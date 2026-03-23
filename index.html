@@ -123,7 +123,7 @@
                         const id = html.match(/"videoId":"([^"]+)"/);
                         if (id && id[1]) {
                             // Aplicamos el retraso de 25s para alcanzar al audio de la radio
-                            yt.src = `https://www.youtube-nocookie.com/embed/${id[1]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id[1]}&rel=0&modestbranding=1&iv_load_policy=3&start=25`;
+                            yt.src = `https://www.youtube-nocookie.com/embed/${id[1]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id[1]}&rel=0&modestbranding=1&iv_load_policy=3&start=45`;
                             
                             // Esperamos un poco para mostrar el video ya cargado
                             setTimeout(() => { 
