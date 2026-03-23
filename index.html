@@ -94,7 +94,6 @@
 
         async function update() {
             try {
-                // 1. Obtener datos de la radio
                 const res = await fetch('https://api.laut.fm/station/primerastereo/current_song');
                 const data = await res.json();
                 
@@ -104,43 +103,38 @@
                     document.getElementById('artist-name').innerText = artist;
                     document.getElementById('song-title').innerText = title;
 
-                    // 2. Carátula HD
+                    // Limpieza total inmediata para evitar videos "pisados"
+                    yt.src = "";
+                    yt.style.opacity = "0";
+                    art.style.opacity = "1";
+
+                    // Buscar Carátula
                     const itunes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
                     const iData = await itunes.json();
                     let img = (iData.results.length > 0) ? iData.results[0].artworkUrl100.replace('100x100', '600x600') : 'https://primerastereo.netlify.app/favicon.png';
                     art.src = img;
                     bg.style.backgroundImage = `url('${img}')`;
-                    
-                    // Reset visual para nueva canción
-                    art.style.opacity = "1";
-                    yt.style.opacity = "0";
-                    yt.src = ""; 
 
-                    // 3. NUEVO BUSCADOR DE VIDEO (Sin AllOrigins para evitar errores CORS/502)
+                    // Buscar Video con carga rápida (5 segundos)
                     const query = encodeURIComponent(artist + " " + title + " official video");
-                    const searchUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`;
-
-                    fetch(searchUrl)
-                        .then(vRes => vRes.text())
-                        .then(html => {
-                            const videoMatch = html.match(/"videoId":"([^"]+)"/);
-                            if (videoMatch && videoMatch[1]) {
-                                const id = videoMatch[1];
-                                yt.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&rel=0&modestbranding=1&iv_load_policy=3`;
-                                
-                                // Transmisión suave de carátula a video
-                                setTimeout(() => { 
-                                    art.style.opacity = "0.1"; 
-                                    yt.style.opacity = "0.7"; 
-                                }, 8000);
-                            }
-                        })
-                        .catch(() => console.log("Reintentando video..."));
+                    fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
+                    .then(r => r.text())
+                    .then(html => {
+                        const id = html.match(/"videoId":"([^"]+)"/);
+                        if (id && id[1]) {
+                            yt.src = `https://www.youtube-nocookie.com/embed/${id[1]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id[1]}&rel=0&modestbranding=1&iv_load_policy=3`;
+                            
+                            // Transición acelerada a 5 segundos
+                            setTimeout(() => { 
+                                art.style.opacity = "0"; 
+                                yt.style.opacity = "1"; // Máxima claridad para el video
+                            }, 5000); 
+                        }
+                    });
                 }
-            } catch (e) { console.log("Error de conexión"); }
+            } catch (e) { console.log("Sincronizando..."); }
         }
 
-        // Control de reproducción
         document.getElementById('play-btn').onclick = () => {
             if (audio.paused) { 
                 audio.play(); 
