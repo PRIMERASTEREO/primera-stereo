@@ -71,7 +71,7 @@
 .animar-logo { animation: pulse-extra 2s infinite ease-in-out; }
 .animar-fondo { animation: pulse-bg 4s infinite ease-in-out; }
 
-        #artist-name { font-size: 1.8rem; font-weight: 600; }
+        #artist-name { font-size: 1.5rem; font-weight: 600; }
         #song-title { color: var(--primary-color); font-size: 1.1rem; }
 
         footer { padding: 25px; display: flex; flex-direction: column; align-items: center; }
@@ -117,7 +117,9 @@
     <footer>
         <button id="play-btn" class="play-btn"><i class="fas fa-play"></i></button>
         <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.8">
-        <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 10px;">© 2010 - 2026 PRIMERA STEREO</p>
+        <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 10px;">© 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE
+
+</p>
     </footer>
 
     <audio id="audio-player" src="https://primerastereo.stream.laut.fm/primerastereo" crossorigin="anonymous"></audio>
@@ -191,7 +193,7 @@
                                         art.style.opacity = "0"; 
                                         yt.style.opacity = "1"; 
                                     }
-                                }, 45000); // Mantenemos tus 45 segundos
+                                }, -03000); // Mantenemos tus -03 segundos
                             }
                         });
                     }
@@ -208,5 +210,34 @@
         setInterval(update, 15000);
         update();
     </script>
+    <script>
+  // 1. Evitar el men煤 del botón derecho (segundo botón)
+  document.addEventListener('contextmenu', event => event.preventDefault());
+
+  // 2. Inhabilitar Ctrl+U (y Ctrl+Shift+I / F12 para mayor seguridad)
+  document.addEventListener('keydown', function(event) {
+    if (
+      (event.ctrlKey && event.key === 'u') || // Ctrl+U
+      (event.ctrlKey && event.shiftKey && event.key === 'I') || // Ctrl+Shift+I
+      event.key === 'F12' // F12
+    ) {
+      event.preventDefault();
+      return false;
+    }
+  });
+</script>
+
+<script>
+    // Inhabilitar clic derecho
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+    // Inhabilitar Ctrl+U y Ctrl+I
+    document.addEventListener('keydown', e => {
+        if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 'i' || e.key === 'I')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+</script>
 </body>
 </html>
