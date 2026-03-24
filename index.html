@@ -46,13 +46,22 @@
         #yt-iframe { width: 100%; height: 100%; border: none; transform: scale(1.8); pointer-events: none; opacity: 0; transition: 1s; }
         #album-art { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2; transition: 1.5s; }
 
-        /* ANIMACIÓN PARA EL LOGO (Jingles) */
-        @keyframes pulse-logo {
-            0% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.05); filter: brightness(1.3); }
-            100% { transform: scale(1); filter: brightness(1); }
-        }
-        .animar-logo { animation: pulse-logo 2s infinite ease-in-out; }
+        /* ANIMACIÓN MEJORADA CON GLOW AMARILLO */
+@keyframes pulse-logo {
+    0% { 
+        transform: scale(1); 
+        filter: brightness(1) drop-shadow(0 0 0px var(--accent)); 
+    }
+    50% { 
+        transform: scale(1.05); 
+        filter: brightness(1.3) drop-shadow(0 0 20px var(--accent)); 
+    }
+    100% { 
+        transform: scale(1); 
+        filter: brightness(1) drop-shadow(0 0 0px var(--accent)); 
+    }
+}
+.animar-logo { animation: pulse-logo 2s infinite ease-in-out; }
 
         #artist-name { font-size: 1.8rem; font-weight: 600; }
         #song-title { color: var(--primary-color); font-size: 1.1rem; }
