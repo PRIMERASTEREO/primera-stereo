@@ -153,8 +153,8 @@
                         .then(html => {
                             const id = html.match(/"videoId":"([^"]+)"/);
                             if (id && id[1]) {
-                                // Agregamos &start=29 para que el video inicie 29 segundos adelantado
-yt.src = `https://www.youtube.com/embed/${id[1]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id[1]}&rel=0&modestbranding=1&start=29`;
+                                // Agregamos &start=9 para que el video inicie 9 segundos adelantado
+yt.src = `https://www.youtube.com/embed/${id[1]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id[1]}&rel=0&modestbranding=1&start=9`;
                                 setTimeout(() => { 
                                     if (document.getElementById('song-title').innerText === title) {
                                         art.style.opacity = "0"; 
