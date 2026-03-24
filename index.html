@@ -127,6 +127,20 @@
         const bg = document.getElementById('bg-layer');
         const audio = document.getElementById('audio-player');
         const yt = document.getElementById('yt-iframe');
+        let errorYoutube = false;
+
+        // Detector de errores para YouTube (UMPG/Bloqueos)
+        window.addEventListener('message', function(event) {
+            if (event.origin === "https://www.youtube.com") {
+                const data = JSON.parse(event.data);
+                if (data.event === 'infoDelivery' && data.info && data.info.error) {
+                    console.log("Aviso de UMPG o bloqueo detectado.");
+                    errorYoutube = true;
+                    yt.style.opacity = "0";
+                    art.style.opacity = "1";
+                }
+            }
+        });
 
         async function update() {
             try {
@@ -144,9 +158,9 @@
                     yt.src = "";
                     yt.style.opacity = "0";
                     art.style.opacity = "1";
-                    art.classList.remove('animar-logo'); // Quitamos animación por defecto
+                    art.classList.remove('animar-logo');
+                    errorYoutube = false; 
 
-                    // FILTRO DE JINGLES (image_b85863.png)
                     const esJingle = artist.toUpperCase().includes("PRIMERA STEREO") || 
                                    title.toUpperCase().includes("JINGLE") || 
                                    title.toUpperCase().includes("START_AD_BREAK") || 
@@ -154,30 +168,30 @@
 
                     if (esJingle) {
                         art.src = "https://primerastereo.netlify.app/favicon.png";
-                        art.classList.add('animar-logo'); // ACTIVAR ANIMACIÓN EN JINGLE
+                        art.classList.add('animar-logo'); 
                     } else {
-                        // BUSCAR CARÁTULA
                         const itunes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
                         const iData = await itunes.json();
                         let img = (iData.results.length > 0) ? iData.results[0].artworkUrl100.replace('100x100', '600x600') : 'https://primerastereo.netlify.app/favicon.png';
                         art.src = img;
                         bg.style.backgroundImage = `url('${img}')`;
 
-                        // BUSCAR VIDEO
                         const query = encodeURIComponent(artist + " " + title + " official video");
                         fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
                         .then(r => r.text())
                         .then(html => {
                             const id = html.match(/"videoId":"([^"]+)"/);
                             if (id && id[1]) {
-                                // Agregamos &start=0 para que el video inicie 0 segundos adelantado
-yt.src = `https://www.youtube.com/embed/${id[1]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id[1]}&rel=0&modestbranding=1&start=0`;
+                                // Mantenemos tu configuración original de start=0
+                                yt.src = `https://www.youtube.com/embed/${id[1]}?enablejsapi=1&autoplay=1&mute=1&controls=0&loop=1&playlist=${id[1]}&rel=0&modestbranding=1&start=0`;
+                                
                                 setTimeout(() => { 
-                                    if (document.getElementById('song-title').innerText === title) {
+                                    // Solo mostramos el video si no se detectó error de UMPG/Bloqueo
+                                    if (document.getElementById('song-title').innerText === title && !errorYoutube) {
                                         art.style.opacity = "0"; 
                                         yt.style.opacity = "1"; 
                                     }
-                                }, 45000); 
+                                }, 45000); // Mantenemos tus 45 segundos
                             }
                         });
                     }
