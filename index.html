@@ -10,6 +10,7 @@
         :root { --primary-color: #6c5ce7; --bg-dark: #000000; --accent: #FFFF00; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg-dark); color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
         .bg-layer { position: absolute; top:0; left:0; width:100%; height:100%; background-size: cover; background-position: center; filter: blur(60px) brightness(0.2); z-index: -2; transition: 2s; }
         .bg-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.9)); z-index: -1; }
         
@@ -18,17 +19,40 @@
         .menu-btn { position: fixed; top: 15px; left: 15px; z-index: 1100; cursor: pointer; color: white; font-size: 22px; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; }
         .side-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: rgba(10, 10, 10, 0.98); transition: 0.4s; z-index: 1050; padding: 20px; border-right: 1px solid var(--primary-color); overflow-y: auto; }
         #menu-toggle:checked + .side-menu { left: 0; }
+        
         .btn-social { display: flex; align-items: center; padding: 10px 15px; margin-bottom: 6px; border-radius: 8px; text-decoration: none; color: white; font-size: 0.85rem; background: rgba(255,255,255,0.05); transition: 0.3s; }
         .btn-social i { margin-right: 12px; width: 22px; text-align: center; }
+        
+        /* Colores de Iconos (image_ba227c.jpg) */
+        .instagram i { color: #E1306C; }
+        .facebook i  { color: #1877F2; }
+        .twitter i   { color: #1DA1F2; }
+        .whatsapp i  { color: #25D366; }
+        .telegram i  { color: #0088CC; }
+        .tiktok i    { color: #010101; }
+        .soundcloud i { color: #FF5500; }
+        .youtube i   { color: #FF0000; }
+        .x-twitter i { color: #FFFFFF; }
+        .threads i   { color: #FFFFFF; }
+        .app-store i { color: #A4C639; }
 
         main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; text-align: center; }
         .main-title { color: var(--accent); font-size: 1.8rem; letter-spacing: 2px; }
         .sub-title { letter-spacing: 6px; opacity: 0.7; font-size: 0.7rem; margin-bottom: 20px; text-transform: uppercase; }
         
+        /* Contenedor de Logo/Video */
         .logo-container { width: 310px; height: 310px; border-radius: 15px; overflow: hidden; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.9); background: #111; margin-bottom: 20px; }
         #video-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         #yt-iframe { width: 100%; height: 100%; border: none; transform: scale(1.8); pointer-events: none; opacity: 0; transition: 1s; }
         #album-art { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2; transition: 1.5s; }
+
+        /* ANIMACIÓN PARA EL LOGO (Jingles) */
+        @keyframes pulse-logo {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.05); filter: brightness(1.3); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+        .animar-logo { animation: pulse-logo 2s infinite ease-in-out; }
 
         #artist-name { font-size: 1.8rem; font-weight: 600; }
         #song-title { color: var(--primary-color); font-size: 1.1rem; }
@@ -47,15 +71,17 @@
 
     <aside class="side-menu">
         <h3 style="color:var(--accent); margin-bottom:20px; padding-left:40px;">SÍGUENOS</h3>
-        <a href="https://www.instagram.com/Primera.Stereo/" target="_blank" class="btn-social"><i class="fab fa-instagram"></i> Instagram</a>
-        <a href="https://www.facebook.com/PrimeraStereoRadio" target="_blank" class="btn-social"><i class="fab fa-facebook-f"></i> Facebook</a>
-        <a href="https://api.whatsapp.com/send?phone=+5804127097429" target="_blank" class="btn-social"><i class="fab fa-whatsapp"></i> Whatsapp</a>
-        <a href="https://t.me/PrimeraStereo" target="_blank" class="btn-social"><i class="fab fa-telegram-plane"></i> Telegram</a>
-        <a href="https://www.tiktok.com/@primerastereo" target="_blank" class="btn-social"><i class="fab fa-tiktok"></i> Tiktok</a>
-        <a href="https://www.youtube.com/@primerastereo" target="_blank" class="btn-social"><i class="fab fa-youtube"></i> Youtube</a>
-        <a href="https://x.com/PrimeraStereo" target="_blank" class="btn-social"><i class="fab fa-x-twitter"></i> Twitter / X</a>
-        <a href="https://www.threads.net/@primera.stereo" target="_blank" class="btn-social"><i class="fas fa-at"></i> Threads</a>
-        <a href="https://www.appcreator24.com/app3819260-6rbmq8" target="_blank" class="btn-social"><i class="fab fa-google-play"></i> Descargar App</a>
+        <a href="https://www.instagram.com/Primera.Stereo/" target="_blank" class="btn-social instagram"><i class="fab fa-instagram"></i> Instagram</a>
+        <a href="https://www.facebook.com/PrimeraStereoRadio" target="_blank" class="btn-social facebook"><i class="fab fa-facebook-f"></i> Facebook</a>
+        <a href="https://twitter.com/PrimeraStereo" target="_blank" class="btn-social twitter"><i class="fab fa-twitter"></i> Twitter</a>
+        <a href="https://api.whatsapp.com/send?phone=+5804127097429" target="_blank" class="btn-social whatsapp"><i class="fab fa-whatsapp"></i> Whatsapp</a>
+        <a href="https://t.me/PrimeraStereo" target="_blank" class="btn-social telegram"><i class="fab fa-telegram-plane"></i> Telegram</a>
+        <a href="https://www.tiktok.com/@primerastereo" target="_blank" class="btn-social tiktok"><i class="fab fa-tiktok"></i> Tiktok</a>
+        <a href="https://soundcloud.com/primerastereo" target="_blank" class="btn-social soundcloud"><i class="fab fa-soundcloud"></i> Soundcloud</a>
+        <a href="https://www.youtube.com/@primerastereo" target="_blank" class="btn-social youtube"><i class="fab fa-youtube"></i> Youtube</a>
+        <a href="https://x.com/PrimeraStereo" target="_blank" class="btn-social x-twitter"><i class="fab fa-x-twitter"></i> Twitter / X</a>
+        <a href="https://www.threads.net/@primera.stereo" target="_blank" class="btn-social threads"><i class="fas fa-at"></i> Threads</a>
+        <a href="https://www.appcreator24.com/app3819260-6rbmq8" target="_blank" class="btn-social app-store"><i class="fab fa-google-play"></i> Descargar App</a>
     </aside>
 
     <main>
@@ -101,30 +127,33 @@
                     yt.src = "";
                     yt.style.opacity = "0";
                     art.style.opacity = "1";
+                    art.classList.remove('animar-logo'); // Quitamos animación por defecto
 
+                    // FILTRO DE JINGLES (image_b85863.png)
                     const esJingle = artist.toUpperCase().includes("PRIMERA STEREO") || 
                                    title.toUpperCase().includes("JINGLE") || 
                                    title.toUpperCase().includes("START_AD_BREAK") || 
                                    album.toUpperCase().includes("JINGLE");
 
-                    const itunes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
-                    const iData = await itunes.json();
-                    let img = (iData.results.length > 0) ? iData.results[0].artworkUrl100.replace('100x100', '600x600') : 'https://primerastereo.netlify.app/favicon.png';
-                    art.src = img;
-                    bg.style.backgroundImage = `url('${img}')`;
+                    if (esJingle) {
+                        art.src = "https://primerastereo.netlify.app/favicon.png";
+                        art.classList.add('animar-logo'); // ACTIVAR ANIMACIÓN EN JINGLE
+                    } else {
+                        // BUSCAR CARÁTULA
+                        const itunes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
+                        const iData = await itunes.json();
+                        let img = (iData.results.length > 0) ? iData.results[0].artworkUrl100.replace('100x100', '600x600') : 'https://primerastereo.netlify.app/favicon.png';
+                        art.src = img;
+                        bg.style.backgroundImage = `url('${img}')`;
 
-                    if (!esJingle) {
-                        // Buscamos "official video" para evitar Error 153 de versiones de solo audio
+                        // BUSCAR VIDEO
                         const query = encodeURIComponent(artist + " " + title + " official video");
                         fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
                         .then(r => r.text())
                         .then(html => {
                             const id = html.match(/"videoId":"([^"]+)"/);
                             if (id && id[1]) {
-                                // Usamos dominio estandar youtube.com para máxima compatibilidad
                                 yt.src = `https://www.youtube.com/embed/${id[1]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id[1]}&rel=0&modestbranding=1&start=0`;
-                                
-                                // Ajusta este número (45000) según tu prueba del cronómetro
                                 setTimeout(() => { 
                                     if (document.getElementById('song-title').innerText === title) {
                                         art.style.opacity = "0"; 
