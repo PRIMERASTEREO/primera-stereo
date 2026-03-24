@@ -147,7 +147,7 @@
                         bg.style.backgroundImage = `url('${img}')`;
 
                         // BUSCAR VIDEO
-                        const query = encodeURIComponent(artist + " " + title + " lyrics");
+                        const query = encodeURIComponent(artist + " " + title + " official video");
                         fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
                         .then(r => r.text())
                         .then(html => {
