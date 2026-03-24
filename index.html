@@ -100,40 +100,54 @@
                 if (document.getElementById('song-title').innerText !== data.title) {
                     const artist = data.artist.name;
                     const title = data.title;
+                    const album = data.album ? data.album : ""; // Detectamos el álbum por si trae info de jingle
+
                     document.getElementById('artist-name').innerText = artist;
                     document.getElementById('song-title').innerText = title;
 
-                    // Limpieza inmediata para el cambio de track
+                    // Limpieza visual
                     yt.src = "";
                     yt.style.opacity = "0";
                     art.style.opacity = "1";
 
-                    // Buscar Carátula iTunes
+                    // 1. FILTRO SÚPER AGRESIVO (Basado en tus capturas de Laut.fm)
+                    const esJingle = artist.toUpperCase().includes("PRIMERA STEREO") || 
+                                   title.toUpperCase().includes("JINGLE") || 
+                                   title.toUpperCase().includes("START_AD_BREAK") || 
+                                   album.toUpperCase().includes("JINGLE");
+
+                    // 2. BUSCAR CARÁTULA
                     const itunes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
                     const iData = await itunes.json();
                     let img = (iData.results.length > 0) ? iData.results[0].artworkUrl100.replace('100x100', '600x600') : 'https://primerastereo.netlify.app/favicon.png';
                     art.src = img;
                     bg.style.backgroundImage = `url('${img}')`;
 
-                    // Buscar Video con Sincronización de 25 segundos
-                    const query = encodeURIComponent(artist + " " + title + " official video");
-                    fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
-                    .then(r => r.text())
-                    .then(html => {
-                        const id = html.match(/"videoId":"([^"]+)"/);
-                        if (id && id[1]) {
-                            // Aplicamos el retraso de 25s para alcanzar al audio de la radio
-                           yt.src = `https://www.youtube-nocookie.com/embed/${id[1]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id[1]}&rel=0&modestbranding=1&iv_load_policy=3&start=180`;
-                            
-                            // Esperamos un poco para mostrar el video ya cargado
-                            setTimeout(() => { 
-                                art.style.opacity = "0"; 
-                                yt.style.opacity = "1"; 
-                            }, 8000); 
-                        }
-                    });
+                    // 3. BUSCAR VIDEO (Solo si NO es un jingle/publicidad)
+                    if (!esJingle) {
+                        // Buscamos "audio" para evitar intros largas de videos oficiales
+                        const query = encodeURIComponent(artist + " " + title + " audio");
+                        fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
+                        .then(r => r.text())
+                        .then(html => {
+                            const id = html.match(/"videoId":"([^"]+)"/);
+                            if (id && id[1]) {
+                                // Inicia oculto en segundo 0
+                                yt.src = `https://www.youtube-nocookie.com/embed/${id[1]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id[1]}&rel=0&modestbranding=1&start=0`;
+                                
+                                // ESPERA DEL CRONÓMETRO (Ajusta los 45000 según tu prueba en AutoDJ)
+                                setTimeout(() => { 
+                                    // Verificación final para no mostrar video si ya cambió el tema
+                                    if (document.getElementById('song-title').innerText === title) {
+                                        art.style.opacity = "0"; 
+                                        yt.style.opacity = "1"; 
+                                    }
+                                }, 45000); 
+                            }
+                        });
+                    }
                 }
-            } catch (e) { console.log("Sincronizando señal..."); }
+            } catch (e) { console.log("Sincronizando..."); }
         }
 
         document.getElementById('play-btn').onclick = () => {
