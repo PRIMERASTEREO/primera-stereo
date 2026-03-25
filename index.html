@@ -20,10 +20,10 @@
         .side-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: rgba(10, 10, 10, 0.98); transition: 0.4s; z-index: 1050; padding: 20px; border-right: 1px solid var(--primary-color); overflow-y: auto; }
         #menu-toggle:checked + .side-menu { left: 0; }
         
-        .btn-social { display: flex; align-items: center; padding: 10px 15px; margin-bottom: 6px; border-radius: 8px; text-decoration: none; color: white; font-size: 0.85rem; background: rgba(255,255,255,0.05); transition: 0.3s; }
+        .btn-social { display: flex; align-items: center; padding: 10px 15px; margin-bottom: 6px; border-radius: 8px; text-decoration: none; color: white; font-size: 1.00rem; background: rgba(255,255,255,0.05); transition: 0.3s; }
         .btn-social i { margin-right: 12px; width: 22px; text-align: center; }
         
-        /* Colores de Iconos (image_ba227c.jpg) */
+        /* Colores de Redes */
         .instagram i { color: #E1306C; }
         .facebook i  { color: #1877F2; }
         .twitter i   { color: #1DA1F2; }
@@ -40,36 +40,18 @@
         .main-title { color: var(--accent); font-size: 1.8rem; letter-spacing: 2px; }
         .sub-title { letter-spacing: 6px; opacity: 0.7; font-size: 0.7rem; margin-bottom: 20px; text-transform: uppercase; }
         
-        /* Contenedor de Logo/Video */
         .logo-container { width: 310px; height: 310px; border-radius: 15px; overflow: hidden; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.9); background: #111; margin-bottom: 20px; }
         #video-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        #yt-iframe { width: 100%; height: 100%; border: none; transform: scale(1.8); pointer-events: none; opacity: 0; transition: 1s; }
+        #yt-player { width: 100%; height: 100%; border: none; transform: scale(1.8); pointer-events: none; opacity: 0; transition: 1s; }
         #album-art { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2; transition: 1.5s; }
 
-       /* ANIMACIÓN MEJORADA: LOGO CON GLOW + FONDO QUE RESPIRA */
-@keyframes pulse-extra {
-    0% { 
-        transform: scale(1); 
-        filter: brightness(1) drop-shadow(0 0 0px var(--accent)); 
-    }
-    50% { 
-        transform: scale(1.05); 
-        filter: brightness(1.2) drop-shadow(0 0 25px var(--accent)); 
-    }
-    100% { 
-        transform: scale(1); 
-        filter: brightness(1) drop-shadow(0 0 0px var(--accent)); 
-    }
-}
+        @keyframes pulse-extra {
+            0% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0px var(--accent)); }
+            50% { transform: scale(1.05); filter: brightness(1.2) drop-shadow(0 0 25px var(--accent)); }
+            100% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0px var(--accent)); }
+        }
 
-@keyframes pulse-bg {
-    0% { opacity: 0.3; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(1.05); }
-    100% { opacity: 0.3; transform: scale(1); }
-}
-
-.animar-logo { animation: pulse-extra 2s infinite ease-in-out; }
-.animar-fondo { animation: pulse-bg 4s infinite ease-in-out; }
+        .animar-logo { animation: pulse-extra 2s infinite ease-in-out; }
 
         #artist-name { font-size: 1.5rem; font-weight: 600; }
         #song-title { color: var(--primary-color); font-size: 1.1rem; }
@@ -105,21 +87,19 @@
         <h1 class="main-title">PRIMERA STEREO</h1>
         <p class="sub-title">Radio Video Online</p>
         <div class="logo-container">
-            <div id="video-container"><iframe id="yt-iframe" allow="autoplay"></iframe></div>
+            <div id="video-container"><div id="yt-player"></div></div>
             <img src="https://primerastereo.netlify.app/favicon.png" id="album-art">
         </div>
         <div class="track-info">
             <h2 id="artist-name">ESPERANDO SEÑAL</h2>
-            <p id="song-title">Cargando salsa...</p>
+            <p id="song-title" data-current="">Cargando...</p>
         </div>
     </main>
 
     <footer>
         <button id="play-btn" class="play-btn"><i class="fas fa-play"></i></button>
         <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.8">
-        <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 10px;">© 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE
-
-</p>
+        <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 10px;">© 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE</p>
     </footer>
 
     <audio id="audio-player" src="https://primerastereo.stream.laut.fm/primerastereo" crossorigin="anonymous"></audio>
@@ -128,77 +108,87 @@
         const art = document.getElementById('album-art');
         const bg = document.getElementById('bg-layer');
         const audio = document.getElementById('audio-player');
-        const yt = document.getElementById('yt-iframe');
+        let player;
         let errorYoutube = false;
 
-        // Detector de errores para YouTube (UMPG/Bloqueos)
-        window.addEventListener('message', function(event) {
-            if (event.origin === "https://www.youtube.com") {
-                const data = JSON.parse(event.data);
-                if (data.event === 'infoDelivery' && data.info && data.info.error) {
-                    console.log("Aviso de UMPG o bloqueo detectado.");
-                    errorYoutube = true;
-                    yt.style.opacity = "0";
-                    art.style.opacity = "1";
-                }
-            }
-        });
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yt-player', {
+                height: '100%', width: '100%',
+                playerVars: { 'autoplay': 1, 'mute': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0 },
+                events: { 'onError': onPlayerError }
+            });
+        }
+
+        function onPlayerError(event) {
+            errorYoutube = true;
+            art.style.opacity = "1";
+            document.getElementById('yt-player').style.opacity = "0";
+        }
 
         async function update() {
             try {
                 const res = await fetch('https://api.laut.fm/station/primerastereo/current_song');
                 const data = await res.json();
+                const songTitleElem = document.getElementById('song-title');
                 
-                if (document.getElementById('song-title').innerText !== data.title) {
-                    const artist = data.artist.name;
-                    const title = data.title;
-                    const album = data.album ? data.album : "";
+                if (songTitleElem.getAttribute('data-current') !== data.title) {
+                    songTitleElem.setAttribute('data-current', data.title);
 
-                    document.getElementById('artist-name').innerText = artist;
-                    document.getElementById('song-title').innerText = title;
+                    // RETRASO DE 8 SEGUNDOS PARA SINCRONIZAR CON EL STREAM
+                    setTimeout(async () => {
+                        const artist = data.artist.name;
+                        const title = data.title;
+                        const album = data.album || "";
 
-                    yt.src = "";
-                    yt.style.opacity = "0";
-                    art.style.opacity = "1";
-                    art.classList.remove('animar-logo');
-                    errorYoutube = false; 
+                        document.getElementById('artist-name').innerText = artist;
+                        songTitleElem.innerText = title;
 
-                    const esJingle = artist.toUpperCase().includes("PRIMERA STEREO") || 
-                                   title.toUpperCase().includes("JINGLE") || 
-                                   title.toUpperCase().includes("START_AD_BREAK") || 
-                                   album.toUpperCase().includes("JINGLE");
+                        if(player && player.stopVideo) player.stopVideo();
+                        document.getElementById('yt-player').style.opacity = "0";
+                        art.style.opacity = "1";
+                        art.classList.remove('animar-logo');
+                        errorYoutube = false;
 
-                    if (esJingle) {
-                        art.src = "https://primerastereo.netlify.app/favicon.png";
-                        art.classList.add('animar-logo'); 
-                    } else {
-                        const itunes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
-                        const iData = await itunes.json();
-                        let img = (iData.results.length > 0) ? iData.results[0].artworkUrl100.replace('100x100', '600x600') : 'https://primerastereo.netlify.app/favicon.png';
-                        art.src = img;
-                        bg.style.backgroundImage = `url('${img}')`;
+                        const esJingle = artist.toUpperCase().includes("PRIMERA STEREO") || 
+                                       title.toUpperCase().includes("JINGLE") || 
+                                       album.toUpperCase().includes("JINGLE");
 
-                        const query = encodeURIComponent(artist + " " + title + " official video");
-                        fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
-                        .then(r => r.text())
-                        .then(html => {
-                            const id = html.match(/"videoId":"([^"]+)"/);
-                            if (id && id[1]) {
-                                // Mantenemos tu configuración original de start=0
-                                yt.src = `https://www.youtube.com/embed/${id[1]}?enablejsapi=1&autoplay=1&mute=1&controls=0&loop=1&playlist=${id[1]}&rel=0&modestbranding=1&start=0`;
-                                
-                                setTimeout(() => { 
-                                    // Solo mostramos el video si no se detectó error de UMPG/Bloqueo
-                                    if (document.getElementById('song-title').innerText === title && !errorYoutube) {
-                                        art.style.opacity = "0"; 
-                                        yt.style.opacity = "1"; 
-                                    }
-                                }, -03000); // Mantenemos tus -03 segundos
-                            }
-                        });
-                    }
+                        if (esJingle) {
+                            art.src = "https://primerastereo.netlify.app/favicon.png";
+                            art.classList.add('animar-logo');
+                            bg.style.backgroundImage = "none";
+                        } else {
+                            const itunes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
+                            const iData = await itunes.json();
+                            let img = (iData.results.length > 0) ? iData.results[0].artworkUrl100.replace('100x100', '600x600') : 'https://primerastereo.netlify.app/favicon.png';
+                            art.src = img;
+                            bg.style.backgroundImage = `url('${img}')`;
+
+                            const query = encodeURIComponent(artist + " " + title + " official video");
+                            fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
+                            .then(r => r.text())
+                            .then(html => {
+                                const id = html.match(/"videoId":"([^"]+)"/);
+                                if (id && id[1] && player && player.loadVideoById) {
+                                    player.loadVideoById({ videoId: id[1], startSeconds: 0 });
+                                    player.mute();
+                                    setTimeout(() => {
+                                        if (songTitleElem.innerText === title && !errorYoutube && player.getPlayerState() === 1) {
+                                            art.style.opacity = "0";
+                                            document.getElementById('yt-player').style.opacity = "1";
+                                        }
+                                    }, 4000);
+                                }
+                            });
+                        }
+                    }, 8000); 
                 }
-            } catch (e) { console.log("Sincronizando..."); }
+            } catch (e) { console.log("Reintentando..."); }
         }
 
         document.getElementById('play-btn').onclick = () => {
@@ -210,34 +200,5 @@
         setInterval(update, 15000);
         update();
     </script>
-    <script>
-  // 1. Evitar el men煤 del botón derecho (segundo botón)
-  document.addEventListener('contextmenu', event => event.preventDefault());
-
-  // 2. Inhabilitar Ctrl+U (y Ctrl+Shift+I / F12 para mayor seguridad)
-  document.addEventListener('keydown', function(event) {
-    if (
-      (event.ctrlKey && event.key === 'u') || // Ctrl+U
-      (event.ctrlKey && event.shiftKey && event.key === 'I') || // Ctrl+Shift+I
-      event.key === 'F12' // F12
-    ) {
-      event.preventDefault();
-      return false;
-    }
-  });
-</script>
-
-<script>
-    // Inhabilitar clic derecho
-    document.addEventListener('contextmenu', event => event.preventDefault());
-
-    // Inhabilitar Ctrl+U y Ctrl+I
-    document.addEventListener('keydown', e => {
-        if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 'i' || e.key === 'I')) {
-            e.preventDefault();
-            return false;
-        }
-    });
-</script>
 </body>
 </html>
