@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-	<meta name="description" content="PRIMERA STEREO Radio Video Online Escúchanos en Vivo Ahora, las 24 horas">
-	<meta name="keywords" content="PRIMERA STEREO Radio Video Online Escúchanos en Vivo Ahora, las 24 horas">
-    <title>PRIMERA STEREO Radio Video Online Escúchanos en Vivo Ahora, las 24 horas</title>
+	<title>PRIMERA STEREO Radio Video Online Escúchanos en Vivo Ahora, las 24 horas</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" type="image/ico" href="https://primerastereo.netlify.app/favicon.png" sizes="512x512">
@@ -74,7 +72,7 @@
         }
 
         .main-title { color: var(--accent); font-size: 1.6rem; letter-spacing: 2px; }
-        .sub-title { letter-spacing: 4px; opacity: 1; font-size: 0.65rem; margin-bottom: 15px; }
+        .sub-title { letter-spacing: 4px; opacity: 1.6; font-size: 0.65rem; margin-bottom: 15px; }
 
         .logo-container {
             width: 300px; height: 300px;
@@ -188,10 +186,15 @@
                 },
                 events: {
                     'onStateChange': (event) => {
+                        // LA CLAVE: Solo ocultar carátula si el video realmente está reproduciendo
                         if (event.data == YT.PlayerState.PLAYING) {
                             clearTimeout(searchTimeout);
                             art.style.opacity = "0"; 
                             ytElem.style.opacity = "1";
+                        } else {
+                            // En cualquier otro estado (cargando, error, pausa), mostramos carátula
+                            art.style.opacity = "1"; 
+                            ytElem.style.opacity = "0";
                         }
                     },
                     'onError': () => { 
