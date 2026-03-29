@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRIMERA STEREO Radio Video Online</title>
+	<meta name="description" content="PRIMERA STEREO Radio Video Online Escúchanos en Vivo Ahora, las 24 horas">
+	<meta name="keywords" content="PRIMERA STEREO Radio Video Online Escúchanos en Vivo Ahora, las 24 horas">
+    <title>PRIMERA STEREO Radio Video Online Escúchanos en Vivo Ahora, las 24 horas</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" type="image/ico" href="https://primerastereo.netlify.app/favicon.png" sizes="512x512">
@@ -72,7 +74,7 @@
         }
 
         .main-title { color: var(--accent); font-size: 1.6rem; letter-spacing: 2px; }
-        .sub-title { letter-spacing: 4px; opacity: 1.6; font-size: 0.65rem; margin-bottom: 15px; }
+        .sub-title { letter-spacing: 4px; opacity: 1; font-size: 0.65rem; margin-bottom: 15px; }
 
         .logo-container {
             width: 300px; height: 300px;
@@ -139,7 +141,7 @@
             <p style="font-size:0.55rem; color:var(--accent); margin-bottom:4px;">PATROCINANTE</p>
             <a id="ad-link" href="https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" target="_blank"><img src="https://primerastereo.netlify.app/Anuncie%20aquí.jpg" id="ad-img"></a>
         </div>
-        <p style="font-size:0.6rem; opacity:1.4; margin-top:10px;">© 2010 - 2026 PRIMERA STEREO Radio Video Online</p>
+        <p style="font-size:0.6rem; opacity:1.6; margin-top:10px;">© 2010 - 2026 PRIMERA STEREO Radio Video Online</p>
     </footer>
 
     <audio id="audio-player" src="https://primerastereo.stream.laut.fm/primerastereo" crossorigin="anonymous"></audio>
@@ -178,7 +180,12 @@
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('yt-player', {
-                playerVars: { 'autoplay': 1, 'mute': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0 },
+                host: 'https://www.youtube.com',
+                playerVars: { 
+                    'autoplay': 1, 'mute': 1, 'controls': 0, 
+                    'modestbranding': 1, 'rel': 0, 'enablejsapi': 1,
+                    'origin': window.location.origin 
+                },
                 events: {
                     'onStateChange': (event) => {
                         if (event.data == YT.PlayerState.PLAYING) {
@@ -187,7 +194,11 @@
                             ytElem.style.opacity = "1";
                         }
                     },
-                    'onError': () => { art.style.opacity = "1"; ytElem.style.opacity = "0"; }
+                    'onError': () => { 
+                        clearTimeout(searchTimeout);
+                        art.style.opacity = "1"; 
+                        ytElem.style.opacity = "0"; 
+                    }
                 }
             });
         }
@@ -203,7 +214,6 @@
                     document.getElementById('artist-name').innerText = data.artist.name;
                     songTitleElem.innerText = data.title;
 
-                    // 1. Reset visual a Carátula (mientras buscamos el video)
                     if(player && player.stopVideo) player.stopVideo();
                     ytElem.style.opacity = "0";
                     art.style.opacity = "1";
@@ -212,48 +222,57 @@
                         art.src = "https://primerastereo.netlify.app/favicon.png";
                         bg.style.backgroundImage = "none";
                     } else {
-                        // 2. Cargar Carátula de iTunes
                         const itunes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(data.artist.name + " " + data.title)}&entity=song&limit=1`);
                         const iData = await itunes.json();
                         let img = (iData.results.length > 0) ? iData.results[0].artworkUrl100.replace('100x100', '600x600') : 'https://primerastereo.netlify.app/favicon.png';
                         art.src = img; bg.style.backgroundImage = `url('${img}')`;
 
-                        // 3. Buscar Video (Prioridad)
                         fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + encodeURIComponent(data.artist.name + " " + data.title + " official video"))}`)
                         .then(r => r.text()).then(html => {
                             const id = html.match(/"videoId":"([^"]+)"/);
                             if (id && id[1] && player && player.loadVideoById) {
                                 player.loadVideoById({ videoId: id[1], startSeconds: 0 });
                                 
-                                // 4. "Seguro de vida": Si en 6 segundos el video no ha arrancado, dejamos la carátula.
+                                clearTimeout(searchTimeout);
                                 searchTimeout = setTimeout(() => {
                                     if(ytElem.style.opacity !== "1") {
                                         art.style.opacity = "1";
                                         ytElem.style.opacity = "0";
                                     }
-                                }, 6000);
+                                }, 7000);
                             }
-                        });
+                        }).catch(() => { art.style.opacity = "1"; ytElem.style.opacity = "0"; });
                     }
                 }
             } catch (e) {}
         }
 
-        playBtn.onclick = () => {
+        const intentarReproducir = () => {
+            audio.play().then(() => {
+                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                ["click", "touchstart", "keydown"].forEach(evt => document.removeEventListener(evt, intentarReproducir));
+            }).catch(() => {});
+        };
+
+        window.addEventListener('load', intentarReproducir);
+        ["click", "touchstart", "keydown"].forEach(evt => document.addEventListener(evt, intentarReproducir, { once: true }));
+
+        playBtn.onclick = (e) => {
+            e.stopPropagation();
             if (audio.paused) { audio.play(); playBtn.innerHTML = '<i class="fas fa-pause"></i>'; }
             else { audio.pause(); playBtn.innerHTML = '<i class="fas fa-play"></i>'; }
         };
 
-        const autoStart = () => {
-            audio.play().then(() => {
-                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                ["click", "touchstart"].forEach(e => document.removeEventListener(e, autoStart));
-            }).catch(() => {});
-        };
-        ["click", "touchstart"].forEach(e => document.addEventListener(e, autoStart, { once: true }));
-
         document.getElementById('volume-slider').oninput = (e) => audio.volume = e.target.value;
-        setInterval(update, 15000); update();
+        setInterval(update, 15000);
+        update();
+
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function(event) {
+            if ((event.ctrlKey && event.key === 'u') || (event.ctrlKey && event.shiftKey && event.key === 'I') || event.key === 'F12') {
+                event.preventDefault();
+            }
+        });
     </script>
 </body>
 </html>
