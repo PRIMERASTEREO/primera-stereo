@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRIMERA STEREO | Radio Video</title>
+    <title>PRIMERA STEREO Radio Video Online Escúchanos en Vivo Ahora, las 24 horas</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+    <link rel="icon" type="image/ico" href="https://primerastereo.netlify.app/favicon.png" sizes="512x512">
+    <link rel="apple-touch-icon" sizes="512x512" href="https://primerastereo.netlify.app/favicon.png"> 
+    <link rel="icon" href="https://primerastereo.netlify.app/favicon.png" sizes="32x32" />
+    <link rel="icon" href="https://primerastereo.netlify.app/favicon.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="https://primerastereo.netlify.app/favicon.png" />
     <style>
         :root { --primary-color: #6c5ce7; --bg-dark: #000000; --accent: #FFFF00; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -68,7 +72,7 @@
         }
 
         .main-title { color: var(--accent); font-size: 1.6rem; letter-spacing: 2px; }
-        .sub-title { letter-spacing: 4px; opacity: 0.6; font-size: 0.65rem; margin-bottom: 15px; }
+        .sub-title { letter-spacing: 4px; opacity: 1.6; font-size: 0.65rem; margin-bottom: 15px; }
 
         .logo-container {
             width: 300px; height: 300px;
@@ -105,7 +109,7 @@
         <h3 style="color:var(--accent); margin-bottom:20px;">SÍGUENOS</h3>
         <a href="https://www.instagram.com/Primera.Stereo/" target="_blank" class="btn-social instagram"><i class="fab fa-instagram"></i> Instagram</a>
         <a href="https://www.facebook.com/PrimeraStereoRadio" target="_blank" class="btn-social facebook"><i class="fab fa-facebook-f"></i> Facebook</a>
-        <a href="https://api.whatsapp.com/send?phone=+5804127097429" target="_blank" class="btn-social whatsapp"><i class="fab fa-whatsapp"></i> Whatsapp</a>
+        <a href="https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" target="_blank" class="btn-social whatsapp"><i class="fab fa-whatsapp"></i> Whatsapp</a>
         <a href="https://t.me/PrimeraStereo" target="_blank" class="btn-social telegram"><i class="fab fa-telegram-plane"></i> Telegram</a>
         <a href="https://www.tiktok.com/@primerastereo" target="_blank" class="btn-social tiktok"><i class="fab fa-tiktok"></i> Tiktok</a>
         <a href="https://soundcloud.com/primerastereo" target="_blank" class="btn-social soundcloud"><i class="fab fa-soundcloud"></i> Soundcloud</a>
@@ -133,9 +137,9 @@
         <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.8">
         <div class="ad-box">
             <p style="font-size:0.55rem; color:var(--accent); margin-bottom:4px;">PATROCINANTE</p>
-            <a id="ad-link" href="#" target="_blank"><img src="https://primerastereo.netlify.app/Anuncie%20aquí.jpg" id="ad-img"></a>
+            <a id="ad-link" href="https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" target="_blank"><img src="https://primerastereo.netlify.app/Anuncie%20aquí.jpg" id="ad-img"></a>
         </div>
-        <p style="font-size:0.6rem; opacity:0.4; margin-top:10px;">© 2010 - 2026 PRIMERA STEREO</p>
+        <p style="font-size:0.6rem; opacity:1.4; margin-top:10px;">© 2010 - 2026 PRIMERA STEREO Radio Video Online</p>
     </footer>
 
     <audio id="audio-player" src="https://primerastereo.stream.laut.fm/primerastereo" crossorigin="anonymous"></audio>
@@ -150,7 +154,7 @@
 
         const ads = [
             { img: "Anuncie%20aquí.jpg", link: "https://api.whatsapp.com/send?phone=+5804127097429" },
-            { img: "Alvacom%20Systems.jpg", link: "https://www.instagram.com/alvacom.systems/" },
+            { img: "Alvacom%20Systems.jpg", link: "https://www.instagram.com/alvacomsystems/" },
             { img: "KINESIOLOGIA2.gif", link: "https://www.instagram.com/nely_alvarez" }
         ];
 
@@ -250,6 +254,47 @@
 
         document.getElementById('volume-slider').oninput = (e) => audio.volume = e.target.value;
         setInterval(update, 15000); update();
+		// Lógica de Autoplay y Click Global
+        const intentarReproducir = () => {
+            audio.play().then(() => {
+                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                // Al funcionar, eliminamos los escuchadores para no gastar recursos
+                ["click", "touchstart", "keydown", "mousemove"].forEach(evt => 
+                    document.removeEventListener(evt, intentarReproducir)
+                );
+            }).catch(() => console.log("Bloqueado por navegador. Esperando interacción..."));
+        };
+
+        // Escuchadores para disparar el audio al mínimo contacto
+        window.addEventListener('load', intentarReproducir);
+        ["click", "touchstart", "keydown", "mousemove"].forEach(evt => 
+            document.addEventListener(evt, intentarReproducir, { once: true })
+        );
+
+        // Control Manual del Botón
+        playBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (audio.paused) {
+                audio.play();
+                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                audio.pause();
+                playBtn.innerHTML = '<i class="fas fa-play"></i>';
+            }
+        };
+
+        document.getElementById('volume-slider').oninput = (e) => audio.volume = e.target.value;
+        setInterval(update, 15000);
+        update();
+
+        // Protección anticopia
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function(event) {
+            if ((event.ctrlKey && event.key === 'u') || (event.ctrlKey && event.shiftKey && event.key === 'I') || event.key === 'F12') {
+                event.preventDefault();
+                return false;
+            }
+			});
     </script>
 </body>
 </html>
