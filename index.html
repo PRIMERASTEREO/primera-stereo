@@ -129,7 +129,7 @@
             <a id="ad-link" href="#" target="_blank"><img id="ad-banner" src=""></a>
         </div>
 
-        <p style="font-size: 0.6rem; opacity: 1.5; margin-top: 0px; text-align: center;">© 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE</p>
+        <p style="font-size: 0.6rem; opacity: 1.6; margin-top: 0px; text-align: center;">© 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE</p>
     </footer>
 
     <audio id="audio-player" src="https://primerastereo.stream.laut.fm/primerastereo" crossorigin="anonymous"></audio>
@@ -222,5 +222,34 @@
         setInterval(update, 15000);
         update(); updateBanners();
     </script>
+	<script>
+  // 1. Evitar el men煤 del botón derecho (segundo botón)
+  document.addEventListener('contextmenu', event => event.preventDefault());
+
+  // 2. Inhabilitar Ctrl+U (y Ctrl+Shift+I / F12 para mayor seguridad)
+  document.addEventListener('keydown', function(event) {
+    if (
+      (event.ctrlKey && event.key === 'u') || // Ctrl+U
+      (event.ctrlKey && event.shiftKey && event.key === 'I') || // Ctrl+Shift+I
+      event.key === 'F12' // F12
+    ) {
+      event.preventDefault();
+      return false;
+    }
+  });
+</script>
+
+<script>
+    // Inhabilitar clic derecho
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+    // Inhabilitar Ctrl+U y Ctrl+I
+    document.addEventListener('keydown', e => {
+        if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 'i' || e.key === 'I')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+</script>
 </body>
 </html>
