@@ -8,173 +8,166 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        /* Reset y Estilos Base */
+        /* Base y Estructura */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             background-color: #000; 
             color: #fff; 
-            font-family: 'Segoe UI', sans-serif;
+            font-family: Arial, sans-serif;
             height: 100vh;
-            display: flex;
             overflow: hidden;
+            display: flex;
         }
 
-        /* --- MENÚ LATERAL (SIDEBAR) --- */
+        /* --- MENÚ LATERAL REPARADO --- */
         #menu-toggle { display: none; }
 
-        .menu-open-btn {
+        /* Botón de apertura (☰) */
+        .menu-btn {
             position: fixed;
             top: 15px;
             left: 15px;
-            z-index: 2000;
+            z-index: 1000;
             cursor: pointer;
+            background: #222;
             color: #fff;
-            font-size: 1.5rem;
-            background: rgba(102, 68, 255, 0.5);
-            padding: 10px;
-            border-radius: 8px;
+            padding: 10px 12px;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            border: 1px solid #444;
         }
 
         .sidebar {
             position: fixed;
             left: 0; top: 0;
-            width: 280px;
-            height: 100vh;
-            background: rgba(15, 15, 15, 0.98);
+            width: 260px;
+            height: 100%;
+            background: #0a0a0a;
             border-right: 2px solid #330066;
-            z-index: 2100;
+            z-index: 2000;
             transform: translateX(-100%);
-            transition: 0.3s;
+            transition: transform 0.3s ease;
             padding: 20px;
             display: flex;
             flex-direction: column;
         }
 
+        /* Cuando el checkbox está activo, se muestra el menú */
         #menu-toggle:checked + .sidebar { transform: translateX(0); }
 
-        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .sidebar h2 { color: #ffff00; font-size: 1.2rem; }
-        .menu-close-btn { cursor: pointer; font-size: 1.5rem; color: #666; }
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 10px;
+        }
+        .sidebar h2 { color: #ffff00; font-size: 1.1rem; }
+        .close-menu { cursor: pointer; font-size: 1.4rem; color: #ff0000; }
 
         .btn-social {
-            background: rgba(255,255,255,0.05);
+            background: #1a1a1a;
             color: #fff;
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 4px;
             text-decoration: none;
             display: flex;
             align-items: center;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
-        .btn-social i { width: 30px; font-size: 1.2rem; margin-right: 10px; text-align: center; }
+        .btn-social i { width: 25px; margin-right: 10px; text-align: center; }
 
-        /* --- CONTENEDOR CENTRAL (EL REPRODUCTOR) --- */
-        .main-wrapper {
+        /* --- CONTENEDOR PRINCIPAL CENTRADO --- */
+        .main-content {
             flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-        }
-
-        /* Esta caja mantiene todo centrado y compacto */
-        .player-card {
-            width: 100%;
-            max-width: 400px; /* Ancho fijo para que no se desparrame */
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            padding: 20px;
+            width: 100%;
+        }
+
+        /* Caja del Reproductor */
+        .player-container {
+            width: 100%;
+            max-width: 380px;
             text-align: center;
         }
 
-        .header-section { margin-bottom: 15px; }
-        .header-title { color: #ffff00; font-weight: bold; font-size: 1.8rem; line-height: 1; }
-        .sub-title { font-size: 0.8rem; letter-spacing: 3px; opacity: 0.8; }
+        /* Títulos (Reparada visibilidad) */
+        .title-block { margin-bottom: 15px; }
+        .main-title { color: #ffff00; font-size: 1.8rem; font-weight: bold; text-shadow: 2px 2px 4px #000; }
+        .sub-title { color: #fff; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; }
 
-        /* ÁREA DE VIDEO / CARÁTULA (CUADRADA) */
-        #media-container {
+        /* Área de Visualización (Logo/Video) */
+        #display-area {
             width: 100%;
-            aspect-ratio: 1/1; /* Obliga a ser un cuadrado perfecto */
+            aspect-ratio: 1/1;
             background: #111;
-            border-radius: 20px;
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 0 25px rgba(102, 68, 255, 0.3);
             position: relative;
+            border: 2px solid #222;
             margin-bottom: 15px;
         }
 
-        #yt-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: 1s; }
-        #album-art { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 1; transition: 1s; }
+        #yt-iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; display: none; }
+        #cover-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: block; }
 
-        /* METADATOS Y MARQUESINA */
-        .metadata-section { width: 100%; margin-bottom: 15px; overflow: hidden; }
-        #artist-name { font-size: 1.3rem; font-weight: bold; margin-bottom: 2px; }
+        /* Metadatos */
+        .info-block { margin-bottom: 15px; min-height: 50px; }
+        #artist { font-size: 1.2rem; font-weight: bold; color: #fff; display: block; }
         
-        .marquee-container {
-            width: 100%;
-            overflow: hidden;
-            white-space: nowrap;
-        }
-        #song-title {
-            display: inline-block;
-            color: #6666ff;
-            font-size: 1rem;
-            padding-left: 100%;
-            animation: marquee 12s linear infinite;
+        .marquee { width: 100%; overflow: hidden; white-space: nowrap; margin-top: 5px; }
+        #song { color: #6666ff; font-size: 1rem; display: inline-block; animation: scroll 10s linear infinite; }
+
+        @keyframes scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
         }
 
-        @keyframes marquee {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(-100%, 0); }
-        }
-
-        /* CONTROLES */
-        .controls-section { margin-bottom: 20px; }
-        .play-btn {
+        /* Controles */
+        .controls { margin-bottom: 20px; }
+        .btn-play {
             background: #6644ff;
             border: none;
-            width: 60px; height: 60px;
+            width: 55px; height: 55px;
             border-radius: 50%;
-            color: white;
-            font-size: 1.8rem;
+            color: #fff;
+            font-size: 1.5rem;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(102, 68, 255, 0.4);
         }
+        
+        .vol-box { margin-top: 10px; display: flex; align-items: center; gap: 10px; justify-content: center; }
+        #vol-slider { width: 120px; accent-color: #ffff00; cursor: pointer; }
 
-        .volume-box { margin-top: 10px; width: 150px; }
-        #volume-slider { width: 100%; cursor: pointer; accent-color: #ffff00; }
+        /* Publicidad */
+        .ad-box { width: 100%; border-top: 1px solid #222; padding-top: 10px; }
+        .ad-text { color: #ffff00; font-size: 0.6rem; font-weight: bold; margin-bottom: 5px; }
+        #ad-img { width: 100%; max-height: 70px; object-fit: contain; }
 
-        /* PUBLICIDAD (BANNER) */
-        .ad-section { width: 100%; margin-top: 10px; }
-        .ad-label { color: #ffff00; font-size: 0.6rem; font-weight: bold; margin-bottom: 5px; }
-        #ad-banner { 
-            width: 100%; 
-            height: auto; 
-            max-height: 80px; 
-            object-fit: contain; 
-            border-radius: 5px;
-        }
+        .footer-text { font-size: 0.6rem; color: #444; margin-top: 10px; }
 
-        .copyright { font-size: 0.65rem; color: #444; margin-top: 15px; }
-
-        /* Ajustes para PC */
+        /* --- AJUSTES PARA PC --- */
         @media (min-width: 1024px) {
-            .sidebar { transform: translateX(0); } /* Sidebar siempre visible en PC */
-            .menu-open-btn, .menu-close-btn { display: none; }
-            .main-wrapper { padding-left: 280px; } /* Desplaza el reproductor para no taparlo */
+            .sidebar { transform: translateX(0); }
+            .menu-btn, .close-menu { display: none; }
+            .main-content { margin-left: 260px; }
         }
     </style>
 </head>
 <body>
 
+    <label for="menu-toggle" class="menu-btn"><i class="fas fa-bars"></i></label>
     <input type="checkbox" id="menu-toggle">
-    <label for="menu-toggle" class="menu-open-btn"><i class="fas fa-bars"></i></label>
 
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>SÍGUENOS</h2>
-            <label for="menu-toggle" class="menu-close-btn"><i class="fas fa-times"></i></label>
+            <label for="menu-toggle" class="close-menu"><i class="fas fa-times"></i></label>
         </div>
         <a href="https://www.instagram.com/Primera.Stereo/" target="_blank" class="btn-social"><i class="fab fa-instagram" style="color:#E1306C"></i> Instagram</a>
         <a href="https://www.facebook.com/PrimeraStereoRadio" target="_blank" class="btn-social"><i class="fab fa-facebook-f" style="color:#1877F2"></i> Facebook</a>
@@ -184,142 +177,129 @@
         <a href="https://soundcloud.com/primerastereo" target="_blank" class="btn-social"><i class="fab fa-soundcloud" style="color:#FF5500"></i> Soundcloud</a>
         <a href="https://www.youtube.com/@primerastereo" target="_blank" class="btn-social"><i class="fab fa-youtube" style="color:#FF0000"></i> Youtube</a>
         <a href="https://x.com/Primera_Stereo" target="_blank" class="btn-social"><i class="fab fa-x-twitter"></i> Twitter / X</a>
-        <a href="https://www.threads.net/@primera.stereo" target="_blank" class="btn-social"><i class="fa-brands fa-threads"></i> Threads</a>
         <a href="https://www.appcreator24.com/app3819260-6rbmq8" target="_blank" class="btn-social"><i class="fas fa-download" style="color:#00ff00"></i> Descargar App</a>
     </div>
 
-    <div class="main-wrapper">
-        <div class="player-card">
+    <div class="main-content">
+        <div class="player-container">
             
-            <div class="header-section">
-                <h1 class="header-title">PRIMERA STEREO</h1>
-                <p class="sub-title">Radio Video Online</p>
+            <div class="title-block">
+                <div class="main-title">PRIMERA STEREO</div>
+                <div class="sub-title">Radio Video Online</div>
             </div>
 
-            <div id="media-container">
+            <div id="display-area">
                 <div id="yt-player"></div>
-                <img id="album-art" src="https://primerastereo.netlify.app/favicon.png" alt="Carátula">
+                <img id="cover-img" src="https://primerastereo.netlify.app/favicon.png">
             </div>
 
-            <div class="metadata-section">
-                <div id="artist-name">Cargando...</div>
-                <div class="marquee-container">
-                    <p id="song-title">Conectando con la señal...</p>
+            <div class="info-block">
+                <span id="artist">Cargando...</span>
+                <div class="marquee">
+                    <span id="song">Conectando señal...</span>
                 </div>
             </div>
 
-            <div class="controls-section">
-                <button id="play-pause" class="play-btn"><i class="fas fa-play"></i></button>
-                <div class="volume-box">
-                    <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.8">
+            <div class="controls">
+                <button id="play-pause" class="btn-play"><i class="fas fa-play"></i></button>
+                <div class="vol-box">
+                    <i class="fas fa-volume-down" style="font-size:0.8rem"></i>
+                    <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="0.8">
+                    <i class="fas fa-volume-up" style="font-size:0.8rem"></i>
                 </div>
             </div>
 
-            <div class="ad-section">
-                <p class="ad-label">PATROCINANTE</p>
+            <div class="ad-box">
+                <p class="ad-text">PATROCINANTE</p>
                 <a href="https://api.whatsapp.com/send?phone=+5804127097429" target="_blank">
-                    <img id="ad-banner" src="https://primerastereo.netlify.app/Anuncie%20aquí.jpg" alt="Publicidad">
+                    <img id="ad-img" src="https://primerastereo.netlify.app/Anuncie%20aquí.jpg">
                 </a>
             </div>
 
-            <p class="copyright">© 2010 - 2026 PRIMERA STEREO</p>
+            <p class="footer-text">© 2010 - 2026 PRIMERA STEREO</p>
         </div>
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
-        const STREAM_URL = "https://primerastereo.stream.laut.fm/primerastereo";
-        const METADATA_URL = "https://api.laut.fm/station/primerastereo/current_song";
+        const STREAM = "https://primerastereo.stream.laut.fm/primerastereo";
+        const API = "https://api.laut.fm/station/primerastereo/current_song";
         
-        const audio = new Audio(STREAM_URL);
+        const audio = new Audio(STREAM);
         const playBtn = document.getElementById('play-pause');
-        const artistElem = document.getElementById('artist-name');
-        const titleElem = document.getElementById('song-title');
-        const albumArtElem = document.getElementById('album-art');
-        const ytPlayerElem = document.getElementById('yt-player');
-        
+        const coverImg = document.getElementById('cover-img');
         let ytPlayer;
-        let currentSong = "";
+        let lastSong = "";
 
         // Play/Pause
         playBtn.addEventListener('click', () => {
             if (audio.paused) {
                 audio.play();
                 playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                if (ytPlayer && ytPlayer.playVideo) ytPlayer.playVideo();
+                if(ytPlayer && ytPlayer.playVideo) ytPlayer.playVideo();
             } else {
                 audio.pause();
                 playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
+                if(ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
             }
         });
 
         // Volumen
-        document.getElementById('volume-slider').addEventListener('input', (e) => {
-            audio.volume = e.target.value;
-        });
+        document.getElementById('vol-slider').addEventListener('input', (e) => audio.volume = e.target.value);
 
         // YouTube API
         function onYouTubeIframeAPIReady() {
             ytPlayer = new YT.Player('yt-player', {
-                playerVars: { 'autoplay': 1, 'controls': 0, 'mute': 1, 'modestbranding': 1 },
+                height: '100%', width: '100%',
+                playerVars: { 'autoplay': 1, 'controls': 0, 'mute': 1, 'modestbranding': 1, 'rel': 0 },
                 events: {
                     'onStateChange': (e) => {
+                        const frame = document.getElementById('yt-player');
                         if (e.data == YT.PlayerState.PLAYING) {
-                            albumArtElem.style.opacity = "0";
-                            ytPlayerElem.style.opacity = "1";
+                            frame.style.display = "block";
+                            coverImg.style.display = "none";
                         } else {
-                            albumArtElem.style.opacity = "1";
-                            ytPlayerElem.style.opacity = "0";
+                            frame.style.display = "none";
+                            coverImg.style.display = "block";
                         }
                     }
                 }
             });
         }
 
-        // Buscador de Video Proxy
-        async function getYoutubeId(query) {
+        async function update() {
             try {
-                const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query + ' official video')}`);
-                const data = await res.json();
-                const match = data.contents.match(/\/watch\?v=([a-zA-Z0-9_-]{11})/);
-                return match ? match[1] : null;
-            } catch (e) { return null; }
-        }
+                const r = await fetch(API);
+                const d = await r.json();
+                const songInfo = `${d.artist.name} - ${d.title}`;
 
-        // Actualizar Metadata
-        async function updateMetadata() {
-            try {
-                const res = await fetch(METADATA_URL);
-                const data = await res.json();
-                
-                const newSong = `${data.artist.name} - ${data.title}`;
-                if (newSong !== currentSong) {
-                    currentSong = newSong;
-                    artistElem.innerText = data.artist.name;
-                    titleElem.innerText = data.title;
+                if (songInfo !== lastSong) {
+                    lastSong = songInfo;
+                    document.getElementById('artist').innerText = d.artist.name;
+                    document.getElementById('song').innerText = d.title;
                     
-                    // Reset marquesina
-                    titleElem.style.animation = 'none';
-                    titleElem.offsetHeight;
-                    titleElem.style.animation = null;
-
-                    // Buscar Video
-                    const vId = await getYoutubeId(newSong);
-                    if (vId && ytPlayer && ytPlayer.loadVideoById) {
-                        ytPlayer.loadVideoById(vId);
+                    // Buscar video
+                    const search = encodeURIComponent(songInfo + " official video");
+                    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://www.youtube.com/results?search_query=' + search)}`);
+                    const data = await res.json();
+                    const id = data.contents.match(/\/watch\?v=([a-zA-Z0-9_-]{11})/);
+                    
+                    if (id && ytPlayer && ytPlayer.loadVideoById) {
+                        ytPlayer.loadVideoById(id[1]);
                     } else {
-                        // Si no hay video, se queda la carátula
-                        albumArtElem.style.opacity = "1";
-                        ytPlayerElem.style.opacity = "0";
+                        // Si falla el video, volvemos a la carátula
+                        document.getElementById('yt-player').style.display = "none";
+                        coverImg.style.display = "block";
+                        // Usamos la carátula de Laut.fm si existe, si no, tu logo
+                        coverImg.src = d.image_huge || "https://primerastereo.netlify.app/favicon.png";
                     }
                 }
             } catch (e) {}
         }
 
-        setInterval(updateMetadata, 15000);
-        updateMetadata();
+        setInterval(update, 15000);
+        update();
     </script>
 </body>
 </html>
