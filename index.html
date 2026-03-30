@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRIMERA STEREO</title>
+    <title>PRIMERA STEREO RADIO VIDEO ONLINE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background-color: #000; color: #fff; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; }
 
-        /* --- MENÚ OVERLAY (ESTILO FLOTANTE) --- */
+        /* --- MENÚ OVERLAY --- */
         #menu-toggle { display: none; }
         .menu-btn {
             position: fixed; top: 15px; left: 15px; z-index: 10001;
@@ -39,7 +39,7 @@
         }
         .btn-social i { width: 25px; margin-right: 10px; text-align: center; font-size: 1.1rem; }
 
-        /* COLORES RRSS */
+        /* COLORES ICONOS RRSS */
         .fa-instagram { color: #E1306C; }
         .fa-facebook { color: #1877F2; }
         .fa-whatsapp { color: #25D366; }
@@ -58,33 +58,35 @@
         }
 
         #player-container {
-            width: 320px; height: 320px; background: #0a0a0a;
+            width: 310px; height: 310px; background: #0a0a0a;
             border-radius: 20px; position: relative; overflow: hidden;
             border: 2px solid #330066; box-shadow: 0 0 25px rgba(102, 68, 255, 0.3);
-            margin: 15px 0;
+            margin: 10px 0;
         }
         #yt-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         #cover-art { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; object-fit: cover; }
 
-        .info { margin-bottom: 20px; }
-        #artist { font-size: 1.6rem; font-weight: bold; color: #ffff00; display: block; }
-        #song { font-size: 1.1rem; color: #6644ff; }
+        .info { margin-bottom: 15px; }
+        #artist { font-size: 1.5rem; font-weight: bold; color: #ffff00; display: block; }
+        #song { font-size: 1rem; color: #6644ff; }
 
         .play-btn { 
-            background: #6644ff; border: none; width: 65px; height: 65px; 
-            border-radius: 50%; color: #fff; font-size: 1.6rem; cursor: pointer;
-            margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            background: #6644ff; border: none; width: 60px; height: 60px; 
+            border-radius: 50%; color: #fff; font-size: 1.5rem; cursor: pointer;
+            margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         
-        .volume-slider { width: 180px; accent-color: #ffff00; margin-bottom: 20px; }
+        .volume-slider { width: 180px; accent-color: #ffff00; margin-bottom: 15px; }
 
-        .ad-section { width: 320px; border-top: 1px solid #222; padding-top: 15px; }
-        #ad-link img { width: 100%; max-height: 70px; object-fit: contain; }
+        /* SECCIÓN PATROCINANTES SIN GUION */
+        .ad-section { width: 320px; padding-top: 5px; }
+        .ad-title { color: #ffff00; font-size: 0.65rem; font-weight: bold; margin-bottom: 8px; letter-spacing: 2px; }
+        #ad-link img { width: 100%; max-height: 75px; object-fit: contain; }
 
-        .copy-footer { font-size: 0.65rem; color: #444; margin-top: 15px; letter-spacing: 1px; }
+        .copy-footer { font-size: 0.6rem; color: #444; margin-top: 10px; }
 
         @media (max-width: 400px) {
-            #player-container { width: 280px; height: 280px; }
+            #player-container { width: 270px; height: 270px; }
         }
     </style>
 </head>
@@ -109,8 +111,8 @@
     </div>
 
     <div class="main-content">
-        <h1 style="color:#ffff00; font-size: 1.8rem; line-height: 1;">PRIMERA STEREO</h1>
-        <p style="font-size: 0.7rem; letter-spacing: 3px; margin-bottom: 5px;">RADIO VIDEO ONLINE</p>
+        <h1 style="color:#ffff00; font-size: 1.8rem;">PRIMERA STEREO</h1>
+        <p style="font-size: 0.7rem; letter-spacing: 3px; margin-bottom: 10px;">RADIO VIDEO ONLINE</p>
 
         <div id="player-container">
             <div id="yt-player"></div>
@@ -126,6 +128,7 @@
         <input type="range" id="volume" class="volume-slider" min="0" max="1" step="0.01" value="0.8">
 
         <div class="ad-section">
+            <p class="ad-title">PATROCINANTES</p>
             <a id="ad-link" href="#" target="_blank"><img id="ad-banner" src=""></a>
         </div>
 
@@ -180,11 +183,9 @@
                     document.getElementById('artist').innerText = data.artist.name;
                     document.getElementById('song').innerText = data.title;
                     
-                    // Actualizar carátula
                     artImg.src = data.image_huge || "https://primerastereo.netlify.app/favicon.png";
                     artImg.style.display = "block";
 
-                    // Búsqueda de Video
                     fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=` + encodeURIComponent(track))
                         .then(r => r.json()).then(v => {
                             if(v.video_id && ytPlayer) {
@@ -194,7 +195,6 @@
                         }).catch(() => {});
                 }
                 
-                // Rotar banner
                 document.getElementById('ad-banner').src = banners[bIdx].img;
                 document.getElementById('ad-link').href = banners[bIdx].link;
                 bIdx = (bIdx + 1) % banners.length;
