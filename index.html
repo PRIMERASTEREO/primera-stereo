@@ -9,37 +9,58 @@
     <style>
         :root { --primary-color: #6c5ce7; --bg-dark: #000000; --accent: #FFFF00; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg-dark); color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: var(--bg-dark); 
+            color: white; 
+            height: 100vh; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
         .bg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(60px) brightness(0.2); z-index: -2; transition: 2s; }
         .bg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.9)); z-index: -1; }
 
-        /* MENU */
+        /* MENU LATERAL COMPLETO */
         #menu-toggle { display: none; }
         .menu-btn { position: fixed; top: 15px; left: 15px; z-index: 1100; cursor: pointer; color: white; font-size: 20px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; }
         .side-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: rgba(10, 10, 10, 0.98); transition: 0.4s; z-index: 1050; padding: 70px 15px 20px 15px; border-right: 1px solid var(--primary-color); overflow-y: auto; }
         #menu-toggle:checked + .side-menu { left: 0; }
+        
         .btn-social { display: flex; align-items: center; padding: 10px 15px; margin-bottom: 6px; border-radius: 8px; text-decoration: none; color: white; font-size: 0.85rem; background: rgba(255,255,255,0.08); transition: 0.3s; }
         .btn-social i { margin-right: 12px; width: 20px; text-align: center; font-size: 1.1rem; }
-        .whatsapp i { color: #25D366; } .facebook i { color: #1877F2; } .instagram i { color: #E1306C; }
+        .instagram i { color: #E1306C; } .facebook i { color: #1877F2; } .whatsapp i { color: #25D366; }
+        .telegram i { color: #0088CC; } .tiktok i { color: #00f2ea; } .soundcloud i { color: #FF5500; }
+        .youtube i { color: #FF0000; } .x-twitter i { color: #FFFFFF; } .threads i { color: #FFFFFF; }
+        .download i { color: #3ddc84; }
 
-        /* PLAYER */
-        main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; text-align: center; width: 100%; }
+        /* REPRODUCTOR */
+        main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; text-align: center; width: 100%; max-width: 400px; padding: 0 20px; }
         .logo-container { width: 300px; height: 300px; border-radius: 20px; overflow: hidden; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.8); background: #111; }
         
         #video-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         #yt-player { width: 100%; height: 100%; transform: scale(1.8); pointer-events: none; opacity: 0; transition: 1s; }
-        
-        /* Carátula siempre visible al inicio */
         #album-art { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 5; opacity: 1; transition: 1s; }
 
-        .track-info { margin-top: 15px; width: 100%; overflow: hidden; }
-        #song-title { color: var(--primary-color); font-size: 1.1rem; display: inline-block; white-space: nowrap; padding-left: 100%; animation: marquee 15s linear infinite; }
+        /* MARQUESINA AJUSTADA AL MARGEN DEL REPRODUCTOR */
+        .track-info { margin-top: 15px; width: 100%; overflow: hidden; position: relative; }
+        #artist-name { font-size: 1.2rem; font-weight: 600; margin-bottom: 5px; }
+        .marquee-box { width: 100%; overflow: hidden; white-space: nowrap; }
+        #song-title { color: var(--primary-color); font-size: 1.1rem; display: inline-block; padding-left: 100%; animation: marquee 12s linear infinite; }
+        
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
 
-        footer { width: 100%; padding: 20px; display: flex; flex-direction: column; align-items: center; z-index: 10; }
-        .play-btn { width: 65px; height: 65px; border-radius: 50%; background: var(--primary-color); border: none; color: white; cursor: pointer; font-size: 1.5rem; }
-        .ad-box img { width: 100%; max-width: 300px; height: 60px; object-fit: contain; margin-top: 10px; border-radius: 8px; }
+        footer { width: 100%; padding: 15px; display: flex; flex-direction: column; align-items: center; z-index: 10; }
+        .play-btn { width: 65px; height: 65px; border-radius: 50%; background: var(--primary-color); border: none; color: white; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .play-btn:hover { transform: scale(1.1); }
+        
+        .ad-box { width: 100%; max-width: 300px; margin-top: 10px; }
+        #ad-img { width: 100%; height: 60px; object-fit: contain; border-radius: 8px; transition: 0.5s; }
+        
+        .copy-text { font-size: 0.65rem; color: rgba(255,255,255,0.5); margin-top: 10px; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -56,27 +77,40 @@
         <a href="https://api.whatsapp.com/send?phone=+5804127097429" target="_blank" class="btn-social whatsapp"><i class="fab fa-whatsapp"></i> Whatsapp</a>
         <a href="https://t.me/PrimeraStereo" target="_blank" class="btn-social telegram"><i class="fab fa-telegram-plane"></i> Telegram</a>
         <a href="https://www.tiktok.com/@primerastereo" target="_blank" class="btn-social tiktok"><i class="fab fa-tiktok"></i> Tiktok</a>
-        <a href="https://www.appcreator24.com/app3819260-6rbmq8" target="_blank" class="btn-social download"><i class="fas fa-download"></i> App</a>
+        <a href="https://soundcloud.com/primerastereo" target="_blank" class="btn-social soundcloud"><i class="fab fa-soundcloud"></i> Soundcloud</a>
+        <a href="https://www.youtube.com/@primerastereo" target="_blank" class="btn-social youtube"><i class="fab fa-youtube"></i> Youtube</a>
+        <a href="https://x.com/Primera_Stereo" target="_blank" class="btn-social x-twitter"><i class="fab fa-x-twitter"></i> Twitter / X</a>
+        <a href="https://www.threads.net/@primera.stereo" target="_blank" class="btn-social threads"><i class="fa-brands fa-threads"></i> Threads</a>
+        <a href="https://www.appcreator24.com/app3819260-6rbmq8" target="_blank" class="btn-social download"><i class="fas fa-download"></i> Descargar App</a>
     </aside>
 
     <main>
-        <h1 style="color:var(--accent); font-size: 1.5rem;">PRIMERA STEREO</h1>
+        <h1 style="color:var(--accent); font-size: 1.4rem; letter-spacing: 2px;">PRIMERA STEREO</h1>
+        <p style="font-size:0.6rem; letter-spacing:4px; margin-bottom:15px; opacity:0.8;">Radio Video Online</p>
+        
         <div class="logo-container">
             <div id="video-container"><div id="yt-player"></div></div>
             <img src="https://primerastereo.netlify.app/favicon.png" id="album-art">
         </div>
+
         <div class="track-info">
-            <h2 id="artist-name" style="font-size: 1.2rem;">PRIMERA STEREO</h2>
-            <p id="song-title">Cargando señal...</p>
+            <h2 id="artist-name">PRIMERA STEREO</h2>
+            <div class="marquee-box">
+                <p id="song-title">Conectando con la señal...</p>
+            </div>
         </div>
     </main>
 
     <footer>
         <button id="play-btn" class="play-btn"><i class="fas fa-play"></i></button>
         <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" style="width:180px; margin:15px 0; accent-color: var(--accent);">
+        
         <div class="ad-box">
+            <p style="font-size:0.5rem; color:var(--accent); margin-bottom:5px;">PATROCINANTE</p>
             <a id="ad-link" href="#" target="_blank"><img src="https://primerastereo.netlify.app/Anuncie%20aquí.jpg" id="ad-img"></a>
         </div>
+        
+        <p class="copy-text">© 2010 - 2026 PRIMERA STEREO Radio Video Online</p>
     </footer>
 
     <audio id="audio-player" src="https://primerastereo.stream.laut.fm/primerastereo" crossorigin="anonymous"></audio>
@@ -87,7 +121,7 @@
         const playBtn = document.getElementById('play-btn');
         let player;
 
-        // Publicidad
+        // Rotación de Publicidad
         const ads = [
             { img: "Anuncie%20aquí.jpg", link: "https://api.whatsapp.com/send?phone=+5804127097429" },
             { img: "Alvacom%20Systems.jpg", link: "https://www.instagram.com/alvacomsystems/" },
@@ -100,13 +134,18 @@
             document.getElementById('ad-link').href = ads[curAd].link;
         }, 10000);
 
-        // YouTube API
+        // YouTube API con manejo de origen para evitar Error 153
         var tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api";
         document.head.appendChild(tag);
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('yt-player', {
-                playerVars: { 'autoplay': 1, 'mute': 1, 'controls': 0, 'rel': 0 },
+                host: 'https://www.youtube.com',
+                playerVars: { 
+                    'autoplay': 1, 'mute': 1, 'controls': 0, 
+                    'modestbranding': 1, 'rel': 0, 'enablejsapi': 1,
+                    'origin': location.origin 
+                },
                 events: {
                     'onStateChange': (e) => {
                         if (e.data == YT.PlayerState.PLAYING) {
@@ -114,7 +153,8 @@
                         } else {
                             art.style.opacity = "1"; ytElem.style.opacity = "0";
                         }
-                    }
+                    },
+                    'onError': () => { art.style.opacity = "1"; ytElem.style.opacity = "0"; }
                 }
             });
         }
@@ -128,30 +168,28 @@
                 if (st.innerText !== data.title) {
                     document.getElementById('artist-name').innerText = data.artist.name;
                     st.innerText = data.title;
-                    
-                    // Al cambiar canción, carátula arriba siempre
                     art.style.opacity = "1"; ytElem.style.opacity = "0";
 
-                    // Imagen desde iTunes
+                    // Imagen iTunes
                     const itunes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(data.artist.name + " " + data.title)}&entity=song&limit=1`);
                     const iData = await itunes.json();
                     let img = (iData.results.length > 0) ? iData.results[0].artworkUrl100.replace('100x100', '600x600') : 'https://primerastereo.netlify.app/favicon.png';
                     art.src = img; bg.style.backgroundImage = `url('${img}')`;
 
-                    // Buscar video
+                    // Video (Proxy corregido)
                     fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + data.artist.name + ' ' + data.title + ' official video')}`)
                     .then(r => r.text()).then(html => {
                         const id = html.match(/"videoId":"([^"]+)"/);
                         if (id && id[1] && player && player.loadVideoById) {
-                            player.loadVideoById(id[1]);
+                            player.loadVideoById({ videoId: id[1] });
                         }
-                    }).catch(() => { art.style.opacity = "1"; });
+                    });
                 }
-            } catch (e) { console.log("Error update"); }
+            } catch (e) {}
         }
 
-        // Control de reproducción y volumen
-        audio.volume = 0.5; // Volumen inicial al 50%
+        // Audio y Controles
+        audio.volume = 0.5;
         playBtn.onclick = () => {
             if (audio.paused) { audio.play(); playBtn.innerHTML = '<i class="fas fa-pause"></i>'; }
             else { audio.pause(); playBtn.innerHTML = '<i class="fas fa-play"></i>'; }
@@ -159,6 +197,9 @@
         document.getElementById('volume-slider').oninput = (e) => audio.volume = e.target.value;
 
         setInterval(update, 15000); update();
+
+        // Prevención de errores de interacción
+        ["click", "touchstart"].forEach(v => document.addEventListener(v, () => { if(audio.paused) {} }, {once: true}));
     </script>
 </body>
 </html>
