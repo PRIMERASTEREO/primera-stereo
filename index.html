@@ -6,7 +6,10 @@
     <title>PRIMERA STEREO 📻 RADIO VIDEO ONLINE</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="icon" type="image/ico" href="https://primerastereo.netlify.app/favicon.png" sizes="512x512">
+    <link rel="icon" type="image/ico" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="512x512">
+	<link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="16x16" />
+    <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="32x32" />
+    <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="192x192" />
     <style>
         :root { --primary-color: #1877F2; --bg-dark: #000000; --accent: #1877F2; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -110,7 +113,7 @@
         <p class="sub-title">Radio Video Online</p>
         <div class="logo-container">
             <div id="video-container"><div id="yt-player"></div></div>
-            <img src="https://primerastereo.netlify.app/favicon.png" id="album-art">
+            <img src="https://primera-stereo.netlify.app/PSRO5-5.png" id="album-art">
         </div>
         <div class="track-info">
             <div class="marquee">
@@ -127,7 +130,7 @@
         <div class="ads-container">
             <p class="ads-title">TU PUBLICIDAD AQUÍ...
 </p>
-            <a id="ad-link" href="#" target="_blank"><img id="ad-banner" src=""></a>
+            <a id="ad-link" href="https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" target="_blank"><img id="ad-banner" src=""></a>
         </div>
 
         <p style="font-size: 0.6rem; opacity: 1.6; margin-top: 0px; text-align: center;">© 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE</p>
@@ -192,13 +195,13 @@
                         errorYoutube = false;
 
                         if (artist.toUpperCase().includes("PRIMERA STEREO") || title.toUpperCase().includes("JINGLE")) {
-                            art.src = "https://primerastereo.netlify.app/favicon.png";
+                            art.src = "https://primera-stereo.netlify.app/PSRO5-5.png";
                             art.classList.add('animar-logo');
                             bg.style.backgroundImage = "none";
                         } else {
                             const itunes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
                             const iData = await itunes.json();
-                            let img = (iData.results.length > 0) ? iData.results[0].artworkUrl100.replace('100x100', '600x600') : 'https://primerastereo.netlify.app/favicon.png';
+                            let img = (iData.results.length > 0) ? iData.results[0].artworkUrl100.replace('100x100', '600x600') : 'https://primera-stereo.netlify.app/PSRO5-5.png';
                             art.src = img; bg.style.backgroundImage = `url('${img}')`;
 
                             const query = encodeURIComponent(artist + " " + title + " official video");
