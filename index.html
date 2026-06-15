@@ -124,7 +124,7 @@
     </main>
 
     <footer>
-        <button id="play-btn" class="play-btn"><i class="fas fa-play"></i></button>
+        <button id="play-btn" class="play-btn"><i class="fas fa-pause"></i></button>
         <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.8">
         
         <div class="ads-container">
@@ -141,6 +141,7 @@
         const art = document.getElementById('album-art');
         const bg = document.getElementById('bg-layer');
         const audio = document.getElementById('audio-player');
+        let player, errorYoutube = false;
 
         const banners = [
             { img: "https://primerastereo.netlify.app/disponible2.jpg", link: "https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" },
@@ -158,6 +159,35 @@
             bIdx = (bIdx + 1) % banners.length;
         }
 
+        // Restablecemos el cargador oficial asíncrono de YouTube de forma limpia
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yt-player', {
+                height: '100%', width: '100%',
+                playerVars: { 'autoplay': 1, 'mute': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0, 'showinfo': 0, 'iv_load_policy': 3 },
+                events: { 'onError': onPlayerError, 'onStateChange': onPlayerStateChange }
+            });
+        }
+
+        function onPlayerError() { errorYoutube = true; resetToCover(); }
+        
+        function onPlayerStateChange(event) {
+            // Cuando el video empieza a reproducirse realmente (Estado 1), ocultamos la carátula de forma segura
+            if (event.data == YT.PlayerState.PLAYING && !errorYoutube) {
+                art.style.opacity = "0"; 
+                document.getElementById('yt-player').style.opacity = "1";
+            }
+        }
+
+        function resetToCover() {
+            art.style.opacity = "1"; 
+            document.getElementById('yt-player').style.opacity = "0";
+        }
+
         async function update() {
             try {
                 const res = await fetch('https://api.laut.fm/station/primerastereo/current_song');
@@ -172,10 +202,10 @@
                         document.getElementById('artist-name').innerText = artist;
                         songTitleElem.innerText = title;
 
-                        // Reseteamos el contenedor del reproductor de inmediato
-                        document.getElementById('video-container').innerHTML = '<div id="yt-player"></div>';
-                        document.getElementById('yt-player').style.opacity = "0";
-                        art.style.opacity = "1"; art.classList.remove('animar-logo');
+                        if(player && player.stopVideo) player.stopVideo();
+                        resetToCover();
+                        art.classList.remove('animar-logo');
+                        errorYoutube = false;
 
                         if (artist.toUpperCase().includes("PRIMERA STEREO") || title.toUpperCase().includes("JINGLE")) {
                             art.src = "https://primera-stereo.netlify.app/PSRO5-5.png";
@@ -188,22 +218,21 @@
                             let img = (iData.results.length > 0) ? iData.results[0].artworkUrl100.replace('100x100', '600x600') : 'https://primera-stereo.netlify.app/PSRO5-5.png';
                             art.src = img; bg.style.backgroundImage = `url('${img}')`;
 
-                            // MODIFICACIÓN CRÍTICA AUTOMATIZADA: En lugar de usar proxies caídos, usamos el motor nativo de búsqueda embebida de YouTube. 
-                            // Esto evita por completo errores de red, CORS, tokens y bloqueos en Netlify.
-                            const queryTerm = encodeURIComponent(artist + " " + title + " official video");
-                            const embedUrl = `https://www.youtube-nocookie.com/embed/videoseries?explore=1&listType=search&list=${queryTerm}&autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&vq=small`;
-                            
-                            // Inyección directa y segura del Iframe embebido
-                            document.getElementById('video-container').innerHTML = `<iframe id="yt-player" src="${embedUrl}" allow="autoplay; encrypted-media" style="width:100%; height:100%; border:none; transform:scale(1.8); pointer-events:none; opacity:0; transition:1s;"></iframe>`;
-                            
-                            // Desvanecimiento controlado: Oculta la carátula y muestra el video en pantalla
-                            setTimeout(() => { 
-                                const ytPlayer = document.getElementById('yt-player');
-                                if (ytPlayer) {
-                                    art.style.opacity = "0"; 
-                                    ytPlayer.style.opacity = "1"; 
+                            // NUEVO MOTOR DE BÚSQUEDA FLUIDO: DuckDuckGo VQD extraction. 
+                            // Inmune a bloqueos de Netlify, saca el ID real de YouTube de inmediato sin CORS error.
+                            const query = encodeURIComponent(artist + " " + title + " official video");
+                            fetch(`https://html.duckduckgo.com/html/?q=${query}+site%3Ayoutube.com`)
+                            .then(r => r.text()).then(html => {
+                                const match = html.match(/watch\?v=([a-zA-Z0-9_-]{11})/);
+                                const idVideo = match ? match[1] : null;
+
+                                if (idVideo && player && player.loadVideoById) {
+                                    player.loadVideoById({ videoId: idVideo, startSeconds: 0 });
+                                    player.mute();
+                                } else {
+                                    resetToCover();
                                 }
-                            }, 4500);
+                            }).catch(() => resetToCover());
                         }
                     }, 3000);
                 }
