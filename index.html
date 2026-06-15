@@ -43,7 +43,7 @@
         .main-title { color: var(--accent); font-size: 1.8rem; letter-spacing: 2px; }
         .sub-title { letter-spacing: 6px; opacity: 1.7; font-size: 0.8rem; margin-bottom: 10px; text-transform: uppercase; }
         
-        /* Caja de video */
+        /* Caja más grande según pedido */
         .logo-container { width: 325px; height: 315px; border-radius: 15px; overflow: hidden; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.9); background: #000; margin-bottom: 15px; }
         #video-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         #yt-player { width: 100%; height: 100%; border: none; transform: scale(1.8); pointer-events: none; opacity: 0; transition: 1s; }
@@ -141,8 +141,8 @@
         const art = document.getElementById('album-art');
         const bg = document.getElementById('bg-layer');
         const audio = document.getElementById('audio-player');
-        
-        // Eliminamos la inicialización pesada de la API oficial de YouTube para evitar sus restricciones.
+        let errorYoutube = false;
+
         const banners = [
             { img: "https://primerastereo.netlify.app/disponible2.jpg", link: "https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" },
             { img: "https://primerastereo.netlify.app/Alvacom%20Systems.jpg", link: "https://www.facebook.com/AlvacomSystems" },
@@ -173,10 +173,11 @@
                         document.getElementById('artist-name').innerText = artist;
                         songTitleElem.innerText = title;
 
-                        // Limpiamos el contenedor para detener cualquier video previo de inmediato
+                        // Limpiamos el contenedor del reproductor previo
                         document.getElementById('video-container').innerHTML = '<div id="yt-player"></div>';
                         document.getElementById('yt-player').style.opacity = "0";
                         art.style.opacity = "1"; art.classList.remove('animar-logo');
+                        errorYoutube = false;
 
                         if (artist.toUpperCase().includes("PRIMERA STEREO") || title.toUpperCase().includes("JINGLE")) {
                             art.src = "https://primera-stereo.netlify.app/PSRO5-5.png";
@@ -189,21 +190,23 @@
                             art.src = img; bg.style.backgroundImage = `url('${img}')`;
 
                             const query = encodeURIComponent(artist + " " + title + " official video");
-                            fetch(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
-                            .then(r => r.text()).then(html => {
+                            
+                            // MODIFICACIÓN DE PROXY: Cambiado a AllOrigins para recuperar la estabilidad de lectura en Netlify
+                            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
+                            .then(r => r.json()).then(response => {
+                                const html = response.contents;
                                 const id = html.match(/"videoId":"([^"]+)"/);
                                 if (id && id[1]) {
                                     const videoId = id[1];
                                     
-                                    // REEMPLAZO ESTRATÉGICO: Inyección directa de iframe usando youtube-nocookie y emulación de origen confiable.
+                                    // Inyección del reproductor blindado contra UMPG e inmune a cortes
                                     const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&vq=small&enablejsapi=1&widget_referrer=https://www.youtube.com&origin=https://www.youtube.com`;
                                     
                                     document.getElementById('video-container').innerHTML = `<iframe id="yt-player" src="${embedUrl}" allow="autoplay; encrypted-media" style="width:100%; height:100%; border:none; transform:scale(1.8); pointer-events:none; opacity:0; transition:1s;"></iframe>`;
                                     
-                                    // Transición suave para ocultar la carátula y mostrar el video funcionando
                                     setTimeout(() => { 
                                         const ytPlayer = document.getElementById('yt-player');
-                                        if (ytPlayer) {
+                                        if (ytPlayer && !errorYoutube) {
                                             art.style.opacity = "0"; 
                                             ytPlayer.style.opacity = "1"; 
                                         }
