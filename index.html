@@ -141,7 +141,6 @@
         const art = document.getElementById('album-art');
         const bg = document.getElementById('bg-layer');
         const audio = document.getElementById('audio-player');
-        let errorYoutube = false;
 
         const banners = [
             { img: "https://primerastereo.netlify.app/disponible2.jpg", link: "https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" },
@@ -173,46 +172,38 @@
                         document.getElementById('artist-name').innerText = artist;
                         songTitleElem.innerText = title;
 
-                        // Limpiamos el contenedor del reproductor previo
+                        // Reseteamos el contenedor del reproductor de inmediato
                         document.getElementById('video-container').innerHTML = '<div id="yt-player"></div>';
                         document.getElementById('yt-player').style.opacity = "0";
                         art.style.opacity = "1"; art.classList.remove('animar-logo');
-                        errorYoutube = false;
 
                         if (artist.toUpperCase().includes("PRIMERA STEREO") || title.toUpperCase().includes("JINGLE")) {
                             art.src = "https://primera-stereo.netlify.app/PSRO5-5.png";
                             art.classList.add('animar-logo');
                             bg.style.backgroundImage = "none";
                         } else {
+                            // Obtención de carátula por iTunes
                             const itunes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
                             const iData = await itunes.json();
                             let img = (iData.results.length > 0) ? iData.results[0].artworkUrl100.replace('100x100', '600x600') : 'https://primera-stereo.netlify.app/PSRO5-5.png';
                             art.src = img; bg.style.backgroundImage = `url('${img}')`;
 
-                            const query = encodeURIComponent(artist + " " + title + " official video");
+                            // MODIFICACIÓN CRÍTICA AUTOMATIZADA: En lugar de usar proxies caídos, usamos el motor nativo de búsqueda embebida de YouTube. 
+                            // Esto evita por completo errores de red, CORS, tokens y bloqueos en Netlify.
+                            const queryTerm = encodeURIComponent(artist + " " + title + " official video");
+                            const embedUrl = `https://www.youtube-nocookie.com/embed/videoseries?explore=1&listType=search&list=${queryTerm}&autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&vq=small`;
                             
-                            // MODIFICACIÓN DE PROXY: Cambiado a AllOrigins para recuperar la estabilidad de lectura en Netlify
-                            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://www.youtube.com/results?search_query=' + query)}`)
-                            .then(r => r.json()).then(response => {
-                                const html = response.contents;
-                                const id = html.match(/"videoId":"([^"]+)"/);
-                                if (id && id[1]) {
-                                    const videoId = id[1];
-                                    
-                                    // Inyección del reproductor blindado contra UMPG e inmune a cortes
-                                    const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&vq=small&enablejsapi=1&widget_referrer=https://www.youtube.com&origin=https://www.youtube.com`;
-                                    
-                                    document.getElementById('video-container').innerHTML = `<iframe id="yt-player" src="${embedUrl}" allow="autoplay; encrypted-media" style="width:100%; height:100%; border:none; transform:scale(1.8); pointer-events:none; opacity:0; transition:1s;"></iframe>`;
-                                    
-                                    setTimeout(() => { 
-                                        const ytPlayer = document.getElementById('yt-player');
-                                        if (ytPlayer && !errorYoutube) {
-                                            art.style.opacity = "0"; 
-                                            ytPlayer.style.opacity = "1"; 
-                                        }
-                                    }, 4000);
+                            // Inyección directa y segura del Iframe embebido
+                            document.getElementById('video-container').innerHTML = `<iframe id="yt-player" src="${embedUrl}" allow="autoplay; encrypted-media" style="width:100%; height:100%; border:none; transform:scale(1.8); pointer-events:none; opacity:0; transition:1s;"></iframe>`;
+                            
+                            // Desvanecimiento controlado: Oculta la carátula y muestra el video en pantalla
+                            setTimeout(() => { 
+                                const ytPlayer = document.getElementById('yt-player');
+                                if (ytPlayer) {
+                                    art.style.opacity = "0"; 
+                                    ytPlayer.style.opacity = "1"; 
                                 }
-                            });
+                            }, 4500);
                         }
                     }, 3000);
                 }
