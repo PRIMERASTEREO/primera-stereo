@@ -132,13 +132,12 @@
             <a id="ad-link" href="https://api.whatsapp.com/send?phone=+5804127097429" target="_blank"><img id="ad-banner" src=""></a>
         </div>
 
-        <p style="font-size: 0.6rem; opacity: 1.6; margin-top: 0px; text-align: center;">© 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE</p>
+        <p style="font-size: 0.6rem; opacity: 1.6; margin-top: 0px; text-align: center;">© 2010 - 2026 PRIMERA STEREO<br>*RADIO VIDEO ONLINE*</p>
     </footer>
 
     <audio id="audio-player" src="https://primerastereo.stream.laut.fm/primerastereo" crossorigin="anonymous"></audio>
 
     <script>
-        // Clave oficial extraída con éxito de Google Cloud Console
         const YOUTUBE_API_KEY = "AIzaSyB587PR4Xec8bS3VpFu7si5lYZwYweyijQ";
 
         const art = document.getElementById('album-art');
@@ -180,19 +179,44 @@
             }, 3000);
         }
 
-        // MOTOR DE BÚSQUEDA OFICIAL POR API DE GOOGLE
+        // MOTOR EN CASCADA COMPLETA ENFOCADO EN CALIDAD VISUAL
         async function searchOfficialYoutubeId(artist, title) {
+            const cleanArtist = artist.replace(/[^\w\s]/gi, '');
+            const cleanTitle = title.replace(/[^\w\s]/gi, '');
+
+            // Intento 1: Buscar Video Oficial reproducible de forma estricta
             try {
-                const query = encodeURIComponent(`${artist} ${title} video oficial`);
-                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                const query = encodeURIComponent(`${cleanArtist} ${cleanTitle} video oficial`);
+                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&videoEmbeddable=true&maxResults=1&key=${YOUTUBE_API_KEY}`;
                 const res = await fetch(url);
                 const data = await res.json();
                 if (data && data.items && data.items.length > 0) {
                     return data.items[0].id.videoId;
                 }
-            } catch (e) {
-                console.error("Error en la consulta de API:", e);
-            }
+            } catch (e) {}
+
+            // Intento 2: Buscar alternativa VEVO o En Vivo que esté desbloqueada
+            try {
+                const queryAlt = encodeURIComponent(`${cleanArtist} ${cleanTitle} vevo live`);
+                const urlAlt = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${queryAlt}&type=video&videoEmbeddable=true&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                const resAlt = await fetch(urlAlt);
+                const dataAlt = await resAlt.json();
+                if (dataAlt && dataAlt.items && dataAlt.items.length > 0) {
+                    return dataAlt.items[0].id.videoId;
+                }
+            } catch (e) {}
+
+            // Intento 3: Búsqueda cruda del tema musical para pescar clips comunitarios libres
+            try {
+                const queryRaw = encodeURIComponent(`${cleanArtist} ${cleanTitle}`);
+                const urlRaw = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${queryRaw}&type=video&videoEmbeddable=true&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                const resRaw = await fetch(urlRaw);
+                const dataRaw = await resRaw.json();
+                if (dataRaw && dataRaw.items && dataRaw.items.length > 0) {
+                    return dataRaw.items[0].id.videoId;
+                }
+            } catch (e) {}
+            
             return null;
         }
 
@@ -231,7 +255,7 @@
                             art.src = img; 
                             bg.style.backgroundImage = `url('${img}')`;
 
-                            // Consulta directa oficial sin bloqueos
+                            // Consulta inteligente de video de alto rendimiento
                             const id = await searchOfficialYoutubeId(artist, title);
                             if (id) {
                                 playDirectVideo(id);
