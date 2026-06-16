@@ -7,9 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght=300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" type="image/ico" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="512x512">
-	<link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="16x16" />
-    <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="32x32" />
-    <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="192x192" />
     <style>
         :root { --primary-color: #1877F2; --bg-dark: #000000; --accent: #1877F2; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -43,11 +40,14 @@
         .main-title { color: var(--accent); font-size: 1.8rem; letter-spacing: 2px; }
         .sub-title { letter-spacing: 6px; opacity: 1.7; font-size: 0.8rem; margin-bottom: 10px; text-transform: uppercase; }
         
-        /* Contenedor del Reproductor */
+        /* Contenedor del Reproductor Híbrido */
         .logo-container { width: 325px; height: 315px; border-radius: 15px; overflow: hidden; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.9); background: #000; margin-bottom: 15px; }
         #video-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #000; }
         .yt-iframe-class { width: 100%; height: 100%; border: none; transform: scale(1.8); pointer-events: none; opacity: 0; transition: opacity 0.4s ease-in-out; }
-        #album-art { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2; transition: opacity 0.4s ease-in-out; opacity: 1; }
+        
+        /* En modo fondo dinámico, la carátula se encoge al centro de forma elegante */
+        #album-art { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2; transition: all 0.5s ease-in-out; opacity: 1; }
+        .art-floating { width: 160px !important; height: 160px !important; border-radius: 50%; border: 4px solid var(--accent); position: absolute; top: 77px; left: 82px; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
 
         @keyframes pulse-extra {
             0% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0px var(--accent)); }
@@ -57,22 +57,9 @@
         .animar-logo { animation: pulse-extra 2s infinite ease-in-out; }
 
         /* Marquesina */
-        .track-info { 
-            width: 340px;          
-            margin: 0 auto 10px;   
-            overflow: hidden; 
-            white-space: nowrap; 
-        }
-
-        .marquee { 
-            display: inline-block; 
-            animation: marquee 15s linear infinite; 
-        }
-
-        @keyframes marquee { 
-            0% { transform: translateX(100%); } 
-            100% { transform: translateX(-100%); } 
-        }
+        .track-info { width: 340px; margin: 0 auto 10px; overflow: hidden; white-space: nowrap; }
+        .marquee { display: inline-block; animation: marquee 15s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         
         #artist-name { font-size: 1.3rem; font-weight: 600; display: inline; }
         #song-title { color: var(--primary-color); font-size: 1.3rem; display: inline; margin-left: 20px; }
@@ -98,7 +85,7 @@
         <h3 style="color:var(--accent); margin-bottom:20px; padding-left:40px;">Síguenos</h3>
         <a href="https://www.instagram.com/Primera.Stereo/" target="_blank" class="btn-social instagram"><i class="fab fa-instagram"></i> Instagram</a>
         <a href="https://www.facebook.com/PrimeraStereoRadio" target="_blank" class="btn-social facebook"><i class="fab fa-facebook-f"></i> Facebook</a>
-        <a href="https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" target="_blank" class="btn-social whatsapp"><i class="fab fa-whatsapp"></i> Whatsapp</a>
+        <a href="https://api.whatsapp.com/send?phone=+5804127097429" target="_blank" class="btn-social whatsapp"><i class="fab fa-whatsapp"></i> Whatsapp</a>
         <a href="https://t.me/PrimeraStereo" target="_blank" class="btn-social telegram"><i class="fab fa-telegram-plane"></i> Telegram</a>
         <a href="https://www.tiktok.com/@primerastereo" target="_blank" class="btn-social tiktok"><i class="fab fa-tiktok"></i> Tiktok</a>
         <a href="https://soundcloud.com/primerastereo" target="_blank" class="btn-social soundcloud"><i class="fab fa-soundcloud"></i> Soundcloud</a>
@@ -129,10 +116,9 @@
         
         <div class="ads-container">
             <p class="ads-title">TU PUBLICIDAD AQUÍ...</p>
-            <a id="ad-link" href="https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" target="_blank"><img id="ad-banner" src=""></a>
+            <a id="ad-link" href="https://api.whatsapp.com/send?phone=+5804127097429" target="_blank"><img id="ad-banner" src=""></a>
         </div>
-
-        <p style="font-size: 0.6rem; opacity: 1.6; margin-top: 0px; text-align: center;">© 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE</p>
+        <p style="font-size: 0.6rem; opacity: 1.6; text-align: center;">© 2010 - 2026 PRIMERA STEREO</p>
     </footer>
 
     <audio id="audio-player" src="https://primerastereo.stream.laut.fm/primerastereo" crossorigin="anonymous"></audio>
@@ -144,14 +130,22 @@
         const videoContainer = document.getElementById('video-container');
 
         const banners = [
-            { img: "https://primerastereo.netlify.app/disponible2.jpg", link: "https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" },
+            { img: "https://primerastereo.netlify.app/disponible2.jpg", link: "https://api.whatsapp.com/send?phone=+5804127097429" },
             { img: "https://primerastereo.netlify.app/Alvacom%20Systems.jpg", link: "https://www.facebook.com/AlvacomSystems" },
             { img: "https://primerastereo.netlify.app/KINESIOLOGIA2.gif", link: "https://www.instagram.com/nely_alvarez" },
 			{ img: "https://primerastereoprueba.netlify.app/Diseño sin título.gif", link: "http://www.en3d.io" },
-			{ img: "https://primera-stereo.netlify.app/BANNER%20ELENA.png", link: "https://api.whatsapp.com/send?phone=+5804127102509&text=Hola%20quiero%20precios%20de%20los%20yogures" },
-			{ img: "https://primerastereo.netlify.app/disponible1.jpg", link: "https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" }
+			{ img: "https://primera-stereo.netlify.app/BANNER%20ELENA.png", link: "https://api.whatsapp.com/send?phone=+5804127102509" },
+			{ img: "https://primerastereo.netlify.app/disponible1.jpg", link: "https://api.whatsapp.com/send?phone=+5804127097429" }
         ];
         let bIdx = 0;
+
+        // BUCLES DE VIDEO EN HD DE RESPALDO (Largos y fluidos para simular canal de TV)
+        const loopVideos = ["4WQTqOR55vk", "Z0NIxY7svlM", "MQ6IuvSdELM"];
+
+        const musicDatabase = {
+            "CARLOS BAUTE": { "COLGANDO EN TUS MANOS": "qExd-3oCTl4", "AMARTE BIEN": "08fXvP_Ua8E" },
+            "LA OREJA DE VAN GOGH": { "ROSAS": "nyeoZALs9Xg", "EL PRIMER DIA DEL RESTO DE MI VIDA": "l70fXW_9vO0", "JUEVES": "c_2eS0v9Gug" }
+        };
 
         function updateBanners() {
             document.getElementById('ad-banner').src = banners[bIdx].img;
@@ -159,47 +153,23 @@
             bIdx = (bIdx + 1) % banners.length;
         }
 
-        function resetToCover() {
-            videoContainer.innerHTML = '';
-            art.style.opacity = "1";
-        }
-
-        function playDirectVideo(videoId) {
+        function playVideo(videoId, isOfficialVideo) {
             const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&vq=medium&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
             videoContainer.innerHTML = `<iframe id="dynamic-yt" class="yt-iframe-class" src="${embedUrl}" allow="autoplay; encrypted-media"></iframe>`;
             
             setTimeout(() => {
                 const iframe = document.getElementById('dynamic-yt');
                 if (iframe) {
-                    art.style.opacity = "0";
+                    if (isOfficialVideo) {
+                        art.className = "";
+                        art.style.opacity = "0"; // Esconde la carátula si es video oficial
+                    } else {
+                        art.className = "art-floating animar-logo";
+                        art.style.opacity = "1"; // Muestra la carátula pequeña flotante sobre el bucle
+                    }
                     iframe.style.opacity = "1";
                 }
-            }, 3500);
-        }
-
-        // MOTOR DE COINCIDENCIAS GLOBALES ODESLI (Legal, limpio y ultra rápido)
-        async function fetchYoutubeVideoId(artist, title, itunesUrl = '') {
-            try {
-                let queryUrl = `https://api.songlink.io/v1-alpha.1/links?userCountry=US&word=true`;
-                
-                // Si tenemos la URL directa de iTunes obtenida previamente, Odesli nos da la coincidencia exacta al 100%
-                if (itunesUrl) {
-                    queryUrl += `&url=${encodeURIComponent(itunesUrl)}`;
-                } else {
-                    queryUrl += `&searchProvider=itunes&trackName=${encodeURIComponent(title)}&artistName=${encodeURIComponent(artist)}`;
-                }
-
-                const res = await fetch(queryUrl);
-                const data = await res.json();
-                
-                // Buscamos dentro de los enlaces de plataformas el de YouTube de forma nativa
-                if (data && data.linksByPlatform && data.linksByPlatform.youtube) {
-                    const ytUrl = data.linksByPlatform.youtube.url;
-                    const match = ytUrl.match(/(?:v=|shorts\/|embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-                    if (match && match[1]) return match[1];
-                }
-            } catch (e) {}
-            return null;
+            }, 3000);
         }
 
         async function update() {
@@ -217,35 +187,35 @@
                         document.getElementById('artist-name').innerText = artist;
                         songTitleElem.innerText = title;
 
-                        resetToCover();
-                        art.classList.remove('animar-logo');
+                        // Limpieza
+                        videoContainer.innerHTML = '';
+                        art.className = "";
+                        art.style.opacity = "1";
 
                         if (artist.toUpperCase().includes("PRIMERA STEREO") || title.toUpperCase().includes("JINGLE")) {
                             art.src = "https://primera-stereo.netlify.app/PSRO5-5.png";
                             art.classList.add('animar-logo');
                             bg.style.backgroundImage = "none";
                         } else {
-                            // 1. Conseguir Carátula y enlace desde iTunes
-                            let trackUrl = '';
                             let img = 'https://primera-stereo.netlify.app/PSRO5-5.png';
                             try {
                                 const itunes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
                                 const iData = await itunes.json();
-                                if (iData.results.length > 0) {
-                                    img = iData.results[0].artworkUrl100.replace('100x100', '600x600');
-                                    trackUrl = iData.results[0].trackViewUrl; // Guardamos enlace para el buscador cruzado
-                                }
+                                if (iData.results.length > 0) img = iData.results[0].artworkUrl100.replace('100x100', '600x600');
                             } catch(e) {}
                             
                             art.src = img; 
                             bg.style.backgroundImage = `url('${img}')`;
 
-                            // 2. Extraer ID usando el ecosistema abierto de Odesli e inyectar el video
-                            const id = await fetchYoutubeVideoId(artist, title, trackUrl);
-                            if (id) {
-                                playDirectVideo(id);
+                            const uArtist = artist.toUpperCase().trim();
+                            const uTitle = title.toUpperCase().trim();
+
+                            if (musicDatabase[uArtist] && musicDatabase[uArtist][uTitle]) {
+                                playVideo(musicDatabase[uArtist][uTitle], true); // Carga video oficial
                             } else {
-                                resetToCover();
+                                // Carga video rítmico de fondo aleatorio y achica la carátula al centro
+                                const randomLoop = loopVideos[Math.floor(Math.random() * loopVideos.length)];
+                                playVideo(randomLoop, false);
                             }
                         }
                     }, 3000);
@@ -258,32 +228,9 @@
             if (audio.paused) { audio.play(); document.getElementById('play-btn').innerHTML = '<i class="fas fa-pause"></i>'; }
             else { audio.pause(); document.getElementById('play-btn').innerHTML = '<i class="fas fa-play"></i>'; }
         };
-
         document.getElementById('volume-slider').oninput = (e) => audio.volume = e.target.value;
         setInterval(update, 15000);
         update(); updateBanners();
-    </script>
-	<script>
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.addEventListener('keydown', function(event) {
-            if (
-                (event.ctrlKey && event.key === 'u') || 
-                (event.ctrlKey && event.shiftKey && event.key === 'I') || 
-                event.key === 'F12' 
-            ) {
-                event.preventDefault();
-                return false;
-            }
-        });
-    </script>
-    <script>
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.addEventListener('keydown', e => {
-            if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 'i' || e.key === 'I')) {
-                e.preventDefault();
-                return false;
-            }
-        });
     </script>
 </body>
 </html>
