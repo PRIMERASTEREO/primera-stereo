@@ -43,7 +43,7 @@
         .main-title { color: var(--accent); font-size: 1.8rem; letter-spacing: 2px; }
         .sub-title { letter-spacing: 6px; opacity: 1.7; font-size: 0.8rem; margin-bottom: 10px; text-transform: uppercase; }
         
-        /* Contenedor del Reproductor Sincronizado */
+        /* Contenedor del Reproductor de Video Estabilizado */
         .logo-container { width: 325px; height: 315px; border-radius: 15px; overflow: hidden; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.9); background: #000; margin-bottom: 15px; }
         #video-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #000; }
         .yt-iframe-class { width: 100%; height: 100%; border: none; transform: scale(1.8); pointer-events: none; opacity: 0; transition: opacity 0.5s ease-in-out; }
@@ -132,7 +132,7 @@
             <a id="ad-link" href="https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" target="_blank"><img id="ad-banner" src=""></a>
         </div>
 
-        <p style="font-size: 0.6rem; opacity: 1.6; margin-top: 0px; text-align: center;">© 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE</p>
+        <p style="font-size: 0.6rem; opacity: 1.6; margin-top: 0px; text-align: center;">© 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE...</p>
     </footer>
 
     <audio id="audio-player" src="https://primerastereo.stream.laut.fm/primerastereo" crossorigin="anonymous"></audio>
@@ -164,53 +164,24 @@
             art.style.opacity = "1";
         }
 
-        // REPRODUCCIÓN FORZADA CON PARÁMETROS LIMPIOS DE ORIGEN
-        function playDirectVideo(videoId) {
-            // Se inyecta usando codificación limpia evitando el dominio secundario nocookie que causa bloqueos
-            const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&vq=medium&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
+        // MOTOR DE INYECCIÓN INTEGRADO CON PARÁMETROS DE CONEXIÓN ULTRA-SEGUROS
+        function forceVideoSearchEmbed(artist, title) {
+            // Limpieza absoluta de caracteres extraños y formateo de la query exacta
+            const cleanQuery = encodeURIComponent(`${artist} ${title} video oficial`);
+            
+            // Endpoint nativo estructurado para simular la búsqueda interna legítima de YouTube de forma transparente
+            const embedUrl = `https://www.youtube.com/embed?listType=search&list=${cleanQuery}&autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&vq=medium&playsinline=1&enablejsapi=1&widgetid=1&origin=${encodeURIComponent(window.location.origin)}`;
             
             videoContainer.innerHTML = `<iframe id="dynamic-yt" class="yt-iframe-class" src="${embedUrl}" allow="autoplay; encrypted-media"></iframe>`;
             
-            // Forzamos el fundido transparente para revelar el video corriendo por debajo a los 3.2 segundos exactos
+            // Sincronización exacta: Revela el contenedor del video a los 3.5 segundos exactos desvaneciendo la carátula
             setTimeout(() => {
                 const iframe = document.getElementById('dynamic-yt');
                 if (iframe) {
                     art.style.opacity = "0";
                     iframe.style.opacity = "1";
                 }
-            }, 3200);
-        }
-
-        // MOTOR DE BÚSQUEDA HÍBRIDO POR RED DE INSTANCIAS INVIDIOUS (Libre de Proxies y CORS)
-        async function fetchYoutubeVideoId(artist, title) {
-            const query = encodeURIComponent(`${artist} ${title} official music video`);
-            
-            // Lista de instancias estables de alta disponibilidad
-            const instances = [
-                "https://invidious.nerdvpn.de",
-                "https://inv.tux.digital",
-                "https://invidious.perennialte.ch"
-            ];
-
-            for (let baseUrl of instances) {
-                try {
-                    // Petición directa nativa al catálogo estructurado del espejo
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 segundos máximo por intento
-
-                    const res = await fetch(`${baseUrl}/api/v1/search?q=${query}&type=video`, { signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    
-                    const data = await res.json();
-                    if (data && data.length > 0 && data[0].videoId) {
-                        return data[0].videoId; // Si encuentra el ID, rompe el ciclo y lo devuelve
-                    }
-                } catch (e) {
-                    // Si un servidor falla o da timeout, el ciclo pasa automáticamente al siguiente espejo en milisegundos
-                    continue; 
-                }
-            }
-            return null;
+            }, 3500);
         }
 
         async function update() {
@@ -243,13 +214,8 @@
                             art.src = img; 
                             bg.style.backgroundImage = `url('${img}')`;
 
-                            // Búsqueda directa garantizada por Invidious
-                            const id = await fetchYoutubeVideoId(artist, title);
-                            if (id) {
-                                playDirectVideo(id);
-                            } else {
-                                resetToCover();
-                            }
+                            // Lanzamiento forzado sin intermediarios ni llamadas externas
+                            forceVideoSearchEmbed(artist, title);
                         }
                     }, 3000);
                 }
