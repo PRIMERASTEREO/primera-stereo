@@ -132,7 +132,7 @@
             <a id="ad-link" href="https://api.whatsapp.com/send?phone=+5804127097429&text=Hola%20estoy%20escuchando%20la%20radio%20y%20quiero%20informaci%C3%B3n%20%20de%20la%20publicidad" target="_blank"><img id="ad-banner" src=""></a>
         </div>
 
-        <p style="font-size: 0.6rem; opacity: 1.6; margin-top: 0px; text-align: center;">© 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE...</p>
+        <p style="font-size: 0.6rem; opacity: 1.6; margin-top: 0px; text-align: center;">© 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE</p>
     </footer>
 
     <audio id="audio-player" src="https://primerastereo.stream.laut.fm/primerastereo" crossorigin="anonymous"></audio>
@@ -164,17 +164,12 @@
             art.style.opacity = "1";
         }
 
-        // MOTOR DE INYECCIÓN INTEGRADO CON PARÁMETROS DE CONEXIÓN ULTRA-SEGUROS
-        function forceVideoSearchEmbed(artist, title) {
-            // Limpieza absoluta de caracteres extraños y formateo de la query exacta
-            const cleanQuery = encodeURIComponent(`${artist} ${title} video oficial`);
-            
-            // Endpoint nativo estructurado para simular la búsqueda interna legítima de YouTube de forma transparente
-            const embedUrl = `https://www.youtube.com/embed?listType=search&list=${cleanQuery}&autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&vq=medium&playsinline=1&enablejsapi=1&widgetid=1&origin=${encodeURIComponent(window.location.origin)}`;
+        // INYECCIÓN DIRECTA BASADA EN ID EXTRAÍDO DE FORMA LIMPIA
+        function playDirectVideo(videoId) {
+            const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&vq=medium&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
             
             videoContainer.innerHTML = `<iframe id="dynamic-yt" class="yt-iframe-class" src="${embedUrl}" allow="autoplay; encrypted-media"></iframe>`;
             
-            // Sincronización exacta: Revela el contenedor del video a los 3.5 segundos exactos desvaneciendo la carátula
             setTimeout(() => {
                 const iframe = document.getElementById('dynamic-yt');
                 if (iframe) {
@@ -182,6 +177,32 @@
                     iframe.style.opacity = "1";
                 }
             }, 3500);
+        }
+
+        // EXTRACTOR MEDIANTE BUSCADOR DE TEXTO PLANO SCRAPING (Inmune a los bloqueos de API/Iframe)
+        async function fetchYoutubeVideoId(artist, title) {
+            const query = encodeURIComponent(`${artist} ${title} video oficial`);
+            try {
+                // Buscador alternativo sin API Key basado en consulta directa ligera de DuckDuckGo en texto plano
+                const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://html.duckduckgo.com/html/?q=site:youtube.com/watch ' + query)}`);
+                const data = await res.json();
+                
+                // Extrae el patrón de la URL del video de YouTube en el HTML devuelto
+                const matches = data.contents.match(/v=([a-zA-Z0-9_-]{11})/);
+                if (matches && matches[1]) {
+                    return matches[1];
+                }
+            } catch (e) {}
+            
+            try {
+                // Segunda capa de respaldo instantánea por si falla la primera
+                const resAlt = await fetch(`https://api.codetabs.com/v1/proxy/?quest=https://html.duckduckgo.com/html/?q=site:youtube.com/watch ${query}`);
+                const textAlt = await resAlt.text();
+                const matchesAlt = textAlt.match(/v=([a-zA-Z0-9_-]{11})/);
+                if (matchesAlt && matchesAlt[1]) return matchesAlt[1];
+            } catch (e) {}
+
+            return null;
         }
 
         async function update() {
@@ -214,8 +235,13 @@
                             art.src = img; 
                             bg.style.backgroundImage = `url('${img}')`;
 
-                            // Lanzamiento forzado sin intermediarios ni llamadas externas
-                            forceVideoSearchEmbed(artist, title);
+                            // Procesa la búsqueda por texto plano e inyecta
+                            const id = await fetchYoutubeVideoId(artist, title);
+                            if (id) {
+                                playDirectVideo(id);
+                            } else {
+                                resetToCover();
+                            }
                         }
                     }, 3000);
                 }
