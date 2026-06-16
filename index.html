@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght=300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" type="image/ico" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="512x512">
+	<link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="16x16" />
+    <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="32x32" />
+    <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="192x192" />
     <style>
         :root { --primary-color: #1877F2; --bg-dark: #000000; --accent: #1877F2; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -40,14 +43,11 @@
         .main-title { color: var(--accent); font-size: 1.8rem; letter-spacing: 2px; }
         .sub-title { letter-spacing: 6px; opacity: 1.7; font-size: 0.8rem; margin-bottom: 10px; text-transform: uppercase; }
         
-        /* Contenedor del Reproductor Híbrido */
+        /* Contenedor del Reproductor Oficial */
         .logo-container { width: 325px; height: 315px; border-radius: 15px; overflow: hidden; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.9); background: #000; margin-bottom: 15px; }
         #video-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #000; }
         .yt-iframe-class { width: 100%; height: 100%; border: none; transform: scale(1.8); pointer-events: none; opacity: 0; transition: opacity 0.4s ease-in-out; }
-        
-        /* En modo fondo dinámico, la carátula se encoge al centro de forma elegante */
-        #album-art { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2; transition: all 0.5s ease-in-out; opacity: 1; }
-        .art-floating { width: 160px !important; height: 160px !important; border-radius: 50%; border: 4px solid var(--accent); position: absolute; top: 77px; left: 82px; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+        #album-art { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2; transition: opacity 0.4s ease-in-out; opacity: 1; }
 
         @keyframes pulse-extra {
             0% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0px var(--accent)); }
@@ -57,9 +57,22 @@
         .animar-logo { animation: pulse-extra 2s infinite ease-in-out; }
 
         /* Marquesina */
-        .track-info { width: 340px; margin: 0 auto 10px; overflow: hidden; white-space: nowrap; }
-        .marquee { display: inline-block; animation: marquee 15s linear infinite; }
-        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .track-info { 
+            width: 340px;          
+            margin: 0 auto 10px;   
+            overflow: hidden; 
+            white-space: nowrap; 
+        }
+
+        .marquee { 
+            display: inline-block; 
+            animation: marquee 15s linear infinite; 
+        }
+
+        @keyframes marquee { 
+            0% { transform: translateX(100%); } 
+            100% { transform: translateX(-100%); } 
+        }
         
         #artist-name { font-size: 1.3rem; font-weight: 600; display: inline; }
         #song-title { color: var(--primary-color); font-size: 1.3rem; display: inline; margin-left: 20px; }
@@ -118,12 +131,16 @@
             <p class="ads-title">TU PUBLICIDAD AQUÍ...</p>
             <a id="ad-link" href="https://api.whatsapp.com/send?phone=+5804127097429" target="_blank"><img id="ad-banner" src=""></a>
         </div>
-        <p style="font-size: 0.6rem; opacity: 1.6; text-align: center;">© 2010 - 2026 PRIMERA STEREO</p>
+
+        <p style="font-size: 0.6rem; opacity: 1.6; margin-top: 0px; text-align: center;">© 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE</p>
     </footer>
 
     <audio id="audio-player" src="https://primerastereo.stream.laut.fm/primerastereo" crossorigin="anonymous"></audio>
 
     <script>
+        // Clave oficial extraída con éxito de Google Cloud Console
+        const YOUTUBE_API_KEY = "AIzaSyB587PR4Xec8bS3VpFu7si5lYZwYweyijQ";
+
         const art = document.getElementById('album-art');
         const bg = document.getElementById('bg-layer');
         const audio = document.getElementById('audio-player');
@@ -139,37 +156,44 @@
         ];
         let bIdx = 0;
 
-        // BUCLES DE VIDEO EN HD DE RESPALDO (Largos y fluidos para simular canal de TV)
-        const loopVideos = ["4WQTqOR55vk", "Z0NIxY7svlM", "MQ6IuvSdELM"];
-
-        const musicDatabase = {
-            "CARLOS BAUTE": { "COLGANDO EN TUS MANOS": "qExd-3oCTl4", "AMARTE BIEN": "08fXvP_Ua8E" },
-            "LA OREJA DE VAN GOGH": { "ROSAS": "nyeoZALs9Xg", "EL PRIMER DIA DEL RESTO DE MI VIDA": "l70fXW_9vO0", "JUEVES": "c_2eS0v9Gug" }
-        };
-
         function updateBanners() {
             document.getElementById('ad-banner').src = banners[bIdx].img;
             document.getElementById('ad-link').href = banners[bIdx].link;
             bIdx = (bIdx + 1) % banners.length;
         }
 
-        function playVideo(videoId, isOfficialVideo) {
+        function resetToCover() {
+            videoContainer.innerHTML = '';
+            art.style.opacity = "1";
+        }
+
+        function playDirectVideo(videoId) {
             const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&vq=medium&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
             videoContainer.innerHTML = `<iframe id="dynamic-yt" class="yt-iframe-class" src="${embedUrl}" allow="autoplay; encrypted-media"></iframe>`;
             
             setTimeout(() => {
                 const iframe = document.getElementById('dynamic-yt');
                 if (iframe) {
-                    if (isOfficialVideo) {
-                        art.className = "";
-                        art.style.opacity = "0"; // Esconde la carátula si es video oficial
-                    } else {
-                        art.className = "art-floating animar-logo";
-                        art.style.opacity = "1"; // Muestra la carátula pequeña flotante sobre el bucle
-                    }
+                    art.style.opacity = "0";
                     iframe.style.opacity = "1";
                 }
             }, 3000);
+        }
+
+        // MOTOR DE BÚSQUEDA OFICIAL POR API DE GOOGLE
+        async function searchOfficialYoutubeId(artist, title) {
+            try {
+                const query = encodeURIComponent(`${artist} ${title} video oficial`);
+                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data && data.items && data.items.length > 0) {
+                    return data.items[0].id.videoId;
+                }
+            } catch (e) {
+                console.error("Error en la consulta de API:", e);
+            }
+            return null;
         }
 
         async function update() {
@@ -187,10 +211,8 @@
                         document.getElementById('artist-name').innerText = artist;
                         songTitleElem.innerText = title;
 
-                        // Limpieza
-                        videoContainer.innerHTML = '';
-                        art.className = "";
-                        art.style.opacity = "1";
+                        resetToCover();
+                        art.classList.remove('animar-logo');
 
                         if (artist.toUpperCase().includes("PRIMERA STEREO") || title.toUpperCase().includes("JINGLE")) {
                             art.src = "https://primera-stereo.netlify.app/PSRO5-5.png";
@@ -201,21 +223,20 @@
                             try {
                                 const itunes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
                                 const iData = await itunes.json();
-                                if (iData.results.length > 0) img = iData.results[0].artworkUrl100.replace('100x100', '600x600');
+                                if (iData.results.length > 0) {
+                                    img = iData.results[0].artworkUrl100.replace('100x100', '600x600');
+                                }
                             } catch(e) {}
                             
                             art.src = img; 
                             bg.style.backgroundImage = `url('${img}')`;
 
-                            const uArtist = artist.toUpperCase().trim();
-                            const uTitle = title.toUpperCase().trim();
-
-                            if (musicDatabase[uArtist] && musicDatabase[uArtist][uTitle]) {
-                                playVideo(musicDatabase[uArtist][uTitle], true); // Carga video oficial
+                            // Consulta directa oficial sin bloqueos
+                            const id = await searchOfficialYoutubeId(artist, title);
+                            if (id) {
+                                playDirectVideo(id);
                             } else {
-                                // Carga video rítmico de fondo aleatorio y achica la carátula al centro
-                                const randomLoop = loopVideos[Math.floor(Math.random() * loopVideos.length)];
-                                playVideo(randomLoop, false);
+                                resetToCover();
                             }
                         }
                     }, 3000);
@@ -228,9 +249,23 @@
             if (audio.paused) { audio.play(); document.getElementById('play-btn').innerHTML = '<i class="fas fa-pause"></i>'; }
             else { audio.pause(); document.getElementById('play-btn').innerHTML = '<i class="fas fa-play"></i>'; }
         };
+
         document.getElementById('volume-slider').oninput = (e) => audio.volume = e.target.value;
         setInterval(update, 15000);
         update(); updateBanners();
+    </script>
+	<script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function(event) {
+            if (
+                (event.ctrlKey && event.key === 'u') || 
+                (event.ctrlKey && event.shiftKey && event.key === 'I') || 
+                event.key === 'F12' 
+            ) {
+                event.preventDefault();
+                return false;
+            }
+        });
     </script>
 </body>
 </html>
