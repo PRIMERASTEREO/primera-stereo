@@ -395,7 +395,7 @@
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
             </div>
             <div class="copyright">
-                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO ONLINE
+                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
             </div>
         </div>
     </div>
@@ -435,44 +435,96 @@
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
             window.onYouTubeIframeAPIReady = function() {
-                ytPlayer = new YT.Player('player-video-bg', {
-                    height: '100%',
-                    width: '100%',
-                    videoId: 'Jf3v7H7G-bU', 
-                    playerVars: {
-                        'autoplay': 1,
-                        'controls': 0,
-                        'rel': 0,
-                        'loop': 1,
-                        'mute': 1, 
-                        'playsinline': 1,
-                        'disablekb': 1
-                    },
-                    events: {
-                        'onReady': function(event) {
-                            event.target.mute();
-                            isPlayerReady = true;
-                            if (currentTrackGlobal && currentArtistGlobal) {
-                                searchAndPlayVideo(currentTrackGlobal, currentArtistGlobal);
-                            }
-                        },
-                        'onStateChange': function(event) {
-                            // Cambiamos a visible SOLAMENTE cuando el video ya está rodando de verdad
-                            if (event.data === YT.PlayerState.PLAYING) {
-                                videoContainer.classList.add('visible'); 
-                            }
-                            if (event.data === YT.PlayerState.ENDED) {
-                                ytPlayer.playVideo(); 
-                            }
-                        },
-                        'onError': function(event) {
-                            // Si el video falla (derechos de autor), quitamos el video y queda la carátula limpia
-                            console.warn("Video bloqueado o inaccesible. Mostrando carátula nítida.");
-                            videoContainer.classList.remove('visible');
-                        }
-                    }
-                });
-            };
+    ytPlayer = new YT.Player('player-video-bg', {
+        height: '100%',
+        width: '100%',
+        videoId: 'Jf3v7H7G-bU', 
+        playerVars: {
+            'autoplay': 1,
+            'controls': 0,
+            'rel': 0,
+            'loop': 1,
+            'mute': 1, 
+            'playsinline': 1,
+            'disablekb': 1,
+            'origin': window.location.origin
+        },
+        events: {
+            'onReady': function(event) {
+                event.target.mute();
+                isPlayerReady = true;
+                if (currentTrackGlobal && currentArtistGlobal) {
+                    searchAndPlayVideo(currentTrackGlobal, currentArtistGlobal);
+                }
+            },
+            'onStateChange': function(event) {
+                if (event.data === YT.PlayerState.PLAYING) {
+                    videoContainer.classList.add('visible'); 
+                }
+                if (event.data === YT.PlayerState.ENDED) {
+                    ytPlayer.playVideo(); 
+                }
+            },
+            'onError': function(event) {
+                // Alerta de bloqueo por Copyright detectada: Escondemos el video roto al instante
+                console.warn("Video bloqueado por derechos de autor o ID inválido. Pasando a carátula HD limpia.");
+                videoContainer.classList.remove('visible');
+                if(ytPlayer && ytPlayer.stopVideo) {
+                    ytPlayer.stopVideo();
+                }
+            }
+        }
+    });
+};
+
+async function searchAndPlayVideo(track, artist) {
+    // 1. Limpieza a fondo del texto eliminando remezclas repetitivas o paréntesis molestos
+    let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
+    
+    // 2. Filtro estratégico en el Query: Forzamos la búsqueda de pistas de audio plano o letras estables
+    const query = `${artist} ${cleanTrack} audio static lyrics`; 
+    
+    currentArtistGlobal = artist;
+    currentTrackGlobal = cleanTrack;
+
+    // Actualizamos la carátula HD en paralelo al fondo
+    getAlbumArt(cleanTrack, artist);
+
+    if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
+    if (query === lastVideoQuery) return;
+    lastVideoQuery = query;
+
+    try {
+        // Buscamos entre los primeros 5 resultados un video apto
+        const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
+        const response = await fetch(searchUrl);
+        const data = await response.json();
+
+        if (data.items && data.items.length > 0) {
+            // Tomamos el primer candidato seguro entregado por el filtro
+            let selectedVideoId = data.items[0].id.videoId;
+            executeVideoLoad(selectedVideoId);
+        } else {
+            videoContainer.classList.remove('visible');
+        }
+    } catch (error) {
+        console.error('Error YouTube API:', error);
+        videoContainer.classList.remove('visible');
+    }
+}
+
+function executeVideoLoad(videoId) {
+    if (!isPlayerReady || !ytPlayer) return;
+    try {
+        videoContainer.classList.remove('visible'); // Ocultar mientras engancha el buffer
+        ytPlayer.loadVideoById({videoId: videoId});
+        ytPlayer.mute();
+        ytPlayer.playVideo();
+    } catch (err) {
+        console.error("Error cargando ID de video:", err);
+        videoContainer.classList.remove('visible');
+    }
+}
 
             // iTunes API para traer arte limpio y en alta resolución
             async function getAlbumArt(track, artist) {
