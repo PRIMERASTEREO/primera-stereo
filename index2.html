@@ -119,7 +119,7 @@
             justify-content: space-between;
         }
 
-        /* CARÁTULA HD TOTALMENTE NÍTIDA DE FONDO */
+        /* CARÁTULA HD DE FONDO */
         .album-art-bg {
             position: absolute;
             top: 0;
@@ -133,7 +133,7 @@
             transition: background-image 0.5s ease-in-out;
         }
 
-        /* CAPA DE VIDEO YOUTUBE */
+        /* CONTENEDOR VIDEO YOUTUBE */
         .player-video-bg {
             position: absolute;
             top: 0;
@@ -141,13 +141,13 @@
             width: 100%;
             height: 100%;
             z-index: 2; 
-            pointer-events: none; 
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
+            pointer-events: none; /* Evita interferencias con el clic */
         }
 
         .player-video-bg.visible {
-            opacity: 0.85; /* Se superpone a la carátula con fuerza */
+            opacity: 0.85;
         }
 
         .player-video-bg iframe {
@@ -155,24 +155,12 @@
             height: 100%;
             transform: scale(1.45);
             object-fit: cover;
-            pointer-events: none;
         }
 
-        /* ESCUDO DE INTERSECCIÓN TÁCTIL */
-        .video-shield {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 3;
-            background: transparent;
-        }
-
-        /* CONTENEDOR DE CONTROLES CON EFECTO HOVER PROFESIONAL */
+        /* CONTENEDOR DE CONTROLES CON HOVER SEGURO */
         .hover-control {
             position: relative;
-            z-index: 4;
+            z-index: 4; /* Queda siempre encima del video sin capas bloqueantes */
             width: 100%;
             height: 100%;
             display: flex;
@@ -180,19 +168,15 @@
             align-items: center;
             justify-content: center;
             gap: 15px;
-            transition: opacity 0.4s ease, transform 0.4s ease;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0.15; /* Suave atenuación por defecto para disfrutar el video */
         }
 
-        /* CORRECCIÓN HOVER: Por defecto los controles se atenúan y al pasar el mouse/pantalla táctil brillan al 100% */
-        .player-card .hover-control {
-            opacity: 0.25;
-            transform: scale(0.98);
-        }
-
+        /* Al pasar el mouse o tocar en móviles, se enciende al 100% */
         .player-card:hover .hover-control,
+        .player-card:transform .hover-control,
         .player-card:active .hover-control {
             opacity: 1;
-            transform: scale(1);
         }
 
         .station-title {
@@ -285,7 +269,7 @@
             cursor: pointer;
         }
 
-        /* ETIQUETA DE ESTADO PERMANENTE ABAJO DE LA CARD */
+        /* BARRA DE ESTADO EXTERNA SÓLIDA */
         .status-badge {
             position: relative;
             display: flex;
@@ -381,7 +365,6 @@
         </div>
 
         <div class="player-card" id="radio-container">
-            <div class="video-shield"></div>
             <div id="album-art-bg" class="album-art-bg"></div>
             <div id="player-video-bg" class="player-video-bg"></div>
 
@@ -420,7 +403,7 @@
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
             </div>
             <div class="copyright">
-                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO ONLINE
+                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
             </div>
         </div>
     </div>
@@ -439,7 +422,6 @@
             const streamUrl = 'https://primerastereo.stream.laut.fm/primerastereo';
             const metadataApiUrl = 'https://api.laut.fm/station/primerastereo/current_song';
             
-            // TU CLAVE DE API ACTUALIZADA Y VERIFICADA
             const YOUTUBE_API_KEY = "AIzaSyCxU2onHMctFbLj0UKLt-SHjw8V80bmGgg";
             
             let ytPlayer = null;
@@ -448,7 +430,6 @@
             let currentArtistGlobal = "";
             let currentTrackGlobal = "";
             
-            // Variables para el sistema de escaneo recursivo (Array Scanning)
             let videoIdsFound = [];
             let currentVideoIndex = 0;
             
@@ -458,7 +439,6 @@
             
             audioPlayer.volume = volumeSlider.value;
             
-            // Carga asíncrona de la API Iframe de YouTube
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -477,6 +457,7 @@
                         'mute': 1, 
                         'playsinline': 1,
                         'disablekb': 1,
+                        // Forzamos el origen dinámico de Netlify para evitar el error de "Vuelva a intentarlo más tarde"
                         'origin': window.location.origin
                     },
                     events: {
@@ -491,18 +472,14 @@
                             if (event.data === YT.PlayerState.PLAYING) {
                                 videoContainer.classList.add('visible'); 
                             }
-                            if (event.data === YT.PlayerState.ENDED) {
-                                ytPlayer.playVideo(); 
-                            }
                         },
                         'onError': function(event) {
-                            // SI UN VIDEO SE ENCUENTRA BLOQUEADO, PASAMOS AL SIGUIENTE DE LA LISTA DE INMEDIATO
-                            console.warn("Video bloqueado detectado. Escaneando opción alternativa...");
+                            // SISTEMA AUTOMÁTICO DE SALTO RECURSIVO AL DETECTAR VIDEO COMPROMETIDO
+                            console.warn("Conflicto con ID de video. Intentando la siguiente opción de la lista oficial...");
                             currentVideoIndex++;
                             if (currentVideoIndex < videoIdsFound.length) {
                                 executeVideoLoad(videoIdsFound[currentVideoIndex]);
                             } else {
-                                // Fin de opciones: ocultamos el recuadro para preservar la carátula nítida
                                 videoContainer.classList.remove('visible');
                             }
                         }
@@ -527,16 +504,17 @@
                 }
             }
 
-            // SISTEMA MAESTRO: TRAE VIDEOS OFICIALES Y LOS ESCANEA EN FILA SI TIENEN COPIADO DE DERECHOS EXTERNOS
+            // BUSCADOR ENFOCADO EXCLUSIVAMENTE EN VIDEOCLIPS REALES (PROVEEDOR ORIGINAL)
             async function searchAndPlayVideo(track, artist) {
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
                 
-                // CRITERIO EXACTO: "Video oficial sin texto alternativo de lyrics"
-                const query = `${artist} ${cleanTrack} official video clip`; 
+                // Criterio estricto: Buscamos el Video de música oficial lanzado por los canales oficiales
+                const query = `${artist} ${cleanTrack} music video official`; 
                 
                 currentArtistGlobal = artist;
                 currentTrackGlobal = cleanTrack;
 
+                // Carga paralela de la imagen en HD de iTunes
                 getAlbumArt(cleanTrack, artist);
 
                 if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
@@ -544,17 +522,14 @@
                 lastVideoQuery = query;
 
                 try {
-                    // Pedimos un pool de 7 videos oficiales candidatos
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=7&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
+                    // Traemos hasta 10 opciones diferentes de videos oficiales para asegurar el tiro
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
 
                     if (data.items && data.items.length > 0) {
-                        // Guardamos todos los IDs encontrados para el barrido secuencial
                         videoIdsFound = data.items.map(item => item.id.videoId);
                         currentVideoIndex = 0; 
-                        
-                        // Intentamos inyectar el primer video oficial
                         executeVideoLoad(videoIdsFound[currentVideoIndex]);
                     } else {
                         videoContainer.classList.remove('visible');
@@ -569,7 +544,11 @@
                 if (!isPlayerReady || !ytPlayer) return;
                 try {
                     videoContainer.classList.remove('visible'); 
-                    ytPlayer.loadVideoById({videoId: videoId});
+                    // Limpieza e inyección directa usando el cargador oficial de Google
+                    ytPlayer.loadVideoById({
+                        videoId: videoId,
+                        startSeconds: 5 // Iniciamos 5 segundos adelante para saltar intros estáticas o pantallas negras
+                    });
                     ytPlayer.mute();
                     ytPlayer.playVideo();
                 } catch (err) {
