@@ -39,7 +39,7 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('fondo.png') no-repeat center center;
+            background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('fondo.png') no-repeat center center;
             background-size: 100% 100%;
             background-attachment: fixed;
             padding: 15px;
@@ -96,30 +96,22 @@
             margin-top: -2px;
         }
 
-        /* CARD PRINCIPAL CON MEDIDA FIJA */
+        /* REPRODUCTOR CENTRAL CON ANCHO FIJO CONTROLADO */
         .player-card {
             position: relative;
             overflow: hidden;
             z-index: 2;
             width: 100%;
             max-width: 340px;
-            background: rgba(20, 22, 26, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: #14161a;
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 20px;
-            padding: 22px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9);
             margin: auto 0;
-            min-height: 320px;
-            justify-content: space-between;
+            height: 340px; /* Cuadrado perfecto para video y carátulas */
         }
 
-        /* CARÁTULA HD DE FONDO */
+        /* CAPA 1: CARÁTULA DE ITUNES */
         .album-art-bg {
             position: absolute;
             top: 0;
@@ -129,11 +121,15 @@
             z-index: 1;
             background-size: cover;
             background-position: center;
-            opacity: 0.35;
-            transition: background-image 0.5s ease-in-out;
+            background-repeat: no-repeat;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .album-art-bg.visible {
+            opacity: 1;
         }
 
-        /* CONTENEDOR VIDEO YOUTUBE */
+        /* CAPA 2: VIDEO DE YOUTUBE INTERNO */
         .player-video-bg {
             position: absolute;
             top: 0;
@@ -144,38 +140,43 @@
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
             pointer-events: none;
+            background: #000000;
         }
-
         .player-video-bg.visible {
-            opacity: 0.45;
+            opacity: 1;
         }
-
         .player-video-bg iframe {
             width: 100%;
             height: 100%;
-            transform: scale(1.45);
+            transform: scale(1.35); /* Zoom sutil para eliminar bordes negros del video */
             object-fit: cover;
         }
 
-        /* CONTENEDOR DE CONTROLES ALTAMENTE VISIBLES */
+        /* CAPA 3: CONTROLES - INVISIBLES POR DEFECTO PARA VER LA IMAGEN/VIDEO */
         .hover-control {
-            position: relative;
-            z-index: 4;
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
+            z-index: 4;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 16px;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            opacity: 0.85; /* Perfectamente visibles desde el inicio */
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.65); /* Capa oscura traslúcida sobre el video/arte sólo en hover */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            opacity: 0; /* Completamente ocultos por defecto */
+            transition: opacity 0.4s ease, transform 0.3s ease;
         }
 
-        /* Efecto Hover Correcto */
-        .player-card:hover .hover-control {
+        /* EFECTO HOVER REAL: APARECEN AL PASAR EL CURSOR */
+        .player-card:hover .hover-control,
+        .player-card:active .hover-control {
             opacity: 1;
-            transform: scale(1.01);
         }
 
         .station-title {
@@ -236,12 +237,12 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            width: 90%;
+            width: 85%;
             margin-top: 5px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 6px 12px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .volume-icon {
@@ -270,7 +271,7 @@
             box-shadow: 0 0 4px rgba(0,0,0,0.5);
         }
 
-        /* RECUADRO DE METADATOS ALINEADO Y DEL MISMO ANCHO */
+        /* CONTENEDOR DE METADATOS: TOTALMENTE SIMÉTRICO AL ANCHO DEL PLAYER */
         .status-badge {
             position: relative;
             display: flex;
@@ -282,21 +283,21 @@
             color: #ffffff;
             z-index: 5;
             width: 100%;
-            max-width: 340px; /* Clavado exactamente al ancho del player */
-            padding: 12px;
-            background: rgba(11, 12, 16, 0.9);
+            max-width: 340px; /* Clavado exactamente al mismo ancho de la card */
+            padding: 12px 15px;
+            background: rgba(20, 22, 26, 0.95);
             border-radius: 12px;
-            min-height: 46px;
+            min-height: 48px;
             border: 1px solid rgba(255, 255, 255, 0.15);
             margin-top: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
         
         .status-badge span {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 280px;
+            max-width: 270px;
         }
 
         .footer-section {
@@ -346,13 +347,12 @@
             line-height: 1.3;
         }
 
-        @media (max-height: 580px) {
-            .player-card, .status-badge { max-width: 300px; }
-            .player-card { padding: 12px; gap: 8px; min-height: 260px; }
+        @media (max-height: 620px) {
+            .player-card, .status-badge { max-width: 290px; }
+            .player-card { height: 290px; }
             .main-logo { font-size: 18pt; }
-            .play-btn { width: 52px; height: 52px; font-size: 18px; }
+            .play-btn { width: 55px; height: 55px; font-size: 20px; }
             .bars-container { height: 25px; }
-            .footer-section { gap: 6px; }
         }
     </style>
 </head>
@@ -393,7 +393,6 @@
             </div>
         </div>
 
-        <!-- CONTENEDOR AJUSTADO PERFECTAMENTE AL ANCHO DEL REPRODUCTOR -->
         <div class="status-badge" id="status">
             <i class="fas fa-broadcast-tower"></i> <span>Presiona Play para escuchar</span>
         </div>
@@ -408,7 +407,7 @@
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
             </div>
             <div class="copyright">
-                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO ONLINE
+                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
             </div>
         </div>
     </div>
@@ -474,17 +473,13 @@
                         },
                         'onStateChange': function(event) {
                             if (event.data === YT.PlayerState.PLAYING) {
+                                albumArtBg.classList.remove('visible'); // Oculta carátula para ver el video limpio
                                 videoContainer.classList.add('visible'); 
                             }
                         },
                         'onError': function(event) {
-                            console.warn("Error con ID de video. Saltando a la siguiente opción...");
-                            currentVideoIndex++;
-                            if (currentVideoIndex < videoIdsFound.length) {
-                                executeVideoLoad(videoIdsFound[currentVideoIndex]);
-                            } else {
-                                videoContainer.classList.remove('visible');
-                            }
+                            console.warn("Video bloqueado o con error de copyright. Pasando a la carátula...");
+                            switchToFallbackArtwork();
                         }
                     }
                 });
@@ -499,12 +494,22 @@
                     if (data.results && data.results.length > 0) {
                         let highResArt = data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
                         albumArtBg.style.backgroundImage = `url('${highResArt}')`;
-                    } else {
-                        albumArtBg.style.backgroundImage = "none";
+                        return true;
                     }
+                    return false;
                 } catch (e) {
                     console.error("Error carátula:", e);
+                    return false;
                 }
+            }
+
+            function switchToFallbackArtwork() {
+                // Si falla YouTube, ocultamos el cuadro gris de error y encendemos la carátula de iTunes limpia
+                videoContainer.classList.remove('visible');
+                if (ytPlayer && ytPlayer.pauseVideo) {
+                    ytPlayer.pauseVideo();
+                }
+                albumArtBg.classList.add('visible');
             }
 
             async function searchAndPlayVideo(track, artist) {
@@ -514,14 +519,20 @@
                 currentArtistGlobal = artist;
                 currentTrackGlobal = cleanTrack;
 
-                getAlbumArt(cleanTrack, artist);
+                const hasArt = await getAlbumArt(cleanTrack, artist);
+                if (hasArt) {
+                    albumArtBg.classList.add('visible'); // Muestra la carátula primero mientras procesa
+                } else {
+                    albumArtBg.style.backgroundImage = "none";
+                    albumArtBg.classList.remove('visible');
+                }
 
                 if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
                 if (query === lastVideoQuery) return;
                 lastVideoQuery = query;
 
                 try {
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
 
@@ -530,18 +541,17 @@
                         currentVideoIndex = 0; 
                         executeVideoLoad(videoIdsFound[currentVideoIndex]);
                     } else {
-                        videoContainer.classList.remove('visible');
+                        switchToFallbackArtwork();
                     }
                 } catch (error) {
                     console.error('Error YouTube API:', error);
-                    videoContainer.classList.remove('visible');
+                    switchToFallbackArtwork();
                 }
             }
 
             function executeVideoLoad(videoId) {
                 if (!isPlayerReady || !ytPlayer) return;
                 try {
-                    videoContainer.classList.remove('visible'); 
                     ytPlayer.loadVideoById({
                         videoId: videoId,
                         startSeconds: 2
@@ -550,6 +560,7 @@
                     ytPlayer.playVideo();
                 } catch (err) {
                     console.error("Error inyectando ID:", err);
+                    switchToFallbackArtwork();
                 }
             }
             
