@@ -39,7 +39,7 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url('fondo.png') no-repeat center center;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('fondo.png') no-repeat center center;
             background-size: 100% 100%;
             background-attachment: fixed;
             padding: 15px;
@@ -96,20 +96,20 @@
             margin-top: -2px;
         }
 
-        /* CARD PRINCIPAL */
+        /* CARD PRINCIPAL CON MEDIDA FIJA */
         .player-card {
             position: relative;
             overflow: hidden;
             z-index: 2;
             width: 100%;
             max-width: 340px;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            background: rgba(20, 22, 26, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+            padding: 22px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -129,7 +129,7 @@
             z-index: 1;
             background-size: cover;
             background-position: center;
-            opacity: 1;
+            opacity: 0.35;
             transition: background-image 0.5s ease-in-out;
         }
 
@@ -143,11 +143,11 @@
             z-index: 2; 
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
-            pointer-events: none; /* Evita interferencias con el clic */
+            pointer-events: none;
         }
 
         .player-video-bg.visible {
-            opacity: 0.85;
+            opacity: 0.45;
         }
 
         .player-video-bg iframe {
@@ -157,30 +157,29 @@
             object-fit: cover;
         }
 
-        /* CONTENEDOR DE CONTROLES CON HOVER SEGURO */
+        /* CONTENEDOR DE CONTROLES ALTAMENTE VISIBLES */
         .hover-control {
             position: relative;
-            z-index: 4; /* Queda siempre encima del video sin capas bloqueantes */
+            z-index: 4;
             width: 100%;
             height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            gap: 16px;
             transition: opacity 0.3s ease, transform 0.3s ease;
-            opacity: 0.15; /* Suave atenuación por defecto para disfrutar el video */
+            opacity: 0.85; /* Perfectamente visibles desde el inicio */
         }
 
-        /* Al pasar el mouse o tocar en móviles, se enciende al 100% */
-        .player-card:hover .hover-control,
-        .player-card:transform .hover-control,
-        .player-card:active .hover-control {
+        /* Efecto Hover Correcto */
+        .player-card:hover .hover-control {
             opacity: 1;
+            transform: scale(1.01);
         }
 
         .station-title {
-            font-size: 12pt;
+            font-size: 13pt;
             font-weight: bold;
             color: #ffffff;
             letter-spacing: 1px;
@@ -188,8 +187,9 @@
         }
 
         .station-subtitle {
-            font-size: 9.5pt;
-            color: #e2e8f0;
+            font-size: 10pt;
+            color: #00d4ff;
+            font-weight: 600;
             margin-top: -5px;
             text-shadow: 0 2px 4px rgba(0,0,0,1);
         }
@@ -229,24 +229,24 @@
         }
         
         .play-btn:hover {
-            transform: scale(1.05);
+            transform: scale(1.08);
         }
 
         .volume-container {
             display: flex;
             align-items: center;
             gap: 10px;
-            width: 85%;
+            width: 90%;
             margin-top: 5px;
-            background: rgba(0, 0, 0, 0.4);
-            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 6px 12px;
             border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .volume-icon {
             color: #ffffff;
             font-size: 14px;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
         }
 
         .volume-slider {
@@ -255,21 +255,22 @@
             appearance: none;
             height: 5px;
             border-radius: 3px;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.3);
             outline: none;
         }
 
         .volume-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 13px;
-            height: 13px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             background: #00d4ff;
             cursor: pointer;
+            box-shadow: 0 0 4px rgba(0,0,0,0.5);
         }
 
-        /* BARRA DE ESTADO EXTERNA SÓLIDA */
+        /* RECUADRO DE METADATOS ALINEADO Y DEL MISMO ANCHO */
         .status-badge {
             position: relative;
             display: flex;
@@ -281,19 +282,21 @@
             color: #ffffff;
             z-index: 5;
             width: 100%;
-            padding: 10px 12px;
-            background: rgba(0, 0, 0, 0.85);
+            max-width: 340px; /* Clavado exactamente al ancho del player */
+            padding: 12px;
+            background: rgba(11, 12, 16, 0.9);
             border-radius: 12px;
-            min-height: 44px;
+            min-height: 46px;
             border: 1px solid rgba(255, 255, 255, 0.15);
-            margin-top: 10px;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
         
         .status-badge span {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 260px;
+            max-width: 280px;
         }
 
         .footer-section {
@@ -344,6 +347,7 @@
         }
 
         @media (max-height: 580px) {
+            .player-card, .status-badge { max-width: 300px; }
             .player-card { padding: 12px; gap: 8px; min-height: 260px; }
             .main-logo { font-size: 18pt; }
             .play-btn { width: 52px; height: 52px; font-size: 18px; }
@@ -389,6 +393,7 @@
             </div>
         </div>
 
+        <!-- CONTENEDOR AJUSTADO PERFECTAMENTE AL ANCHO DEL REPRODUCTOR -->
         <div class="status-badge" id="status">
             <i class="fas fa-broadcast-tower"></i> <span>Presiona Play para escuchar</span>
         </div>
@@ -403,7 +408,7 @@
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
             </div>
             <div class="copyright">
-                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
+                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO ONLINE
             </div>
         </div>
     </div>
@@ -457,7 +462,6 @@
                         'mute': 1, 
                         'playsinline': 1,
                         'disablekb': 1,
-                        // Forzamos el origen dinámico de Netlify para evitar el error de "Vuelva a intentarlo más tarde"
                         'origin': window.location.origin
                     },
                     events: {
@@ -474,8 +478,7 @@
                             }
                         },
                         'onError': function(event) {
-                            // SISTEMA AUTOMÁTICO DE SALTO RECURSIVO AL DETECTAR VIDEO COMPROMETIDO
-                            console.warn("Conflicto con ID de video. Intentando la siguiente opción de la lista oficial...");
+                            console.warn("Error con ID de video. Saltando a la siguiente opción...");
                             currentVideoIndex++;
                             if (currentVideoIndex < videoIdsFound.length) {
                                 executeVideoLoad(videoIdsFound[currentVideoIndex]);
@@ -497,24 +500,20 @@
                         let highResArt = data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
                         albumArtBg.style.backgroundImage = `url('${highResArt}')`;
                     } else {
-                        albumArtBg.style.backgroundImage = "radial-gradient(circle, #1a1c23 0%, #0b0c10 100%)";
+                        albumArtBg.style.backgroundImage = "none";
                     }
                 } catch (e) {
                     console.error("Error carátula:", e);
                 }
             }
 
-            // BUSCADOR ENFOCADO EXCLUSIVAMENTE EN VIDEOCLIPS REALES (PROVEEDOR ORIGINAL)
             async function searchAndPlayVideo(track, artist) {
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
-                
-                // Criterio estricto: Buscamos el Video de música oficial lanzado por los canales oficiales
-                const query = `${artist} ${cleanTrack} music video official`; 
+                const query = `${artist} ${cleanTrack} official music video`; 
                 
                 currentArtistGlobal = artist;
                 currentTrackGlobal = cleanTrack;
 
-                // Carga paralela de la imagen en HD de iTunes
                 getAlbumArt(cleanTrack, artist);
 
                 if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
@@ -522,8 +521,7 @@
                 lastVideoQuery = query;
 
                 try {
-                    // Traemos hasta 10 opciones diferentes de videos oficiales para asegurar el tiro
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
 
@@ -544,10 +542,9 @@
                 if (!isPlayerReady || !ytPlayer) return;
                 try {
                     videoContainer.classList.remove('visible'); 
-                    // Limpieza e inyección directa usando el cargador oficial de Google
                     ytPlayer.loadVideoById({
                         videoId: videoId,
-                        startSeconds: 5 // Iniciamos 5 segundos adelante para saltar intros estáticas o pantallas negras
+                        startSeconds: 2
                     });
                     ytPlayer.mute();
                     ytPlayer.playVideo();
