@@ -39,7 +39,7 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)), url('fondo.png') no-repeat center center;
+            background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url('fondo.png') no-repeat center center;
             background-size: 100% 100%;
             background-attachment: fixed;
             padding: 15px;
@@ -102,20 +102,35 @@
             z-index: 2;
             width: 100%;
             max-width: 340px;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 20px;
             padding: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 12px;
             margin: auto 0;
-            min-height: 290px;
+            min-height: 300px;
             justify-content: space-between;
+        }
+
+        /* Contenedor de la carátula de respaldo */
+        .album-art-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background-size: cover;
+            background-position: center;
+            filter: blur(4px);
+            opacity: 0.45;
+            transition: background-image 0.8s ease-in-out;
         }
 
         .player-video-bg {
@@ -124,9 +139,14 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
+            z-index: 2; /* Por encima de la carátula */
             pointer-events: none; 
-            opacity: 0.6;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .player-video-bg.visible {
+            opacity: 0.65;
         }
 
         .player-video-bg iframe {
@@ -143,7 +163,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 2;
+            z-index: 3;
             background: transparent;
         }
 
@@ -257,7 +277,7 @@
             z-index: 6;
             width: 100%;
             padding: 10px 12px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.75);
             border-radius: 12px;
             min-height: 44px;
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -319,7 +339,7 @@
         }
 
         @media (max-height: 580px) {
-            .player-card { padding: 12px; gap: 8px; min-height: 240px; }
+            .player-card { padding: 12px; gap: 8px; min-height: 250px; }
             .main-logo { font-size: 18pt; }
             .play-btn { width: 52px; height: 52px; font-size: 18px; }
             .bars-container { height: 25px; }
@@ -341,6 +361,7 @@
 
         <div class="player-card" id="radio-container">
             <div class="video-shield"></div>
+            <div id="album-art-bg" class="album-art-bg"></div>
             <div id="player-video-bg" class="player-video-bg"></div>
 
             <div class="hover-control">
@@ -378,7 +399,7 @@
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
             </div>
             <div class="copyright">
-                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
+                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO ONLINE
             </div>
         </div>
     </div>
@@ -392,6 +413,8 @@
             const refreshBtn = document.getElementById('refresh-btn');
             const bars = document.querySelectorAll('#radio-visualizer .bar');
             const mainApp = document.getElementById('main-app');
+            const albumArtBg = document.getElementById('album-art-bg');
+            const videoContainer = document.getElementById('player-video-bg');
             
             const streamUrl = 'https://primerastereo.stream.laut.fm/primerastereo';
             const metadataApiUrl = 'https://api.laut.fm/station/primerastereo/current_song';
@@ -402,7 +425,6 @@
             let lastVideoQuery = "";
             let currentArtistGlobal = "";
             let currentTrackGlobal = "";
-            let fallbackAttempts = 0;
             
             let isPlaying = false;
             let metadataInterval = null;
@@ -410,19 +432,17 @@
             
             audioPlayer.volume = volumeSlider.value;
             
-            // Inyección asíncrona estándar del script de YouTube
+            // Inyección limpia del script oficial de YouTube sin bloquear renderizado
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-            // INICIALIZACIÓN CONTROLADA: Cargamos un video base estable de YouTube (un video de olas o similar totalmente libre de copyright agresivo)
-            // Esto evita las pantallas grises iniciales y fallas de ID de reproducción tras un F5.
             window.onYouTubeIframeAPIReady = function() {
                 ytPlayer = new YT.Player('player-video-bg', {
                     height: '100%',
                     width: '100%',
-                    videoId: 'Jf3v7H7G-bU', // Video inicial dummy y súper estable para preparar el reproductor
+                    videoId: 'Jf3v7H7G-bU', // Video inicial ultra estable
                     playerVars: {
                         'autoplay': 1,
                         'controls': 0,
@@ -435,110 +455,94 @@
                     events: {
                         'onReady': function(event) {
                             event.target.mute();
-                            isPlayerReady = true; 
-                            
-                            // Si los metadatos se cargaron primero en Netlify, procesamos la canción real ahora mismo
+                            isPlayerReady = true;
                             if (currentTrackGlobal && currentArtistGlobal) {
                                 searchAndPlayVideo(currentTrackGlobal, currentArtistGlobal);
                             }
                         },
                         'onStateChange': function(event) {
+                            // Si el video se reproduce correctamente, ocultamos la carátula y mostramos el video
+                            if (event.data === YT.PlayerState.PLAYING) {
+                                videoContainer.classList.add('visible');
+                            }
                             if (event.data === YT.PlayerState.ENDED && isPlaying) {
                                 ytPlayer.playVideo(); 
                             }
                         },
                         'onError': function(event) {
-                            console.warn("Fallo detectado. Saltando a búsqueda secundaria...");
-                            fallbackSearch();
+                            console.warn("Video bloqueado o error de ID. Pasando a carátula de respaldo.");
+                            videoContainer.classList.remove('visible'); // Muestra la hermosa carátula en su lugar
                         }
                     }
                 });
             };
 
+            // NUEVO BUSCADOR DE CARÁTULAS DE RESPALDO (iTunes API)
+            async function getAlbumArt(track, artist) {
+                try {
+                    const query = `${artist} ${track}`;
+                    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&limit=1`;
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    if (data.results && data.results.length > 0) {
+                        // Cambiamos el tamaño de la carátula de 100x100 a 600x600 px de alta resolución
+                        let highResArt = data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
+                        albumArtBg.style.backgroundImage = `url('${highResArt}')`;
+                    } else {
+                        albumArtBg.style.backgroundImage = "none";
+                    }
+                } catch (e) {
+                    console.error("Error cargando carátula:", e);
+                }
+            }
+
             async function searchAndPlayVideo(track, artist) {
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
-                const query = `${artist} ${cleanTrack} live tv festival`; 
+                
+                // CAMBIO CRUCIAL: Añadimos términos estrictos "live concert festival" para evadir bloqueos de disqueras
+                const query = `${artist} ${cleanTrack} live concert festival`; 
                 
                 currentArtistGlobal = artist;
                 currentTrackGlobal = cleanTrack;
 
-                // Retener datos si el reproductor no está inicializado
+                // Buscamos e inyectamos la carátula inmediatamente (asíncrono, no congela el código)
+                getAlbumArt(cleanTrack, artist);
+
                 if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
-                
-                // Si el tema es el mismo, no hacemos nada para evitar saltos bruscos
                 if (query === lastVideoQuery) return;
-                
                 lastVideoQuery = query;
-                fallbackAttempts = 0; 
 
                 try {
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=4&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
 
                     if (data.items && data.items.length > 0) {
-                        filterAndLoadVideo(data.items);
+                        // Forzamos que agarre la primera opción que cumpla el criterio en vivo
+                        let selectedVideoId = data.items[0].id.videoId;
+                        executeVideoLoad(selectedVideoId);
                     } else {
-                        fallbackSearch();
+                        // Si no encuentra nada, oculta capa de video y deja la carátula visible
+                        videoContainer.classList.remove('visible');
                     }
                 } catch (error) {
-                    console.error('Error en búsqueda principal:', error);
-                    fallbackSearch();
-                }
-            }
-
-            function filterAndLoadVideo(items) {
-                let selectedVideoId = null;
-                
-                for (let item of items) {
-                    let titleLower = item.snippet.title.toLowerCase();
-                    if (!titleLower.includes('lyric') && !titleLower.includes('letras') && !titleLower.includes('subtitulado') && !titleLower.includes('subtitle')) {
-                        selectedVideoId = item.id.videoId;
-                        break;
-                    }
-                }
-                
-                if (!selectedVideoId && items.length > 0) {
-                    selectedVideoId = items[0].id.videoId;
-                }
-
-                if (selectedVideoId) {
-                    executeVideoLoad(selectedVideoId);
-                }
-            }
-
-            async function fallbackSearch() {
-                if (fallbackAttempts >= 2) return;
-                fallbackAttempts++;
-
-                try {
-                    const queryAlternative = `${currentArtistGlobal} ${currentTrackGlobal} en vivo concierto`;
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${encodeURIComponent(queryAlternative)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
-                    const response = await fetch(searchUrl);
-                    const data = await response.json();
-
-                    if (data.items && data.items.length > 0) {
-                        filterAndLoadVideo(data.items);
-                    }
-                } catch (err) {
-                    console.error('Error en fallback:', err);
+                    console.error('Error YouTube API:', error);
+                    videoContainer.classList.remove('visible');
                 }
             }
 
             function executeVideoLoad(videoId) {
                 if (!isPlayerReady || !ytPlayer) return;
                 try {
-                    // Si la radio está encendida, forzamos la reproducción en caliente
                     if (isPlaying) {
                         ytPlayer.loadVideoById({videoId: videoId});
                         ytPlayer.mute();
                         ytPlayer.playVideo();
                     } else {
-                        // Si está pausada o cargando de cero, dejamos el video en espera
                         ytPlayer.cueVideoById({videoId: videoId});
                     }
                 } catch (err) {
-                    console.error("Error inyectando ID seguro:", err);
+                    console.error("Error inyectando video:", err);
                 }
             }
             
@@ -561,11 +565,13 @@
                     }
                 } catch (error) {
                     console.error('Error metadatos:', error);
+                    // Si falla la API de metadatos, la radio NO se detiene
                 }
             }
 
+            // Arrancar metadatos de inmediato de forma independiente
             updateMetadata();
-            metadataInterval = setInterval(updateMetadata, 15000);
+            metadataInterval = setInterval(updateMetadata, 14000);
 
             function simulateVisualizer() {
                 if (!isPlaying) {
@@ -600,7 +606,7 @@
                             ytPlayer.playVideo();
                         }
                     }).catch(error => {
-                        console.error('Error al reproducir:', error);
+                        console.error('Error al reproducir streaming:', error);
                         statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error de streaming';
                     });
                 } else {
@@ -612,6 +618,7 @@
                     statusElement.innerHTML = '<i class="fas fa-pause-circle"></i> Pausado';
                     cancelAnimationFrame(animationId);
                     bars.forEach(bar => bar.style.height = '5px');
+                    videoContainer.classList.remove('visible');
                     
                     if (isPlayerReady && ytPlayer && ytPlayer.pauseVideo) {
                         ytPlayer.pauseVideo();
@@ -626,6 +633,7 @@
                 playBtn.innerHTML = '<i class="fas fa-play"></i>';
                 mainApp.classList.remove('playing-mode');
                 statusElement.innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizando...';
+                videoContainer.classList.remove('visible');
                 
                 if (isPlayerReady && ytPlayer && ytPlayer.stopVideo) {
                     ytPlayer.stopVideo();
@@ -634,7 +642,7 @@
                 setTimeout(() => {
                     togglePlayback();
                     refreshBtn.classList.remove('loading');
-                }, 800);
+                }, 600);
             }
 
             playBtn.addEventListener('click', togglePlayback);
