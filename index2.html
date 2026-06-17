@@ -96,7 +96,7 @@
             margin-top: -2px;
         }
 
-        /* CONTENEDOR CENTRAL */
+        /* CONTENEDOR CENTRAL FIJO AL RETO */
         .player-card {
             position: relative;
             overflow: hidden;
@@ -111,7 +111,7 @@
             height: 340px;
         }
 
-        /* Capa de carátula por defecto */
+        /* Capa de carátula base */
         .album-art-bg {
             position: absolute;
             top: 0;
@@ -122,10 +122,9 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            transition: opacity 0.3s ease;
         }
 
-        /* Capa de video de YouTube */
+        /* Capa del contenedor de Video */
         .player-video-bg {
             position: absolute;
             top: 0;
@@ -134,18 +133,22 @@
             height: 100%;
             z-index: 1; 
             background: #000000;
+            opacity: 0;
+            transition: opacity 0.4s ease;
             pointer-events: none;
         }
         
-        /* Fuerza el video al frente superando la carátula */
-        .player-video-bg.playing-active {
+        /* Cuando el video está activo, pasa al frente inmediatamente por CSS */
+        .player-video-bg.video-active {
             z-index: 4;
+            opacity: 1;
         }
 
         .player-video-bg iframe {
             width: 100%;
             height: 100%;
-            transform: scale(1.4); /* Relleno del espacio cuadrado */
+            border: none;
+            transform: scale(1.4); /* Zoom nativo para rellenar el aspecto cuadrado */
             object-fit: cover;
         }
 
@@ -156,7 +159,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 5; 
+            z-index: 5; /* Siempre por encima de carátulas e iframes */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -365,7 +368,6 @@
 
         <div class="player-card" id="radio-container">
             <div id="album-art-bg" class="album-art-bg"></div>
-            <!-- El div donde la API de YouTube inyectará el iframe -->
             <div id="player-video-bg" class="player-video-bg"></div>
 
             <div class="hover-control">
@@ -425,69 +427,13 @@
             
             const YOUTUBE_API_KEY = "AIzaSyCxU2onHMctFbLj0UKLt-SHjw8V80bmGgg";
             
-            let ytPlayer = null;
-            let isYTAPIReady = false;
             let lastVideoQuery = "";
-            
             let isPlaying = false;
             let metadataInterval = null;
             let animationId;
             
             audioPlayer.volume = volumeSlider.value;
             albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
-
-            // Carga limpia de la API asíncrona de YouTube
-            const tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            const firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-            window.onYouTubeIframeAPIReady = function() {
-                isYTAPIReady = true;
-            };
-
-            // RECREACIÓN DE INSTANCIA NATIVA (Evita fallos por bloqueos de inicialización o CORS locales)
-            function createFreshYTPlayer(videoId) {
-                if (!isYTAPIReady) return;
-
-                // Limpiamos la capa interna creando un nodo div limpio para que reemplace el iframe anterior
-                videoContainer.innerHTML = '<div id="yt-placeholder"></div>';
-
-                ytPlayer = new YT.Player('yt-placeholder', {
-                    height: '100%',
-                    width: '100%',
-                    videoId: videoId,
-                    playerVars: {
-                        'autoplay': 1,
-                        'controls': 0,
-                        'rel': 0,
-                        'loop': 1,
-                        'playlist': videoId, // Requerido por la API de YT para forzar loops sin controles
-                        'mute': 1, 
-                        'playsinline': 1,
-                        'disablekb': 1
-                    },
-                    events: {
-                        'onReady': function(event) {
-                            event.target.mute();
-                            event.target.playVideo();
-                        },
-                        'onStateChange': function(event) {
-                            // En cuanto el video arranca de verdad, se pone al frente
-                            if (event.data === YT.PlayerState.PLAYING) {
-                                videoContainer.classList.add('playing-active'); 
-                            } else if (event.data === YT.PlayerState.BUFFERING) {
-                                // Mantiene la capa activa si solo está cargando fragmentos
-                            } else {
-                                videoContainer.classList.remove('playing-active');
-                            }
-                        },
-                        'onError': function() {
-                            videoContainer.classList.remove('playing-active');
-                        }
-                    }
-                });
-            }
 
             async function getAlbumArt(track, artist) {
                 try {
@@ -511,9 +457,9 @@
                 const trackUpper = track.toUpperCase();
                 const artistUpper = artist.toUpperCase();
 
-                // Regla estricta: Jingles e Identificaciones de Primera Stereo matan el video y ponen el logo
+                // Filtro estricto para Jingles e IDs de estación
                 if (trackUpper.includes("JINGLE") || trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO")) {
-                    videoContainer.classList.remove('playing-active');
+                    videoContainer.classList.remove('video-active');
                     videoContainer.innerHTML = '';
                     albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
                     lastVideoQuery = "STATION_IDLE_LOGO";
@@ -522,10 +468,15 @@
 
                 await getAlbumArt(track, artist);
 
+                // Exclusión explícita de "lyrics" o "letra" para traer exclusivamente videos oficiales o videoclips musicales
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
-                const query = `${artist} ${cleanTrack} official music video`;
+                const query = `${artist} ${cleanTrack} official music video -lyrics -letra -lyric`;
+                
                 if (query === lastVideoQuery) return;
                 lastVideoQuery = query;
+
+                // Si la radio está en pausa, no cargamos videos innecesariamente
+                if (!isPlaying) return;
 
                 try {
                     const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
@@ -534,15 +485,25 @@
 
                     if (data.items && data.items.length > 0) {
                         const videoId = data.items[0].id.videoId;
-                        // Disparamos la carga limpia de raíz
-                        createFreshYTPlayer(videoId);
+                        
+                        // INYECCIÓN DIRECTA DE IFRAME HTML5 CON PARÁMETROS NATIVOS FORZADOS
+                        // Usamos allow="autoplay" de forma explícita para obligar al navegador a renderizarlo
+                        videoContainer.innerHTML = `
+                            <iframe 
+                                src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&rel=0&loop=1&playlist=${videoId}&showinfo=0&iv_load_policy=3&playsinline=1" 
+                                allow="autoplay; encrypted-media" 
+                                frameborder="0">
+                            </iframe>`;
+                        
+                        // Se muestra la capa de inmediato sin esperar promesas de JS
+                        videoContainer.classList.add('video-active');
                     } else {
-                        videoContainer.classList.remove('playing-active');
+                        videoContainer.classList.remove('video-active');
                         videoContainer.innerHTML = '';
                     }
                 } catch (error) {
                     console.error('Error buscando video:', error);
-                    videoContainer.classList.remove('playing-active');
+                    videoContainer.classList.remove('video-active');
                 }
             }
             
@@ -608,7 +569,7 @@
                     statusElement.innerHTML = '<i class="fas fa-pause-circle"></i> Pausado';
                     cancelAnimationFrame(animationId);
                     bars.forEach(bar => bar.style.height = '5px');
-                    videoContainer.classList.remove('playing-active');
+                    videoContainer.classList.remove('video-active');
                     videoContainer.innerHTML = '';
                 }
             }
