@@ -139,7 +139,6 @@
             pointer-events: none;
         }
 
-        /* Capa protectora transparente para evitar que el usuario pause el video sin querer */
         .video-shield {
             position: absolute;
             top: 0;
@@ -402,10 +401,11 @@
             
             const YOUTUBE_API_KEY = "AIzaSyB587PR4Xec8bS3VpFu7si5lYZwYweyijQ";
             let ytPlayer = null;
+            let isPlayerReady = false; // Control de carga asíncrona tras F5
             let lastVideoQuery = "";
             let currentArtistGlobal = "";
             let currentTrackGlobal = "";
-            let fallbackAttempts = 0; // Contador de intentos para evitar bucles infinitos
+            let fallbackAttempts = 0;
             
             let isPlaying = false;
             let metadataInterval = null;
@@ -430,6 +430,12 @@
                     events: {
                         'onReady': function(event) {
                             event.target.mute();
+                            isPlayerReady = true; // El reproductor ya está seguro en memoria
+                            // Si los metadatos se cargaron antes, forzamos la reproducción ahora
+                            if (currentTrackGlobal && currentArtistGlobal) {
+                                lastVideoQuery = ""; // Limpieza preventiva
+                                searchAndPlayVideo(currentTrackGlobal, currentArtistGlobal);
+                            }
                         },
                         'onStateChange': function(event) {
                             if (event.data === YT.PlayerState.ENDED && isPlaying) {
@@ -437,25 +443,27 @@
                             }
                         },
                         'onError': function(event) {
-                            // Si el video falla por copyright, ejecuta la búsqueda en vivo/TV inmediatamente
-                            console.warn("Video bloqueado. Buscando versión alternativa en movimiento...");
+                            console.warn("Fallo en reproducción. Saltando a alternativa...");
                             fallbackSearch();
                         }
                     }
                 });
             };
 
-            // Motor de búsqueda agresivo orientado a videos en movimiento (Cero letras)
             async function searchAndPlayVideo(track, artist) {
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
-                
-                // Intento 1: Buscamos la presentación en vivo o el video musical de respaldo
                 const query = `${artist} ${cleanTrack} live tv festival`; 
                 
-                if (query === lastVideoQuery || !ytPlayer || !ytPlayer.loadVideoById) return;
-                lastVideoQuery = query;
                 currentArtistGlobal = artist;
                 currentTrackGlobal = cleanTrack;
+
+                // Si la API de YouTube aún no está lista, guardamos los nombres de la canción y esperamos
+                if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
+                
+                // Si es la misma consulta exacta y el video ya está cargado, evitamos recargas innecesarias
+                if (query === lastVideoQuery) return;
+                
+                lastVideoQuery = query;
                 fallbackAttempts = 0; 
 
                 try {
@@ -474,7 +482,6 @@
                 }
             }
 
-            // Filtro estricto que descarta cualquier rastro de "Lyrics", "Letras" o subtítulos
             function filterAndLoadVideo(items) {
                 let selectedVideoId = null;
                 
@@ -486,7 +493,6 @@
                     }
                 }
                 
-                // Si todos tenían letras por algún motivo raro, usamos el primero para no dejar la pantalla en gris
                 if (!selectedVideoId && items.length > 0) {
                     selectedVideoId = items[0].id.videoId;
                 }
@@ -496,9 +502,8 @@
                 }
             }
 
-            // Intento de Emergencia 2: Busca conciertos puros o presentaciones míticas de televisión
             async function fallbackSearch() {
-                if (fallbackAttempts >= 2) return; // Detener si ya se intentó demasiado para evitar sobrecarga
+                if (fallbackAttempts >= 2) return;
                 fallbackAttempts++;
 
                 try {
@@ -516,12 +521,17 @@
             }
 
             function executeVideoLoad(videoId) {
-                if (isPlaying) {
-                    ytPlayer.loadVideoById({videoId: videoId});
-                    ytPlayer.mute();
-                    ytPlayer.playVideo();
-                } else {
-                    ytPlayer.cueVideoById({videoId: videoId});
+                if (!isPlayerReady || !ytPlayer) return;
+                try {
+                    if (isPlaying) {
+                        ytPlayer.loadVideoById({videoId: videoId});
+                        ytPlayer.mute();
+                        ytPlayer.playVideo();
+                    } else {
+                        ytPlayer.cueVideoById({videoId: videoId});
+                    }
+                } catch (err) {
+                    console.error("Error inyectando el ID del video:", err);
                 }
             }
             
@@ -547,6 +557,7 @@
                 }
             }
 
+            // Llamada inicial inmediata de metadatos
             updateMetadata();
             metadataInterval = setInterval(updateMetadata, 15000);
 
@@ -574,9 +585,12 @@
                         playBtn.innerHTML = '<i class="fas fa-pause"></i>';
                         mainApp.classList.add('playing-mode');
                         simulateVisualizer();
+                        
+                        // Forzamos actualización instantánea del video al dar Play
+                        lastVideoQuery = ""; 
                         updateMetadata();
                         
-                        if (ytPlayer && ytPlayer.playVideo) {
+                        if (isPlayerReady && ytPlayer && ytPlayer.playVideo) {
                             ytPlayer.playVideo();
                         }
                     }).catch(error => {
@@ -593,7 +607,7 @@
                     cancelAnimationFrame(animationId);
                     bars.forEach(bar => bar.style.height = '5px');
                     
-                    if (ytPlayer && ytPlayer.pauseVideo) {
+                    if (isPlayerReady && ytPlayer && ytPlayer.pauseVideo) {
                         ytPlayer.pauseVideo();
                     }
                 }
@@ -607,7 +621,7 @@
                 mainApp.classList.remove('playing-mode');
                 statusElement.innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizando...';
                 
-                if (ytPlayer && ytPlayer.stopVideo) {
+                if (isPlayerReady && ytPlayer && ytPlayer.stopVideo) {
                     ytPlayer.stopVideo();
                 }
                 
