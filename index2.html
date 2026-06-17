@@ -15,7 +15,6 @@
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <style>
-        /* Restablecer estilos base y prevenir scroll absoluto en móviles */
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
@@ -34,23 +33,21 @@
             user-select: none;
         }
 
-        /* Contenedor principal adaptable */
         .app-container {
-            position: center;
+            position: relative;
             width: 100%;
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('fondo.png') no-repeat center center;
-			background-size: 100% 100%;
-			background-attachment: fixed;
+            background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)), url('fondo.png') no-repeat center center;
+            background-size: 100% 100%;
+            background-attachment: fixed;
             padding: 15px;
             text-align: center;
         }
 
-        /* Botón de refrescar en esquina superior derecha */
         .refresh-btn {
             position: absolute;
             top: 15px;
@@ -76,7 +73,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Encabezado */
         .header-section {
             z-index: 2;
             width: 100%;
@@ -102,14 +98,13 @@
             margin-top: -2px;
         }
 
-        /* Tarjeta del Reproductor */
         .player-card {
             position: relative;
             overflow: hidden;
             z-index: 2;
             width: 100%;
             max-width: 340px;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -121,11 +116,10 @@
             align-items: center;
             gap: 12px;
             margin: auto 0;
-            min-height: 280px;
+            min-height: 290px;
             justify-content: space-between;
         }
 
-        /* Contenedor de fondo de YouTube - Totalmente protegido contra clics accidentales */
         .player-video-bg {
             position: absolute;
             top: 0;
@@ -134,18 +128,28 @@
             height: 100%;
             z-index: 1;
             pointer-events: none; 
-            opacity: 0.55;
+            opacity: 0.6;
         }
 
         .player-video-bg iframe {
             width: 100%;
             height: 100%;
-            transform: scale(1.35);
+            transform: scale(1.4);
             object-fit: cover;
             pointer-events: none;
         }
 
-        /* CONTROLES INTERACTIVOS (RECUADRO VERDE) */
+        /* Capa protectora transparente para evitar que el usuario pause el video sin querer */
+        .video-shield {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            background: transparent;
+        }
+
         .hover-control {
             position: relative;
             z-index: 5;
@@ -158,12 +162,10 @@
             transition: opacity 0.4s ease;
         }
 
-        /* Desaparece suavemente cuando el tema está sonando */
         .app-container.playing-mode .hover-control {
             opacity: 0;
         }
 
-        /* Reaparece al pasar el mouse por encima (Hover) a voluntad */
         .player-card:hover .hover-control {
             opacity: 1 !important;
         }
@@ -181,7 +183,6 @@
             margin-top: -5px;
         }
 
-        /* Ecualizador animado */
         .bars-container {
             display: flex;
             align-items: flex-end;
@@ -199,7 +200,6 @@
             transition: height 0.2s ease;
         }
 
-        /* Botón de Play principal */
         .play-btn {
             width: 65px;
             height: 65px;
@@ -216,7 +216,6 @@
             font-size: 24px;
         }
 
-        /* Control de Volumen */
         .volume-container {
             display: flex;
             align-items: center;
@@ -250,7 +249,6 @@
             cursor: pointer;
         }
 
-        /* BASE DEL REPRODUCITOR (RECUADRO AMARILLO) */
         .status-badge {
             display: flex;
             align-items: center;
@@ -262,7 +260,7 @@
             z-index: 6;
             width: 100%;
             padding: 10px 12px;
-            background: rgba(0, 0, 0, 0.65);
+            background: rgba(0, 0, 0, 0.7);
             border-radius: 12px;
             min-height: 44px;
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -276,7 +274,6 @@
             max-width: 260px;
         }
 
-        /* Redes Sociales fijas abajo */
         .footer-section {
             z-index: 2;
             width: 100%;
@@ -316,13 +313,7 @@
         .social-btn.instagram:hover { background: #e1306c; }
         .social-btn.tiktok:hover { background: #000000; }
         .social-btn.youtube:hover { background: #ff0000; }
-		.social-btn.google-play:hover { background: #0d9114; }
-        
-        .custom-logo img {
-            width: 20px;
-            height: 20px;
-            object-fit: contain;
-        }
+        .social-btn.google-play:hover { background: #0d9114; }
 
         .copyright {
             font-size: 8pt;
@@ -330,7 +321,6 @@
             line-height: 1.3;
         }
 
-        /* Ajustes responsivos extremos para pantallas pequeñas */
         @media (max-height: 580px) {
             .player-card { padding: 12px; gap: 8px; min-height: 240px; }
             .main-logo { font-size: 18pt; }
@@ -353,23 +343,16 @@
         </div>
 
         <div class="player-card" id="radio-container">
+            <div class="video-shield"></div>
             <div id="player-video-bg" class="player-video-bg"></div>
 
             <div class="hover-control">
-             <div class="station-title">PRIMERA STEREO</div>
-                <div class="station-subtitle"> RADIO VIDEO ONLINE</div>   
+                <div class="station-title">PRIMERA STEREO</div>
+                <div class="station-subtitle">RADIO VIDEO ONLINE</div>   
 
                 <div class="bars-container" id="radio-visualizer">
-                    <div class="bar"></div>
-                    <div class="bar"></div>
-                    <div class="bar"></div>
-                    <div class="bar"></div>
-                    <div class="bar"></div>
-                    <div class="bar"></div>
-                    <div class="bar"></div>
-                    <div class="bar"></div>
-                    <div class="bar"></div>
-                    <div class="bar"></div>
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
                 </div>
 
                 <button class="play-btn" id="play-btn">
@@ -391,21 +374,11 @@
         <div class="footer-section">
             <div class="social-title">Síguenos en nuestras redes sociales</div>
             <div class="social-icons">
-                <a href="https://www.facebook.com/PrimeraStereoRadio" class="social-btn facebook" target="_blank">
-                    <i class="fab fa-facebook-f"></i>
-                </a>
-                <a href="https://www.instagram.com/Primera.Stereo/" class="social-btn instagram" target="_blank">
-                    <i class="fab fa-instagram"></i>
-                </a>
-                <a href="https://www.tiktok.com/@primerastereo" class="social-btn tiktok" target="_blank">
-                    <i class="fab fa-tiktok"></i>
-                </a>
-                <a href="https://www.youtube.com/@PrimeraStereo" class="social-btn youtube" target="_blank">
-                    <i class="fab fa-youtube"></i>
-                </a>
-                <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank">
-                    <i class="fab fa-google-play"></i>
-                </a>
+                <a href="https://www.facebook.com/PrimeraStereoRadio" class="social-btn facebook" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://www.instagram.com/Primera.Stereo/" class="social-btn instagram" target="_blank"><i class="fab fa-instagram"></i></a>
+                <a href="https://www.tiktok.com/@primerastereo" class="social-btn tiktok" target="_blank"><i class="fab fa-tiktok"></i></a>
+                <a href="https://www.youtube.com/@PrimeraStereo" class="social-btn youtube" target="_blank"><i class="fab fa-youtube"></i></a>
+                <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
             </div>
             <div class="copyright">
                 &copy;2010 - 2026 PRIMERA STEREO<br>RADIO ONLINE
@@ -415,7 +388,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Elementos del DOM
             const audioPlayer = new Audio();
             const playBtn = document.getElementById('play-btn');
             const volumeSlider = document.getElementById('volume-slider');
@@ -425,24 +397,22 @@
             const bars = visualizer.querySelectorAll('.bar');
             const mainApp = document.getElementById('main-app');
             
-            // URLs de Streaming y Metadatos de laut.fm
             const streamUrl = 'https://primerastereo.stream.laut.fm/primerastereo';
             const metadataApiUrl = 'https://api.laut.fm/station/primerastereo/current_song';
             
-            // Integración de YouTube API
             const YOUTUBE_API_KEY = "AIzaSyB587PR4Xec8bS3VpFu7si5lYZwYweyijQ";
             let ytPlayer = null;
             let lastVideoQuery = "";
+            let currentArtistGlobal = "";
+            let currentTrackGlobal = "";
+            let fallbackAttempts = 0; // Contador de intentos para evitar bucles infinitos
             
-            // Estados generales
             let isPlaying = false;
             let metadataInterval = null;
             let animationId;
             
-            // Inicializar volumen básico de la radio
             audioPlayer.volume = volumeSlider.value;
             
-            // Inicialización de la API de YouTube ajustada para evadir bloqueos de inserción de Videos Oficiales
             window.onYouTubeIframeAPIReady = function() {
                 ytPlayer = new YT.Player('player-video-bg', {
                     height: '100%',
@@ -450,83 +420,101 @@
                     videoId: '', 
                     playerVars: {
                         'autoplay': 1,
-                        'controls': 0,     // Mantenemos oculto visualmente el reproductor nativo
+                        'controls': 0,
                         'rel': 0,
                         'loop': 1,
                         'mute': 1, 
                         'playsinline': 1,
-                        'disablekb': 1,
-                        'origin': window.location.origin // Le aclara a YouTube que es un sitio verificado de confianza
+                        'disablekb': 1
                     },
                     events: {
                         'onReady': function(event) {
                             event.target.mute();
                         },
                         'onStateChange': function(event) {
-                            // Si el video oficial se detiene abruptamente o no arranca debido a restricciones ocultas
                             if (event.data === YT.PlayerState.ENDED && isPlaying) {
                                 ytPlayer.playVideo(); 
                             }
                         },
                         'onError': function(event) {
-                            // CONTROL CRUCIAL: Si el video de VEVO/Artista da error de inserción, ejecuta el Plan B Oficial
-                            console.warn("Video oficial principal bloqueado. Buscando canal alternativo oficial...");
+                            // Si el video falla por copyright, ejecuta la búsqueda en vivo/TV inmediatamente
+                            console.warn("Video bloqueado. Buscando versión alternativa en movimiento...");
                             fallbackSearch();
                         }
                     }
                 });
             };
 
-            let currentArtistGlobal = "";
-            let currentTrackGlobal = "";
-
-            // Búsqueda orientada estrictamente a VIDEOS OFICIALES
+            // Motor de búsqueda agresivo orientado a videos en movimiento (Cero letras)
             async function searchAndPlayVideo(track, artist) {
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
                 
-                // Forzamos "video oficial" o "official video" en la API para evitar cualquier tipo de letras
-                const query = `${artist} ${cleanTrack} official video`; 
+                // Intento 1: Buscamos la presentación en vivo o el video musical de respaldo
+                const query = `${artist} ${cleanTrack} live tv festival`; 
                 
                 if (query === lastVideoQuery || !ytPlayer || !ytPlayer.loadVideoById) return;
                 lastVideoQuery = query;
                 currentArtistGlobal = artist;
                 currentTrackGlobal = cleanTrack;
+                fallbackAttempts = 0; 
 
                 try {
-                    // Agregamos el parámetro videoEmbeddable=true directamente a nivel de servidor de Google
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
 
                     if (data.items && data.items.length > 0) {
-                        const videoId = data.items[0].id.videoId;
-                        executeVideoLoad(videoId);
+                        filterAndLoadVideo(data.items);
                     } else {
                         fallbackSearch();
                     }
                 } catch (error) {
-                    console.error('Error buscando video oficial:', error);
+                    console.error('Error en búsqueda principal:', error);
+                    fallbackSearch();
                 }
             }
 
-            // PLAN B OFICIAL: Busca en canales alternativos (como VEVO, sellos discográficos, o remasters oficiales)
+            // Filtro estricto que descarta cualquier rastro de "Lyrics", "Letras" o subtítulos
+            function filterAndLoadVideo(items) {
+                let selectedVideoId = null;
+                
+                for (let item of items) {
+                    let titleLower = item.snippet.title.toLowerCase();
+                    if (!titleLower.includes('lyric') && !titleLower.includes('letras') && !titleLower.includes('subtitulado') && !titleLower.includes('subtitle')) {
+                        selectedVideoId = item.id.videoId;
+                        break;
+                    }
+                }
+                
+                // Si todos tenían letras por algún motivo raro, usamos el primero para no dejar la pantalla en gris
+                if (!selectedVideoId && items.length > 0) {
+                    selectedVideoId = items[0].id.videoId;
+                }
+
+                if (selectedVideoId) {
+                    executeVideoLoad(selectedVideoId);
+                }
+            }
+
+            // Intento de Emergencia 2: Busca conciertos puros o presentaciones míticas de televisión
             async function fallbackSearch() {
+                if (fallbackAttempts >= 2) return; // Detener si ya se intentó demasiado para evitar sobrecarga
+                fallbackAttempts++;
+
                 try {
-                    const queryAlternative = `${currentArtistGlobal} ${currentTrackGlobal} vevo`;
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(queryAlternative)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
+                    const queryAlternative = `${currentArtistGlobal} ${currentTrackGlobal} en vivo concierto`;
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${encodeURIComponent(queryAlternative)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
 
                     if (data.items && data.items.length > 0) {
-                        const videoId = data.items[0].id.videoId;
-                        executeVideoLoad(videoId);
+                        filterAndLoadVideo(data.items);
                     }
                 } catch (err) {
-                    console.error('Error en el fallback oficial:', err);
+                    console.error('Error en fallback:', err);
                 }
             }
 
-            // Inyecta el ID del video oficial de forma segura
             function executeVideoLoad(videoId) {
                 if (isPlaying) {
                     ytPlayer.loadVideoById({videoId: videoId});
@@ -537,7 +525,6 @@
                 }
             }
             
-            // Consumo de API de Metadatos en tiempo real
             async function updateMetadata() {
                 try {
                     const response = await fetch(metadataApiUrl + '?t=' + new Date().getTime());
@@ -556,14 +543,13 @@
                         }
                     }
                 } catch (error) {
-                    console.error('Error obteniendo metadatos:', error);
+                    console.error('Error metadatos:', error);
                 }
             }
 
             updateMetadata();
             metadataInterval = setInterval(updateMetadata, 15000);
 
-            // Animación del ecualizador visual
             function simulateVisualizer() {
                 if (!isPlaying) {
                     bars.forEach(bar => bar.style.height = '5px');
@@ -577,7 +563,6 @@
                 animationId = requestAnimationFrame(simulateVisualizer);
             }
 
-            // Alternar Reproducción y aplicar clases de ocultamiento visual
             function togglePlayback() {
                 if (!isPlaying) {
                     statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...';
@@ -596,7 +581,7 @@
                         }
                     }).catch(error => {
                         console.error('Error al reproducir:', error);
-                        statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error al conectar';
+                        statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error de streaming';
                     });
                 } else {
                     audioPlayer.pause();
