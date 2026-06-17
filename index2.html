@@ -37,15 +37,17 @@
 
         /* Contenedor principal adaptable */
         .app-container {
-            position: relative;
+            position: center;
             width: 100%;
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            background: url('img/fondo.png') no-repeat center center;
-            background-size: cover;
+            /* Aquí colocamos tu imagen de fondo bien centrada y adaptada */
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('img/fondo.png') no-repeat center center;
+			background-size: 100% 100%;
+			background-attachment: fixed;
             padding: 15px;
             text-align: center;
         }
@@ -314,6 +316,7 @@
         .social-btn.instagram:hover { background: #e1306c; }
         .social-btn.tiktok:hover { background: #000000; }
         .social-btn.youtube:hover { background: #ff0000; }
+		.social-btn.google-play:hover { background: #0d9114; }
         
         .custom-logo img {
             width: 20px;
@@ -416,8 +419,8 @@
                 <a href="https://www.youtube.com/@PrimeraStereo" class="social-btn youtube" target="_blank">
                     <i class="fab fa-youtube"></i>
                 </a>
-                <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn custom-logo" target="_blank">
-                    <img src="https://primerastereoradioonline.netlify.app/icons/descarga.png" alt="App">
+                <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank">
+                    <i class="fab fa-google-play"></i>
                 </a>
             </div>
             <div class="copyright">
