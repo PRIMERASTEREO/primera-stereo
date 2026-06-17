@@ -43,7 +43,6 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            /* Aquí colocamos tu imagen de fondo bien centrada y adaptada */
             background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('fondo.png') no-repeat center center;
 			background-size: 100% 100%;
 			background-attachment: fixed;
@@ -103,14 +102,14 @@
             margin-top: -2px;
         }
 
-        /* Tarjeta del Reproductor con soporte para video de fondo */
+        /* Tarjeta del Reproductor */
         .player-card {
             position: relative;
             overflow: hidden;
             z-index: 2;
             width: 100%;
             max-width: 340px;
-            background: rgba(0, 0, 0, 0.5); /* Más oscuro para contrastar con el video detrás */
+            background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -122,44 +121,51 @@
             align-items: center;
             gap: 12px;
             margin: auto 0;
-            min-height: 250px;
-            justify-content: center;
+            min-height: 280px;
+            justify-content: space-between;
         }
 
-        /* Contenedor del video incrustado en el reproductor */
+        /* Contenedor de fondo de YouTube - Totalmente protegido contra clics accidentales */
         .player-video-bg {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
-            opacity: 0.55; /* Opacidad ideal para balancear visibilidad de video y controles */
+            z-index: 1;
+            pointer-events: none; 
+            opacity: 0.55;
         }
 
         .player-video-bg iframe {
             width: 100%;
             height: 100%;
-            transform: scale(1.35); /* Zoom sutil para ocultar bordes negros nativos de YT */
+            transform: scale(1.35);
             object-fit: cover;
+            pointer-events: none;
         }
 
-        /* CONTROLES DEL RECUADRO VERDE: Ocultos por defecto, aparecen en Hover */
+        /* CONTROLES INTERACTIVOS (RECUADRO VERDE) */
         .hover-control {
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.4s ease, visibility 0.4s ease;
+            position: relative;
+            z-index: 5;
             width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 12px;
+            opacity: 1;
+            transition: opacity 0.4s ease;
         }
 
-        /* Al pasar el mouse encima, muestra los controles para interactuar a voluntad */
+        /* Desaparece suavemente cuando el tema está sonando */
+        .app-container.playing-mode .hover-control {
+            opacity: 0;
+        }
+
+        /* Reaparece al pasar el mouse por encima (Hover) a voluntad */
         .player-card:hover .hover-control {
-            opacity: 1;
-            visibility: visible;
+            opacity: 1 !important;
         }
 
         .station-title {
@@ -208,7 +214,6 @@
             box-shadow: 0 6px 15px rgba(0, 198, 255, 0.4);
             color: white;
             font-size: 24px;
-            z-index: 3;
         }
 
         /* Control de Volumen */
@@ -218,7 +223,6 @@
             gap: 10px;
             width: 85%;
             margin-top: 5px;
-            z-index: 3;
         }
 
         .volume-icon {
@@ -246,7 +250,7 @@
             cursor: pointer;
         }
 
-        /* Nuevo diseño del recuadro inferior (Reemplazo del Rojo por el Amarillo) */
+        /* BASE DEL REPRODUCITOR (RECUADRO AMARILLO SUSTITUYENDO AL ROJO) */
         .status-badge {
             display: flex;
             align-items: center;
@@ -255,13 +259,21 @@
             font-size: 10pt;
             font-weight: bold;
             color: #ffffff;
-            z-index: 3;
+            z-index: 6;
             width: 100%;
             padding: 10px 12px;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.65);
             border-radius: 12px;
             min-height: 44px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-top: 5px;
+        }
+        
+        .status-badge span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 260px;
         }
 
         /* Redes Sociales fijas abajo */
@@ -320,7 +332,7 @@
 
         /* Ajustes responsivos extremos para pantallas pequeñas */
         @media (max-height: 580px) {
-            .player-card { padding: 12px; gap: 8px; }
+            .player-card { padding: 12px; gap: 8px; min-height: 240px; }
             .main-logo { font-size: 18pt; }
             .play-btn { width: 52px; height: 52px; font-size: 18px; }
             .bars-container { height: 25px; }
@@ -334,7 +346,7 @@
         <i class="fas fa-sync-alt"></i>
     </button>
 
-    <div class="app-container">
+    <div class="app-container" id="main-app">
         <div class="header-section">
             <h1 class="main-logo">Primera Stereo</h1>
             <div class="sub-logo">Radio Online</div>
@@ -411,6 +423,7 @@
             const refreshBtn = document.getElementById('refresh-btn');
             const visualizer = document.getElementById('radio-visualizer');
             const bars = visualizer.querySelectorAll('.bar');
+            const mainApp = document.getElementById('main-app');
             
             // URLs de Streaming y Metadatos de laut.fm
             const streamUrl = 'https://primerastereo.stream.laut.fm/primerastereo';
@@ -429,7 +442,7 @@
             // Inicializar volumen básico de la radio
             audioPlayer.volume = volumeSlider.value;
             
-            // Función constructora obligatoria del API de YouTube
+            // Función de la API de YouTube
             window.onYouTubeIframeAPIReady = function() {
                 ytPlayer = new YT.Player('player-video-bg', {
                     height: '100%',
@@ -441,7 +454,7 @@
                         'showinfo': 0,
                         'rel': 0,
                         'loop': 1,
-                        'mute': 1, // Obligatorio silenciar el video para permitir reproducción automática en navegadores modernos
+                        'mute': 1, 
                         'playsinline': 1,
                         'disablekb': 1
                     },
@@ -466,7 +479,6 @@
 
                     if (data.items && data.items.length > 0) {
                         const videoId = data.items[0].id.videoId;
-                        // Si la radio está encendida, reproduce el video directamente de fondo
                         if (isPlaying) {
                             ytPlayer.loadVideoById({videoId: videoId});
                             ytPlayer.mute();
@@ -491,20 +503,22 @@
                         const currentTrack = data.title;
                         const currentArtist = data.artist && data.artist.name ? data.artist.name : 'PRIMERA STEREO';
                         
-                        // Actualizamos el recuadro de estado con la información de la canción actual
+                        // Reflejar la canción actual directamente en el recuadro amarillo inferior
                         statusElement.innerHTML = `<i class="fas fa-music"></i> <span>${currentArtist} - ${currentTrack}</span>`;
 
-                        // Buscar correspondencia en YouTube en cada actualización
+                        // Sincronizar el video en el fondo
                         searchAndPlayVideo(currentTrack, currentArtist);
                     } else {
-                        statusElement.innerHTML = '<i class="fas fa-broadcast-tower"></i> <span>Al Aire - En Vivo</span>';
+                        if (isPlaying) {
+                            statusElement.innerHTML = '<i class="fas fa-broadcast-tower"></i> <span>Al Aire - En Vivo</span>';
+                        }
                     }
                 } catch (error) {
                     console.error('Error obteniendo metadatos:', error);
                 }
             }
 
-            // Ejecutar consulta de metadatos continua cada 15 segundos
+            // Consulta continua cada 15 segundos
             updateMetadata();
             metadataInterval = setInterval(updateMetadata, 15000);
 
@@ -522,7 +536,7 @@
                 animationId = requestAnimationFrame(simulateVisualizer);
             }
 
-            // Alternar Reproducción en sintonía con el Video
+            // Alternar Reproducción y aplicar clases de ocultamiento visual
             function togglePlayback() {
                 if (!isPlaying) {
                     statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...';
@@ -532,10 +546,10 @@
                     audioPlayer.play().then(() => {
                         isPlaying = true;
                         playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                        mainApp.classList.add('playing-mode'); // Activa el desvanecimiento del recuadro verde
                         simulateVisualizer();
                         updateMetadata();
                         
-                        // Sincronizar encendido de video
                         if (ytPlayer && ytPlayer.playVideo) {
                             ytPlayer.playVideo();
                         }
@@ -545,14 +559,14 @@
                     });
                 } else {
                     audioPlayer.pause();
-                    audioPlayer.src = ''; // Corta el flujo de datos del stream
+                    audioPlayer.src = ''; 
                     isPlaying = false;
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    mainApp.classList.remove('playing-mode'); // Regresa los controles fijos al pausar
                     statusElement.innerHTML = '<i class="fas fa-pause-circle"></i> Pausado';
                     cancelAnimationFrame(animationId);
                     bars.forEach(bar => bar.style.height = '5px');
                     
-                    // Sincronizar pausa de video
                     if (ytPlayer && ytPlayer.pauseVideo) {
                         ytPlayer.pauseVideo();
                     }
@@ -565,6 +579,7 @@
                 audioPlayer.pause();
                 isPlaying = false;
                 playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                mainApp.classList.remove('playing-mode');
                 statusElement.innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizando...';
                 
                 if (ytPlayer && ytPlayer.stopVideo) {
