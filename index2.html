@@ -12,7 +12,6 @@
     <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="16x16" />   
     <link rel="apple-touch-icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" />
     
-    <!-- API de YouTube para control de Iframe -->
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <style>
@@ -45,7 +44,7 @@
             justify-content: space-between;
             align-items: center;
             /* Aquí colocamos tu imagen de fondo bien centrada y adaptada */
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('fondo.png') no-repeat center center;
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('img/fondo.png') no-repeat center center;
 			background-size: 100% 100%;
 			background-attachment: fixed;
             padding: 15px;
@@ -123,6 +122,8 @@
             align-items: center;
             gap: 12px;
             margin: auto 0;
+            min-height: 250px;
+            justify-content: center;
         }
 
         /* Contenedor del video incrustado en el reproductor */
@@ -133,7 +134,6 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            pointer-events: none; /* No interfiere con los clics en los botones */
             opacity: 0.55; /* Opacidad ideal para balancear visibilidad de video y controles */
         }
 
@@ -142,6 +142,24 @@
             height: 100%;
             transform: scale(1.35); /* Zoom sutil para ocultar bordes negros nativos de YT */
             object-fit: cover;
+        }
+
+        /* CONTROLES DEL RECUADRO VERDE: Ocultos por defecto, aparecen en Hover */
+        .hover-control {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Al pasar el mouse encima, muestra los controles para interactuar a voluntad */
+        .player-card:hover .hover-control {
+            opacity: 1;
+            visibility: visible;
         }
 
         .station-title {
@@ -228,52 +246,22 @@
             cursor: pointer;
         }
 
-        /* Estilos de Metadatos */
-        .metadata-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            padding: 8px 12px;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 12px;
-            min-height: 44px;
-            z-index: 3;
-        }
-        .metadata-icon {
-            color: #60a5fa;
-            font-size: 14px;
-        }
-        .metadata-info {
-            text-align: left;
-            flex: 1;
-            overflow: hidden;
-        }
-        .metadata-track {
-            font-size: 13px;
-            font-weight: bold;
-            color: #ffffff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .metadata-artist {
-            font-size: 11px;
-            color: #cbd5e1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Tag de Estado En Vivo */
+        /* Nuevo diseño del recuadro inferior (Reemplazo del Rojo por el Amarillo) */
         .status-badge {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 9pt;
-            color: #e2e8f0;
+            justify-content: center;
+            gap: 8px;
+            font-size: 10pt;
+            font-weight: bold;
+            color: #ffffff;
             z-index: 3;
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 12px;
+            min-height: 44px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         /* Redes Sociales fijas abajo */
@@ -342,68 +330,52 @@
 </head>
 <body>
 
-    <!-- Botón de refrescar en esquina superior derecha -->
     <button class="refresh-btn" id="refresh-btn" title="Refrescar streaming y actualizar metadatos">
         <i class="fas fa-sync-alt"></i>
     </button>
 
     <div class="app-container">
-        <!-- Encabezado -->
         <div class="header-section">
             <h1 class="main-logo">Primera Stereo</h1>
             <div class="sub-logo">Radio Online</div>
         </div>
 
-        <!-- Tarjeta del Reproductor Principal -->
         <div class="player-card" id="radio-container">
-            <!-- Capa del reproductor de video de YouTube de fondo -->
             <div id="player-video-bg" class="player-video-bg"></div>
 
-            <div class="station-title">PRIMERA STEREO RADIO ONLINE</div>
-            <div class="station-subtitle">Música las 24 horas</div>
+            <div class="hover-control">
+                <div class="station-title">PRIMERA STEREO RADIO ONLINE</div>
+                <div class="station-subtitle">Música las 24 horas</div>
 
-            <!-- Ecualizador Visual -->
-            <div class="bars-container" id="radio-visualizer">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-            </div>
+                <div class="bars-container" id="radio-visualizer">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
 
-            <!-- Botón Play/Pause -->
-            <button class="play-btn" id="play-btn">
-                <i class="fas fa-play"></i>
-            </button>
+                <button class="play-btn" id="play-btn">
+                    <i class="fas fa-play"></i>
+                </button>
 
-            <!-- Control de Volumen -->
-            <div class="volume-container">
-                <span><i class="fas fa-volume-down volume-icon"></i></span>
-                <input type="range" min="0" max="1" step="0.01" value="0.7" class="volume-slider" id="volume-slider">
-                <span><i class="fas fa-volume-up volume-icon"></i></span>
-            </div>
-
-            <!-- Contenedor de Metadatos en Vivo -->
-            <div class="metadata-container" id="metadata-container">
-                <i class="fas fa-music metadata-icon"></i>
-                <div class="metadata-info">
-                    <div class="metadata-track" id="metadata-track">Cargando canción...</div>
-                    <div class="metadata-artist" id="metadata-artist">PRIMERA STEREO</div>
+                <div class="volume-container">
+                    <span><i class="fas fa-volume-down volume-icon"></i></span>
+                    <input type="range" min="0" max="1" step="0.01" value="0.7" class="volume-slider" id="volume-slider">
+                    <span><i class="fas fa-volume-up volume-icon"></i></span>
                 </div>
             </div>
 
-            <!-- Estado de conexión -->
             <div class="status-badge" id="status">
                 <i class="fas fa-broadcast-tower"></i> <span>Presiona Play para escuchar</span>
             </div>
         </div>
 
-        <!-- Sección de Footer y Redes Sociales Reales -->
         <div class="footer-section">
             <div class="social-title">Síguenos en nuestras redes sociales</div>
             <div class="social-icons">
@@ -439,10 +411,6 @@
             const refreshBtn = document.getElementById('refresh-btn');
             const visualizer = document.getElementById('radio-visualizer');
             const bars = visualizer.querySelectorAll('.bar');
-            
-            // Elementos para Metadatos
-            const metadataTrack = document.getElementById('metadata-track');
-            const metadataArtist = document.getElementById('metadata-artist');
             
             // URLs de Streaming y Metadatos de laut.fm
             const streamUrl = 'https://primerastereo.stream.laut.fm/primerastereo';
@@ -523,14 +491,13 @@
                         const currentTrack = data.title;
                         const currentArtist = data.artist && data.artist.name ? data.artist.name : 'PRIMERA STEREO';
                         
-                        metadataTrack.textContent = currentTrack;
-                        metadataArtist.textContent = currentArtist;
+                        // Actualizamos el recuadro de estado con la información de la canción actual
+                        statusElement.innerHTML = `<i class="fas fa-music"></i> <span>${currentArtist} - ${currentTrack}</span>`;
 
                         // Buscar correspondencia en YouTube en cada actualización
                         searchAndPlayVideo(currentTrack, currentArtist);
                     } else {
-                        metadataTrack.textContent = 'Música las 24 Horas';
-                        metadataArtist.textContent = 'PRIMERA STEREO';
+                        statusElement.innerHTML = '<i class="fas fa-broadcast-tower"></i> <span>Al Aire - En Vivo</span>';
                     }
                 } catch (error) {
                     console.error('Error obteniendo metadatos:', error);
@@ -565,7 +532,6 @@
                     audioPlayer.play().then(() => {
                         isPlaying = true;
                         playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                        statusElement.innerHTML = '<i class="fas fa-broadcast-tower"></i> Al Aire - En Vivo';
                         simulateVisualizer();
                         updateMetadata();
                         
