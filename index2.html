@@ -9,7 +9,7 @@
     <link rel="icon" type="image/ico" href="https://primerastereo.netlify.app/favicon.png" sizes="512x512">
     <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="192x192" />
     <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="32x32" /> 
-    <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="16x16" />   
+    <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="16x16" />    
     <link rel="apple-touch-icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" />
     
     <script src="https://www.youtube.com/iframe_api"></script>
@@ -250,7 +250,7 @@
             cursor: pointer;
         }
 
-        /* BASE DEL REPRODUCITOR (RECUADRO AMARILLO SUSTITUYENDO AL ROJO) */
+        /* BASE DEL REPRODUCITOR (RECUADRO AMARILLO) */
         .status-badge {
             display: flex;
             align-items: center;
@@ -461,34 +461,73 @@
                     events: {
                         'onReady': function(event) {
                             event.target.mute();
+                        },
+                        'onError': function(event) {
+                            // Si ocurre un error de reproducción (como el bloqueo de inserción), salta al plan B
+                            console.warn("El video actual falló o está bloqueado. Ejecutando Plan B...");
+                            fallbackSearch();
                         }
                     }
                 });
             };
 
-            // Buscar y reproducir el clip de video de la canción actual
+            // Guarda las variables globales del artista actual para el plan de respaldo
+            let currentArtistGlobal = "";
+            let currentTrackGlobal = "";
+
+            // Buscar y reproducir el clip de video de la canción actual con filtros anti-bloqueo
             async function searchAndPlayVideo(track, artist) {
-                const query = `${artist} ${track}`;
+                // Filtramos palabras que ensucian la búsqueda exacta en la API de YouTube
+                let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
+                const query = `${artist} ${cleanTrack} lyric`; // Plan A: Forzar "lyric" para saltar bloqueos VEVO/Discográficas
+                
                 if (query === lastVideoQuery || !ytPlayer || !ytPlayer.loadVideoById) return;
                 lastVideoQuery = query;
+                currentArtistGlobal = artist;
+                currentTrackGlobal = cleanTrack;
 
                 try {
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(query)}&type=video&key=${YOUTUBE_API_KEY}`;
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
 
                     if (data.items && data.items.length > 0) {
                         const videoId = data.items[0].id.videoId;
-                        if (isPlaying) {
-                            ytPlayer.loadVideoById({videoId: videoId});
-                            ytPlayer.mute();
-                            ytPlayer.playVideo();
-                        } else {
-                            ytPlayer.cueVideoById({videoId: videoId});
-                        }
+                        executeVideoLoad(videoId);
+                    } else {
+                        // Si no encuentra nada con "lyric", intenta una búsqueda más limpia
+                        fallbackSearch();
                     }
                 } catch (error) {
                     console.error('Error buscando video en YouTube:', error);
+                }
+            }
+
+            // Plan B de emergencia: Busca alternativas en vivo o instrumentales que no estén bloqueadas
+            async function fallbackSearch() {
+                try {
+                    const queryAlternative = `${currentArtistGlobal} ${currentTrackGlobal} en vivo`;
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(queryAlternative)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
+                    const response = await fetch(searchUrl);
+                    const data = await response.json();
+
+                    if (data.items && data.items.length > 0) {
+                        const videoId = data.items[0].id.videoId;
+                        executeVideoLoad(videoId);
+                    }
+                } catch (err) {
+                    console.error('Error en el fallback de YouTube:', err);
+                }
+            }
+
+            // Inyecta el ID del video de forma segura en el reproductor interno
+            function executeVideoLoad(videoId) {
+                if (isPlaying) {
+                    ytPlayer.loadVideoById({videoId: videoId});
+                    ytPlayer.mute();
+                    ytPlayer.playVideo();
+                } else {
+                    ytPlayer.cueVideoById({videoId: videoId});
                 }
             }
             
@@ -503,7 +542,7 @@
                         const currentTrack = data.title;
                         const currentArtist = data.artist && data.artist.name ? data.artist.name : 'PRIMERA STEREO';
                         
-                        // Reflejar la canción actual directamente en el recuadro amarillo inferior
+                        // Reflejar la canción actual directamente en el recuadro inferior
                         statusElement.innerHTML = `<i class="fas fa-music"></i> <span>${currentArtist} - ${currentTrack}</span>`;
 
                         // Sincronizar el video en el fondo
