@@ -102,23 +102,23 @@
             z-index: 2;
             width: 100%;
             max-width: 340px;
-            background: rgba(0, 0, 0, 0.55);
+            background: rgba(0, 0, 0, 0.65);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 20px;
             padding: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 12px;
             margin: auto 0;
-            min-height: 300px;
+            min-height: 320px;
             justify-content: space-between;
         }
 
-        /* Capa de la carátula de fondo */
+        /* CORRECCIÓN: Carátula NÍTIDA sin desenfoque (blur eliminado) */
         .album-art-bg {
             position: absolute;
             top: 0;
@@ -128,12 +128,11 @@
             z-index: 1;
             background-size: cover;
             background-position: center;
-            filter: blur(4px);
-            opacity: 0.5;
-            transition: background-image 0.6s ease-in-out;
+            opacity: 0.85;
+            transition: background-image 0.5s ease-in-out;
         }
 
-        /* El video ahora está visible por defecto en segundo plano */
+        /* Capa de video flotando arriba de la carátula */
         .player-video-bg {
             position: absolute;
             top: 0;
@@ -142,13 +141,13 @@
             height: 100%;
             z-index: 2; 
             pointer-events: none; 
-            opacity: 0.65;
-            transition: opacity 0.4s ease;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
         }
 
-        /* Si falla, añadimos una clase para ocultarlo dinámicamente */
-        .player-video-bg.hidden {
-            opacity: 0 !important;
+        /* Clase activa para mostrar el video sólo si es totalmente válido */
+        .player-video-bg.visible {
+            opacity: 0.70;
         }
 
         .player-video-bg iframe {
@@ -159,6 +158,7 @@
             pointer-events: none;
         }
 
+        /* Escudo transparente para proteger los controles táctiles del iframe */
         .video-shield {
             position: absolute;
             top: 0;
@@ -177,16 +177,6 @@
             flex-direction: column;
             align-items: center;
             gap: 12px;
-            opacity: 1;
-            transition: opacity 0.4s ease;
-        }
-
-        .app-container.playing-mode .hover-control {
-            opacity: 0;
-        }
-
-        .player-card:hover .hover-control {
-            opacity: 1 !important;
         }
 
         .station-title {
@@ -194,12 +184,14 @@
             font-weight: bold;
             color: #ffffff;
             letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
         .station-subtitle {
             font-size: 9pt;
-            color: #a0aec0;
+            color: #e2e8f0;
             margin-top: -5px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
 
         .bars-container {
@@ -214,7 +206,7 @@
         .bar {
             width: 4px;
             height: 5px;
-            background-color: #2563eb;
+            background-color: #00d4ff;
             border-radius: 2px;
             transition: height 0.2s ease;
         }
@@ -233,6 +225,7 @@
             box-shadow: 0 6px 15px rgba(0, 198, 255, 0.4);
             color: white;
             font-size: 24px;
+            z-index: 6;
         }
 
         .volume-container {
@@ -244,8 +237,9 @@
         }
 
         .volume-icon {
-            color: #b0b3b8;
+            color: #ffffff;
             font-size: 14px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
         }
 
         .volume-slider {
@@ -254,7 +248,7 @@
             appearance: none;
             height: 5px;
             border-radius: 3px;
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.4);
             outline: none;
         }
 
@@ -279,10 +273,10 @@
             z-index: 6;
             width: 100%;
             padding: 10px 12px;
-            background: rgba(0, 0, 0, 0.75);
+            background: rgba(0, 0, 0, 0.8);
             border-radius: 12px;
             min-height: 44px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             margin-top: 5px;
         }
         
@@ -341,7 +335,7 @@
         }
 
         @media (max-height: 580px) {
-            .player-card { padding: 12px; gap: 8px; min-height: 250px; }
+            .player-card { padding: 12px; gap: 8px; min-height: 260px; }
             .main-logo { font-size: 18pt; }
             .play-btn { width: 52px; height: 52px; font-size: 18px; }
             .bars-container { height: 25px; }
@@ -401,7 +395,7 @@
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
             </div>
             <div class="copyright">
-                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
+                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO ONLINE
             </div>
         </div>
     </div>
@@ -434,7 +428,7 @@
             
             audioPlayer.volume = volumeSlider.value;
             
-            // Inyección controlada de la API de YouTube
+            // Carga asíncrona de la API Iframe de YouTube
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -444,7 +438,7 @@
                 ytPlayer = new YT.Player('player-video-bg', {
                     height: '100%',
                     width: '100%',
-                    videoId: 'Jf3v7H7G-bU', // Video inicial dummy estable
+                    videoId: 'Jf3v7H7G-bU', 
                     playerVars: {
                         'autoplay': 1,
                         'controls': 0,
@@ -457,29 +451,30 @@
                     events: {
                         'onReady': function(event) {
                             event.target.mute();
-                            event.target.playVideo(); // Forzamos reproducción en frío al nacer
                             isPlayerReady = true;
                             if (currentTrackGlobal && currentArtistGlobal) {
                                 searchAndPlayVideo(currentTrackGlobal, currentArtistGlobal);
                             }
                         },
                         'onStateChange': function(event) {
+                            // Cambiamos a visible SOLAMENTE cuando el video ya está rodando de verdad
                             if (event.data === YT.PlayerState.PLAYING) {
-                                videoContainer.classList.remove('hidden'); // Asegura visibilidad activa
+                                videoContainer.classList.add('visible'); 
                             }
                             if (event.data === YT.PlayerState.ENDED) {
                                 ytPlayer.playVideo(); 
                             }
                         },
                         'onError': function(event) {
-                            console.warn("Fallo de reproducción. Ocultando capa de video para ver carátula.");
-                            videoContainer.classList.add('hidden');
+                            // Si el video falla (derechos de autor), quitamos el video y queda la carátula limpia
+                            console.warn("Video bloqueado o inaccesible. Mostrando carátula nítida.");
+                            videoContainer.classList.remove('visible');
                         }
                     }
                 });
             };
 
-            // API de iTunes para buscar carátulas automáticamente
+            // iTunes API para traer arte limpio y en alta resolución
             async function getAlbumArt(track, artist) {
                 try {
                     const query = `${artist} ${track}`;
@@ -490,7 +485,8 @@
                         let highResArt = data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
                         albumArtBg.style.backgroundImage = `url('${highResArt}')`;
                     } else {
-                        albumArtBg.style.backgroundImage = "none";
+                        // Fondo por defecto elegante si iTunes no encuentra nada
+                        albumArtBg.style.backgroundImage = "radial-gradient(circle, #1a1c23 0%, #0b0c10 100%)";
                     }
                 } catch (e) {
                     console.error("Error carátula:", e);
@@ -498,12 +494,16 @@
             }
 
             async function searchAndPlayVideo(track, artist) {
+                // Limpieza de cadenas de caracteres extrañas
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
-                const query = `${artist} ${cleanTrack} live concert festival`; 
+                
+                // MEJORA ESTRATÉGICA: Buscamos versiones "audio", "lyrics" o "cover" para saltar bloqueos de copyright
+                const query = `${artist} ${cleanTrack} audio lyrics`; 
                 
                 currentArtistGlobal = artist;
                 currentTrackGlobal = cleanTrack;
 
+                // Actualizar carátula HD inmediatamente en paralelo
                 getAlbumArt(cleanTrack, artist);
 
                 if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
@@ -511,7 +511,7 @@
                 lastVideoQuery = query;
 
                 try {
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=4&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
 
@@ -519,24 +519,24 @@
                         let selectedVideoId = data.items[0].id.videoId;
                         executeVideoLoad(selectedVideoId);
                     } else {
-                        videoContainer.classList.add('hidden');
+                        videoContainer.classList.remove('visible');
                     }
                 } catch (error) {
                     console.error('Error YouTube API:', error);
-                    videoContainer.classList.add('hidden');
+                    videoContainer.classList.remove('visible');
                 }
             }
 
-            // MODIFICACIÓN CRUCIAL: Forzar la carga y ejecución instantánea del video SIEMPRE (esté o no la radio en Play)
             function executeVideoLoad(videoId) {
                 if (!isPlayerReady || !ytPlayer) return;
                 try {
+                    videoContainer.classList.remove('visible'); // Ocultamos durante la transición para que no parpadee gris
                     ytPlayer.loadVideoById({videoId: videoId});
                     ytPlayer.mute();
                     ytPlayer.playVideo();
-                    videoContainer.classList.remove('hidden');
                 } catch (err) {
                     console.error("Error inyectando video:", err);
+                    videoContainer.classList.remove('visible');
                 }
             }
             
@@ -563,7 +563,7 @@
             }
 
             updateMetadata();
-            metadataInterval = setInterval(updateMetadata, 14000);
+            metadataInterval = setInterval(updateMetadata, 15000);
 
             function simulateVisualizer() {
                 if (!isPlaying) {
@@ -573,7 +573,7 @@
                 bars.forEach(bar => {
                     const randomHeight = Math.floor(Math.random() * 27) + 5;
                     bar.style.height = `${randomHeight}px`;
-                    bar.style.background = 'linear-gradient(to top, #2563eb, #00d4ff)';
+                    bar.style.background = 'linear-gradient(to top, #0072ff, #00d4ff)';
                 });
                 animationId = requestAnimationFrame(simulateVisualizer);
             }
@@ -587,9 +587,7 @@
                     audioPlayer.play().then(() => {
                         isPlaying = true;
                         playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                        mainApp.classList.add('playing-mode');
                         simulateVisualizer();
-                        
                         lastVideoQuery = ""; 
                         updateMetadata();
                     }).catch(error => {
@@ -601,7 +599,6 @@
                     audioPlayer.src = ''; 
                     isPlaying = false;
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                    mainApp.classList.remove('playing-mode');
                     statusElement.innerHTML = '<i class="fas fa-pause-circle"></i> Pausado';
                     cancelAnimationFrame(animationId);
                     bars.forEach(bar => bar.style.height = '5px');
@@ -613,7 +610,6 @@
                 audioPlayer.pause();
                 isPlaying = false;
                 playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                mainApp.classList.remove('playing-mode');
                 statusElement.innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizando...';
                 
                 setTimeout(() => {
