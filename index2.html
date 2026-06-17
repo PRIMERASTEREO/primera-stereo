@@ -96,7 +96,7 @@
             margin-top: -2px;
         }
 
-        /* CONTENEDOR CENTRAL FIJO AL RETO */
+        /* CARD CENTRAL */
         .player-card {
             position: relative;
             overflow: hidden;
@@ -111,7 +111,7 @@
             height: 340px;
         }
 
-        /* Capa de carátula base */
+        /* Capa de carátula principal */
         .album-art-bg {
             position: absolute;
             top: 0;
@@ -122,9 +122,10 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+            transition: opacity 0.4s ease;
         }
 
-        /* Capa del contenedor de Video */
+        /* Contenedor del video */
         .player-video-bg {
             position: absolute;
             top: 0;
@@ -138,44 +139,64 @@
             pointer-events: none;
         }
         
-        /* Cuando el video está activo, pasa al frente inmediatamente por CSS */
-        .player-video-bg.video-active {
+        /* Modificadores de estado dinámicos gestionados por JS */
+        .player-card.video-mode .player-video-bg {
             z-index: 4;
             opacity: 1;
+        }
+        .player-card.video-mode .album-art-bg {
+            opacity: 0;
         }
 
         .player-video-bg iframe {
             width: 100%;
             height: 100%;
             border: none;
-            transform: scale(1.4); /* Zoom nativo para rellenar el aspecto cuadrado */
+            transform: scale(1.42); /* Compensación de aspecto para rellenar el marco */
             object-fit: cover;
         }
 
-        /* Capa superior absoluta para controles del hover */
+        /* CAPA HOVER MEJORADA: Visible parcialmente por defecto para mostrar controles */
         .hover-control {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 5; /* Siempre por encima de carátulas e iframes */
+            z-index: 5; 
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 16px;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            opacity: 0;
-            transition: opacity 0.4s ease;
+            background: rgba(0, 0, 0, 0.4); /* Fondo más suave al inicio */
+            transition: background 0.4s ease, opacity 0.4s ease;
         }
 
+        /* Interacción del Hover completa */
         .player-card:hover .hover-control,
         .player-card:active .hover-control {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        /* Al cargar o en modo carátula, forzamos que los textos de fondo se oculten para no ensuciar el logo */
+        .player-card.art-mode .station-title,
+        .player-card.art-mode .station-subtitle,
+        .player-card.art-mode .bars-container,
+        .player-card.art-mode .volume-container {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Los elementos informativos se revelan limpiamente al pasar el cursor */
+        .player-card:hover .station-title, .player-card:hover .station-subtitle,
+        .player-card:hover .bars-container, .player-card:hover .volume-container,
+        .player-card:active .station-title, .player-card:active .station-subtitle,
+        .player-card:active .bars-container, .player-card:active .volume-container {
             opacity: 1;
+            pointer-events: auto;
         }
 
         .station-title {
@@ -211,25 +232,28 @@
             transition: height 0.2s ease;
         }
 
+        /* BOTÓN PLAY: Diseñado con alta prioridad visual */
         .play-btn {
-            width: 65px;
-            height: 65px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #0072ff, #00c6ff);
+            background: linear-gradient(135deg, #ff7b00, #ffae00);
             border: none;
             outline: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 15px rgba(0, 198, 255, 0.5);
+            box-shadow: 0 6px 20px rgba(255, 123, 0, 0.6);
             color: white;
-            font-size: 24px;
-            transition: transform 0.2s ease;
+            font-size: 26px;
+            transition: transform 0.2s ease, background 0.3s ease;
+            z-index: 6;
+            pointer-events: auto !important; /* Siempre clicable */
         }
         
         .play-btn:hover {
-            transform: scale(1.08);
+            transform: scale(1.1);
         }
 
         .volume-container {
@@ -366,7 +390,7 @@
             <div class="sub-logo">Radio Video Online</div>
         </div>
 
-        <div class="player-card" id="radio-container">
+        <div class="player-card art-mode" id="player-card">
             <div id="album-art-bg" class="album-art-bg"></div>
             <div id="player-video-bg" class="player-video-bg"></div>
 
@@ -400,7 +424,7 @@
             <div class="social-icons">
                 <a href="https://www.facebook.com/PrimeraStereoRadio" class="social-btn facebook" target="_blank"><i class="fab fa-facebook-f"></i></a>
                 <a href="https://www.instagram.com/Primera.Stereo/" class="social-btn instagram" target="_blank"><i class="fab fa-instagram"></i></a>
-                <a href="https://www.tiktok.com/@primerastereo" class="social-btn tiktok" target="_blank"><i class="fab fa-tiktok"></i></a>
+                <a href="https://www.tiktok.com/@primerastereo" class="social-btn tiktok" target="_blank"><i class="fab fa-tiktok text-dark"></i></a>
                 <a href="https://www.youtube.com/@PrimeraStereo" class="social-btn youtube" target="_blank"><i class="fab fa-youtube"></i></a>
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
             </div>
@@ -420,12 +444,11 @@
             const bars = document.querySelectorAll('#radio-visualizer .bar');
             const albumArtBg = document.getElementById('album-art-bg');
             const videoContainer = document.getElementById('player-video-bg');
+            const playerCard = document.getElementById('player-card');
             
             const streamUrl = 'https://primerastereo.stream.laut.fm/primerastereo';
             const metadataApiUrl = 'https://api.laut.fm/station/primerastereo/current_song';
             const defaultLogoUrl = 'https://primera-stereo.netlify.app/11.png';
-            
-            const YOUTUBE_API_KEY = "AIzaSyCxU2onHMctFbLj0UKLt-SHjw8V80bmGgg";
             
             let lastVideoQuery = "";
             let isPlaying = false;
@@ -453,58 +476,53 @@
                 return false;
             }
 
-            async function processTrackMedia(track, artist) {
+            function processTrackMedia(track, artist) {
                 const trackUpper = track.toUpperCase();
                 const artistUpper = artist.toUpperCase();
 
-                // Filtro estricto para Jingles e IDs de estación
+                // Filtro para jingles o identificaciones de la estación
                 if (trackUpper.includes("JINGLE") || trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO")) {
-                    videoContainer.classList.remove('video-active');
+                    playerCard.classList.remove('video-mode');
+                    playerCard.classList.add('art-mode');
                     videoContainer.innerHTML = '';
                     albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
                     lastVideoQuery = "STATION_IDLE_LOGO";
                     return;
                 }
 
-                await getAlbumArt(track, artist);
+                getAlbumArt(track, artist);
 
-                // Exclusión explícita de "lyrics" o "letra" para traer exclusivamente videos oficiales o videoclips musicales
+                // Exclusión explícita de "lyrics" o "letra" para videoclips musicales oficiales
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
-                const query = `${artist} ${cleanTrack} official music video -lyrics -letra -lyric`;
+                let cleanArtist = artist.trim();
                 
-                if (query === lastVideoQuery) return;
-                lastVideoQuery = query;
+                // Generamos un query limpio para la URL nativa de incrustación de YouTube
+                const rawSearchQuery = `${cleanArtist} ${cleanTrack} official music video`;
+                if (rawSearchQuery === lastVideoQuery) return;
+                lastVideoQuery = rawSearchQuery;
 
-                // Si la radio está en pausa, no cargamos videos innecesariamente
-                if (!isPlaying) return;
-
-                try {
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
-                    const response = await fetch(searchUrl);
-                    const data = await response.json();
-
-                    if (data.items && data.items.length > 0) {
-                        const videoId = data.items[0].id.videoId;
-                        
-                        // INYECCIÓN DIRECTA DE IFRAME HTML5 CON PARÁMETROS NATIVOS FORZADOS
-                        // Usamos allow="autoplay" de forma explícita para obligar al navegador a renderizarlo
-                        videoContainer.innerHTML = `
-                            <iframe 
-                                src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&rel=0&loop=1&playlist=${videoId}&showinfo=0&iv_load_policy=3&playsinline=1" 
-                                allow="autoplay; encrypted-media" 
-                                frameborder="0">
-                            </iframe>`;
-                        
-                        // Se muestra la capa de inmediato sin esperar promesas de JS
-                        videoContainer.classList.add('video-active');
-                    } else {
-                        videoContainer.classList.remove('video-active');
-                        videoContainer.innerHTML = '';
-                    }
-                } catch (error) {
-                    console.error('Error buscando video:', error);
-                    videoContainer.classList.remove('video-active');
+                // Si la reproducción no está activa, mantenemos la interfaz en modo carátula limpia
+                if (!isPlaying) {
+                    playerCard.classList.remove('video-mode');
+                    playerCard.classList.add('art-mode');
+                    return;
                 }
+
+                // INYECCIÓN DE VIDEO DIRECTA POR URL COMPILADA SIN DEPENDER DE FETCH API KEYS
+                // Cambiamos el modo de renderizado a "/embed/videoseries?listType=search&list=..."
+                // Esto fuerza a la plataforma de YouTube a buscar e inicializar de forma nativa el clip musical al frente
+                const embeddedSearchUrl = `https://www.youtube.com/embed/videoseries?listType=search&list=${encodeURIComponent(rawSearchQuery)}&autoplay=1&mute=1&controls=0&rel=0&loop=1&showinfo=0&iv_load_policy=3&playsinline=1`;
+                
+                videoContainer.innerHTML = `
+                    <iframe 
+                        src="${embeddedSearchUrl}" 
+                        allow="autoplay; encrypted-media" 
+                        frameborder="0">
+                    </iframe>`;
+                
+                // Intercambio inmediato de capas por CSS
+                playerCard.classList.remove('art-mode');
+                playerCard.classList.add('video-mode');
             }
             
             async function updateMetadata() {
@@ -540,7 +558,7 @@
                 bars.forEach(bar => {
                     const randomHeight = Math.floor(Math.random() * 27) + 5;
                     bar.style.height = `${randomHeight}px`;
-                    bar.style.background = 'linear-gradient(to top, #0072ff, #00d4ff)';
+                    bar.style.background = 'linear-gradient(to top, #ff7b00, #ffae00)';
                 });
                 animationId = requestAnimationFrame(simulateVisualizer);
             }
@@ -554,6 +572,8 @@
                     audioPlayer.play().then(() => {
                         isPlaying = true;
                         playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                        playBtn.style.background = 'linear-gradient(135deg, #0072ff, #00d4ff)';
+                        playBtn.style.boxShadow = '0 6px 20px rgba(0, 114, 255, 0.6)';
                         simulateVisualizer();
                         lastVideoQuery = ""; 
                         updateMetadata();
@@ -566,10 +586,13 @@
                     audioPlayer.src = ''; 
                     isPlaying = false;
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    playBtn.style.background = 'linear-gradient(135deg, #ff7b00, #ffae00)';
+                    playBtn.style.boxShadow = '0 6px 20px rgba(255, 123, 0, 0.6)';
                     statusElement.innerHTML = '<i class="fas fa-pause-circle"></i> Pausado';
                     cancelAnimationFrame(animationId);
                     bars.forEach(bar => bar.style.height = '5px');
-                    videoContainer.classList.remove('video-active');
+                    playerCard.classList.remove('video-mode');
+                    playerCard.classList.add('art-mode');
                     videoContainer.innerHTML = '';
                 }
             }
@@ -579,6 +602,7 @@
                 audioPlayer.pause();
                 isPlaying = false;
                 playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                playBtn.style.background = 'linear-gradient(135deg, #ff7b00, #ffae00)';
                 statusElement.innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizando...';
                 
                 setTimeout(() => {
