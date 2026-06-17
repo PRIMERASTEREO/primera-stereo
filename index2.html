@@ -378,7 +378,7 @@
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
             </div>
             <div class="copyright">
-                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO ONLINE
+                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
             </div>
         </div>
     </div>
@@ -398,7 +398,7 @@
             
             const YOUTUBE_API_KEY = "AIzaSyB587PR4Xec8bS3VpFu7si5lYZwYweyijQ";
             let ytPlayer = null;
-            let isPlayerReady = false; // El interruptor maestro de seguridad
+            let isPlayerReady = false; 
             let lastVideoQuery = "";
             let currentArtistGlobal = "";
             let currentTrackGlobal = "";
@@ -410,17 +410,19 @@
             
             audioPlayer.volume = volumeSlider.value;
             
-            // BLINDAJE ASÍNCRONO DE LA API: Inyección controlada del script
+            // Inyección asíncrona estándar del script de YouTube
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
+            // INICIALIZACIÓN CONTROLADA: Cargamos un video base estable de YouTube (un video de olas o similar totalmente libre de copyright agresivo)
+            // Esto evita las pantallas grises iniciales y fallas de ID de reproducción tras un F5.
             window.onYouTubeIframeAPIReady = function() {
                 ytPlayer = new YT.Player('player-video-bg', {
                     height: '100%',
                     width: '100%',
-                    videoId: '', 
+                    videoId: 'Jf3v7H7G-bU', // Video inicial dummy y súper estable para preparar el reproductor
                     playerVars: {
                         'autoplay': 1,
                         'controls': 0,
@@ -433,9 +435,9 @@
                     events: {
                         'onReady': function(event) {
                             event.target.mute();
-                            isPlayerReady = true; // Habilitamos la comunicación con el reproductor
+                            isPlayerReady = true; 
                             
-                            // Si la API de metadatos ya traía una canción en cola, la disparamos ahora de forma segura
+                            // Si los metadatos se cargaron primero en Netlify, procesamos la canción real ahora mismo
                             if (currentTrackGlobal && currentArtistGlobal) {
                                 searchAndPlayVideo(currentTrackGlobal, currentArtistGlobal);
                             }
@@ -446,7 +448,7 @@
                             }
                         },
                         'onError': function(event) {
-                            console.warn("Error interno en reproducción. Buscando alternativa en vivo...");
+                            console.warn("Fallo detectado. Saltando a búsqueda secundaria...");
                             fallbackSearch();
                         }
                     }
@@ -460,10 +462,10 @@
                 currentArtistGlobal = artist;
                 currentTrackGlobal = cleanTrack;
 
-                // PROTECCIÓN CRUCIAL: Si YouTube no está listo en Netlify, retenemos los datos y abortamos ejecución temporal
+                // Retener datos si el reproductor no está inicializado
                 if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
                 
-                // Si la consulta es idéntica, no interrumpimos el video actual
+                // Si el tema es el mismo, no hacemos nada para evitar saltos bruscos
                 if (query === lastVideoQuery) return;
                 
                 lastVideoQuery = query;
@@ -526,13 +528,13 @@
             function executeVideoLoad(videoId) {
                 if (!isPlayerReady || !ytPlayer) return;
                 try {
-                    // Si el usuario ya dio PLAY a la radio, forzamos carga instantánea en caliente
+                    // Si la radio está encendida, forzamos la reproducción en caliente
                     if (isPlaying) {
                         ytPlayer.loadVideoById({videoId: videoId});
                         ytPlayer.mute();
                         ytPlayer.playVideo();
                     } else {
-                        // Si está cargando en frío por F5, solo encolamos el video de fondo en espera
+                        // Si está pausada o cargando de cero, dejamos el video en espera
                         ytPlayer.cueVideoById({videoId: videoId});
                     }
                 } catch (err) {
@@ -562,7 +564,6 @@
                 }
             }
 
-            // Arrancamos metadatos de inmediato
             updateMetadata();
             metadataInterval = setInterval(updateMetadata, 15000);
 
@@ -591,7 +592,7 @@
                         mainApp.classList.add('playing-mode');
                         simulateVisualizer();
                         
-                        // Forzamos reseteo del query interno al pulsar play
+                        // Forzamos actualización limpia de metadatos al arrancar
                         lastVideoQuery = ""; 
                         updateMetadata();
                         
