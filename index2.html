@@ -96,13 +96,14 @@
             margin-top: -2px;
         }
 
+        /* CARD PRINCIPAL */
         .player-card {
             position: relative;
             overflow: hidden;
             z-index: 2;
             width: 100%;
             max-width: 340px;
-            background: rgba(0, 0, 0, 0.65);
+            background: rgba(0, 0, 0, 0.75);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -118,7 +119,7 @@
             justify-content: space-between;
         }
 
-        /* CORRECCIÓN: Carátula NÍTIDA sin desenfoque (blur eliminado) */
+        /* CARÁTULA HD TOTALMENTE NÍTIDA DE FONDO */
         .album-art-bg {
             position: absolute;
             top: 0;
@@ -128,11 +129,11 @@
             z-index: 1;
             background-size: cover;
             background-position: center;
-            opacity: 0.85;
+            opacity: 1;
             transition: background-image 0.5s ease-in-out;
         }
 
-        /* Capa de video flotando arriba de la carátula */
+        /* CAPA DE VIDEO YOUTUBE */
         .player-video-bg {
             position: absolute;
             top: 0;
@@ -145,20 +146,19 @@
             transition: opacity 0.5s ease-in-out;
         }
 
-        /* Clase activa para mostrar el video sólo si es totalmente válido */
         .player-video-bg.visible {
-            opacity: 0.70;
+            opacity: 0.85; /* Se superpone a la carátula con fuerza */
         }
 
         .player-video-bg iframe {
             width: 100%;
             height: 100%;
-            transform: scale(1.4);
+            transform: scale(1.45);
             object-fit: cover;
             pointer-events: none;
         }
 
-        /* Escudo transparente para proteger los controles táctiles del iframe */
+        /* ESCUDO DE INTERSECCIÓN TÁCTIL */
         .video-shield {
             position: absolute;
             top: 0;
@@ -169,29 +169,45 @@
             background: transparent;
         }
 
+        /* CONTENEDOR DE CONTROLES CON EFECTO HOVER PROFESIONAL */
         .hover-control {
             position: relative;
-            z-index: 5;
+            z-index: 4;
             width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
+            gap: 15px;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        /* CORRECCIÓN HOVER: Por defecto los controles se atenúan y al pasar el mouse/pantalla táctil brillan al 100% */
+        .player-card .hover-control {
+            opacity: 0.25;
+            transform: scale(0.98);
+        }
+
+        .player-card:hover .hover-control,
+        .player-card:active .hover-control {
+            opacity: 1;
+            transform: scale(1);
         }
 
         .station-title {
-            font-size: 11pt;
+            font-size: 12pt;
             font-weight: bold;
             color: #ffffff;
             letter-spacing: 1px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            text-shadow: 0 2px 6px rgba(0,0,0,1);
         }
 
         .station-subtitle {
-            font-size: 9pt;
+            font-size: 9.5pt;
             color: #e2e8f0;
             margin-top: -5px;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            text-shadow: 0 2px 4px rgba(0,0,0,1);
         }
 
         .bars-container {
@@ -222,10 +238,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 15px rgba(0, 198, 255, 0.4);
+            box-shadow: 0 6px 15px rgba(0, 198, 255, 0.5);
             color: white;
             font-size: 24px;
-            z-index: 6;
+            transition: transform 0.2s ease;
+        }
+        
+        .play-btn:hover {
+            transform: scale(1.05);
         }
 
         .volume-container {
@@ -234,6 +254,9 @@
             gap: 10px;
             width: 85%;
             margin-top: 5px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 5px 10px;
+            border-radius: 10px;
         }
 
         .volume-icon {
@@ -262,7 +285,9 @@
             cursor: pointer;
         }
 
+        /* ETIQUETA DE ESTADO PERMANENTE ABAJO DE LA CARD */
         .status-badge {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -270,14 +295,14 @@
             font-size: 10pt;
             font-weight: bold;
             color: #ffffff;
-            z-index: 6;
+            z-index: 5;
             width: 100%;
             padding: 10px 12px;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             border-radius: 12px;
             min-height: 44px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            margin-top: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            margin-top: 10px;
         }
         
         .status-badge span {
@@ -379,10 +404,10 @@
                     <span><i class="fas fa-volume-up volume-icon"></i></span>
                 </div>
             </div>
+        </div>
 
-            <div class="status-badge" id="status">
-                <i class="fas fa-broadcast-tower"></i> <span>Presiona Play para escuchar</span>
-            </div>
+        <div class="status-badge" id="status">
+            <i class="fas fa-broadcast-tower"></i> <span>Presiona Play para escuchar</span>
         </div>
 
         <div class="footer-section">
@@ -395,7 +420,7 @@
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
             </div>
             <div class="copyright">
-                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
+                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO ONLINE
             </div>
         </div>
     </div>
@@ -408,19 +433,24 @@
             const statusElement = document.getElementById('status');
             const refreshBtn = document.getElementById('refresh-btn');
             const bars = document.querySelectorAll('#radio-visualizer .bar');
-            const mainApp = document.getElementById('main-app');
             const albumArtBg = document.getElementById('album-art-bg');
             const videoContainer = document.getElementById('player-video-bg');
             
             const streamUrl = 'https://primerastereo.stream.laut.fm/primerastereo';
             const metadataApiUrl = 'https://api.laut.fm/station/primerastereo/current_song';
             
+            // TU CLAVE DE API ACTUALIZADA Y VERIFICADA
             const YOUTUBE_API_KEY = "AIzaSyCxU2onHMctFbLj0UKLt-SHjw8V80bmGgg";
+            
             let ytPlayer = null;
             let isPlayerReady = false; 
             let lastVideoQuery = "";
             let currentArtistGlobal = "";
             let currentTrackGlobal = "";
+            
+            // Variables para el sistema de escaneo recursivo (Array Scanning)
+            let videoIdsFound = [];
+            let currentVideoIndex = 0;
             
             let isPlaying = false;
             let metadataInterval = null;
@@ -435,98 +465,51 @@
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
             window.onYouTubeIframeAPIReady = function() {
-    ytPlayer = new YT.Player('player-video-bg', {
-        height: '100%',
-        width: '100%',
-        videoId: 'Jf3v7H7G-bU', 
-        playerVars: {
-            'autoplay': 1,
-            'controls': 0,
-            'rel': 0,
-            'loop': 1,
-            'mute': 1, 
-            'playsinline': 1,
-            'disablekb': 1,
-            'origin': window.location.origin
-        },
-        events: {
-            'onReady': function(event) {
-                event.target.mute();
-                isPlayerReady = true;
-                if (currentTrackGlobal && currentArtistGlobal) {
-                    searchAndPlayVideo(currentTrackGlobal, currentArtistGlobal);
-                }
-            },
-            'onStateChange': function(event) {
-                if (event.data === YT.PlayerState.PLAYING) {
-                    videoContainer.classList.add('visible'); 
-                }
-                if (event.data === YT.PlayerState.ENDED) {
-                    ytPlayer.playVideo(); 
-                }
-            },
-            'onError': function(event) {
-                // Alerta de bloqueo por Copyright detectada: Escondemos el video roto al instante
-                console.warn("Video bloqueado por derechos de autor o ID inválido. Pasando a carátula HD limpia.");
-                videoContainer.classList.remove('visible');
-                if(ytPlayer && ytPlayer.stopVideo) {
-                    ytPlayer.stopVideo();
-                }
-            }
-        }
-    });
-};
+                ytPlayer = new YT.Player('player-video-bg', {
+                    height: '100%',
+                    width: '100%',
+                    videoId: 'Jf3v7H7G-bU', 
+                    playerVars: {
+                        'autoplay': 1,
+                        'controls': 0,
+                        'rel': 0,
+                        'loop': 1,
+                        'mute': 1, 
+                        'playsinline': 1,
+                        'disablekb': 1,
+                        'origin': window.location.origin
+                    },
+                    events: {
+                        'onReady': function(event) {
+                            event.target.mute();
+                            isPlayerReady = true;
+                            if (currentTrackGlobal && currentArtistGlobal) {
+                                searchAndPlayVideo(currentTrackGlobal, currentArtistGlobal);
+                            }
+                        },
+                        'onStateChange': function(event) {
+                            if (event.data === YT.PlayerState.PLAYING) {
+                                videoContainer.classList.add('visible'); 
+                            }
+                            if (event.data === YT.PlayerState.ENDED) {
+                                ytPlayer.playVideo(); 
+                            }
+                        },
+                        'onError': function(event) {
+                            // SI UN VIDEO SE ENCUENTRA BLOQUEADO, PASAMOS AL SIGUIENTE DE LA LISTA DE INMEDIATO
+                            console.warn("Video bloqueado detectado. Escaneando opción alternativa...");
+                            currentVideoIndex++;
+                            if (currentVideoIndex < videoIdsFound.length) {
+                                executeVideoLoad(videoIdsFound[currentVideoIndex]);
+                            } else {
+                                // Fin de opciones: ocultamos el recuadro para preservar la carátula nítida
+                                videoContainer.classList.remove('visible');
+                            }
+                        }
+                    }
+                });
+            };
 
-async function searchAndPlayVideo(track, artist) {
-    // 1. Limpieza a fondo del texto eliminando remezclas repetitivas o paréntesis molestos
-    let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
-    
-    // 2. Filtro estratégico en el Query: Forzamos la búsqueda de pistas de audio plano o letras estables
-    const query = `${artist} ${cleanTrack} audio static lyrics`; 
-    
-    currentArtistGlobal = artist;
-    currentTrackGlobal = cleanTrack;
-
-    // Actualizamos la carátula HD en paralelo al fondo
-    getAlbumArt(cleanTrack, artist);
-
-    if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
-    if (query === lastVideoQuery) return;
-    lastVideoQuery = query;
-
-    try {
-        // Buscamos entre los primeros 5 resultados un video apto
-        const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
-        const response = await fetch(searchUrl);
-        const data = await response.json();
-
-        if (data.items && data.items.length > 0) {
-            // Tomamos el primer candidato seguro entregado por el filtro
-            let selectedVideoId = data.items[0].id.videoId;
-            executeVideoLoad(selectedVideoId);
-        } else {
-            videoContainer.classList.remove('visible');
-        }
-    } catch (error) {
-        console.error('Error YouTube API:', error);
-        videoContainer.classList.remove('visible');
-    }
-}
-
-function executeVideoLoad(videoId) {
-    if (!isPlayerReady || !ytPlayer) return;
-    try {
-        videoContainer.classList.remove('visible'); // Ocultar mientras engancha el buffer
-        ytPlayer.loadVideoById({videoId: videoId});
-        ytPlayer.mute();
-        ytPlayer.playVideo();
-    } catch (err) {
-        console.error("Error cargando ID de video:", err);
-        videoContainer.classList.remove('visible');
-    }
-}
-
-            // iTunes API para traer arte limpio y en alta resolución
             async function getAlbumArt(track, artist) {
                 try {
                     const query = `${artist} ${track}`;
@@ -537,7 +520,6 @@ function executeVideoLoad(videoId) {
                         let highResArt = data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
                         albumArtBg.style.backgroundImage = `url('${highResArt}')`;
                     } else {
-                        // Fondo por defecto elegante si iTunes no encuentra nada
                         albumArtBg.style.backgroundImage = "radial-gradient(circle, #1a1c23 0%, #0b0c10 100%)";
                     }
                 } catch (e) {
@@ -545,17 +527,16 @@ function executeVideoLoad(videoId) {
                 }
             }
 
+            // SISTEMA MAESTRO: TRAE VIDEOS OFICIALES Y LOS ESCANEA EN FILA SI TIENEN COPIADO DE DERECHOS EXTERNOS
             async function searchAndPlayVideo(track, artist) {
-                // Limpieza de cadenas de caracteres extrañas
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
                 
-                // MEJORA ESTRATÉGICA: Buscamos versiones "audio", "lyrics" o "cover" para saltar bloqueos de copyright
-                const query = `${artist} ${cleanTrack} audio lyrics`; 
+                // CRITERIO EXACTO: "Video oficial sin texto alternativo de lyrics"
+                const query = `${artist} ${cleanTrack} official video clip`; 
                 
                 currentArtistGlobal = artist;
                 currentTrackGlobal = cleanTrack;
 
-                // Actualizar carátula HD inmediatamente en paralelo
                 getAlbumArt(cleanTrack, artist);
 
                 if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
@@ -563,13 +544,18 @@ function executeVideoLoad(videoId) {
                 lastVideoQuery = query;
 
                 try {
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
+                    // Pedimos un pool de 7 videos oficiales candidatos
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=7&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
 
                     if (data.items && data.items.length > 0) {
-                        let selectedVideoId = data.items[0].id.videoId;
-                        executeVideoLoad(selectedVideoId);
+                        // Guardamos todos los IDs encontrados para el barrido secuencial
+                        videoIdsFound = data.items.map(item => item.id.videoId);
+                        currentVideoIndex = 0; 
+                        
+                        // Intentamos inyectar el primer video oficial
+                        executeVideoLoad(videoIdsFound[currentVideoIndex]);
                     } else {
                         videoContainer.classList.remove('visible');
                     }
@@ -582,13 +568,12 @@ function executeVideoLoad(videoId) {
             function executeVideoLoad(videoId) {
                 if (!isPlayerReady || !ytPlayer) return;
                 try {
-                    videoContainer.classList.remove('visible'); // Ocultamos durante la transición para que no parpadee gris
+                    videoContainer.classList.remove('visible'); 
                     ytPlayer.loadVideoById({videoId: videoId});
                     ytPlayer.mute();
                     ytPlayer.playVideo();
                 } catch (err) {
-                    console.error("Error inyectando video:", err);
-                    videoContainer.classList.remove('visible');
+                    console.error("Error inyectando ID:", err);
                 }
             }
             
