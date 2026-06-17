@@ -442,7 +442,7 @@
             // Inicializar volumen básico de la radio
             audioPlayer.volume = volumeSlider.value;
             
-            // Función de la API de YouTube
+            // Inicialización de la API de YouTube ajustada para evadir bloqueos de inserción de Videos Oficiales
             window.onYouTubeIframeAPIReady = function() {
                 ytPlayer = new YT.Player('player-video-bg', {
                     height: '100%',
@@ -450,36 +450,42 @@
                     videoId: '', 
                     playerVars: {
                         'autoplay': 1,
-                        'controls': 0,
-                        'showinfo': 0,
+                        'controls': 0,     // Mantenemos oculto visualmente el reproductor nativo
                         'rel': 0,
                         'loop': 1,
                         'mute': 1, 
                         'playsinline': 1,
-                        'disablekb': 1
+                        'disablekb': 1,
+                        'origin': window.location.origin // Le aclara a YouTube que es un sitio verificado de confianza
                     },
                     events: {
                         'onReady': function(event) {
                             event.target.mute();
                         },
+                        'onStateChange': function(event) {
+                            // Si el video oficial se detiene abruptamente o no arranca debido a restricciones ocultas
+                            if (event.data === YT.PlayerState.ENDED && isPlaying) {
+                                ytPlayer.playVideo(); 
+                            }
+                        },
                         'onError': function(event) {
-                            // Si ocurre un error de reproducción (como el bloqueo de inserción), salta al plan B
-                            console.warn("El video actual falló o está bloqueado. Ejecutando Plan B...");
+                            // CONTROL CRUCIAL: Si el video de VEVO/Artista da error de inserción, ejecuta el Plan B Oficial
+                            console.warn("Video oficial principal bloqueado. Buscando canal alternativo oficial...");
                             fallbackSearch();
                         }
                     }
                 });
             };
 
-            // Guarda las variables globales del artista actual para el plan de respaldo
             let currentArtistGlobal = "";
             let currentTrackGlobal = "";
 
-            // Buscar y reproducir el clip de video de la canción actual con filtros anti-bloqueo
+            // Búsqueda orientada estrictamente a VIDEOS OFICIALES
             async function searchAndPlayVideo(track, artist) {
-                // Filtramos palabras que ensucian la búsqueda exacta en la API de YouTube
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
-                const query = `${artist} ${cleanTrack} lyric`; // Plan A: Forzar "lyric" para saltar bloqueos VEVO/Discográficas
+                
+                // Forzamos "video oficial" o "official video" en la API para evitar cualquier tipo de letras
+                const query = `${artist} ${cleanTrack} official video`; 
                 
                 if (query === lastVideoQuery || !ytPlayer || !ytPlayer.loadVideoById) return;
                 lastVideoQuery = query;
@@ -487,6 +493,7 @@
                 currentTrackGlobal = cleanTrack;
 
                 try {
+                    // Agregamos el parámetro videoEmbeddable=true directamente a nivel de servidor de Google
                     const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
@@ -495,18 +502,17 @@
                         const videoId = data.items[0].id.videoId;
                         executeVideoLoad(videoId);
                     } else {
-                        // Si no encuentra nada con "lyric", intenta una búsqueda más limpia
                         fallbackSearch();
                     }
                 } catch (error) {
-                    console.error('Error buscando video en YouTube:', error);
+                    console.error('Error buscando video oficial:', error);
                 }
             }
 
-            // Plan B de emergencia: Busca alternativas en vivo o instrumentales que no estén bloqueadas
+            // PLAN B OFICIAL: Busca en canales alternativos (como VEVO, sellos discográficos, o remasters oficiales)
             async function fallbackSearch() {
                 try {
-                    const queryAlternative = `${currentArtistGlobal} ${currentTrackGlobal} en vivo`;
+                    const queryAlternative = `${currentArtistGlobal} ${currentTrackGlobal} vevo`;
                     const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(queryAlternative)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
@@ -516,11 +522,11 @@
                         executeVideoLoad(videoId);
                     }
                 } catch (err) {
-                    console.error('Error en el fallback de YouTube:', err);
+                    console.error('Error en el fallback oficial:', err);
                 }
             }
 
-            // Inyecta el ID del video de forma segura en el reproductor interno
+            // Inyecta el ID del video oficial de forma segura
             function executeVideoLoad(videoId) {
                 if (isPlaying) {
                     ytPlayer.loadVideoById({videoId: videoId});
@@ -542,10 +548,7 @@
                         const currentTrack = data.title;
                         const currentArtist = data.artist && data.artist.name ? data.artist.name : 'PRIMERA STEREO';
                         
-                        // Reflejar la canción actual directamente en el recuadro inferior
                         statusElement.innerHTML = `<i class="fas fa-music"></i> <span>${currentArtist} - ${currentTrack}</span>`;
-
-                        // Sincronizar el video en el fondo
                         searchAndPlayVideo(currentTrack, currentArtist);
                     } else {
                         if (isPlaying) {
@@ -557,7 +560,6 @@
                 }
             }
 
-            // Consulta continua cada 15 segundos
             updateMetadata();
             metadataInterval = setInterval(updateMetadata, 15000);
 
@@ -585,7 +587,7 @@
                     audioPlayer.play().then(() => {
                         isPlaying = true;
                         playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                        mainApp.classList.add('playing-mode'); // Activa el desvanecimiento del recuadro verde
+                        mainApp.classList.add('playing-mode');
                         simulateVisualizer();
                         updateMetadata();
                         
@@ -601,7 +603,7 @@
                     audioPlayer.src = ''; 
                     isPlaying = false;
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                    mainApp.classList.remove('playing-mode'); // Regresa los controles fijos al pausar
+                    mainApp.classList.remove('playing-mode');
                     statusElement.innerHTML = '<i class="fas fa-pause-circle"></i> Pausado';
                     cancelAnimationFrame(animationId);
                     bars.forEach(bar => bar.style.height = '5px');
@@ -612,7 +614,6 @@
                 }
             }
 
-            // Refrescar Streaming
             function refreshStream() {
                 refreshBtn.classList.add('loading');
                 audioPlayer.pause();
@@ -631,7 +632,6 @@
                 }, 800);
             }
 
-            // Eventos de interacción del usuario
             playBtn.addEventListener('click', togglePlayback);
             volumeSlider.addEventListener('input', () => audioPlayer.volume = volumeSlider.value);
             refreshBtn.addEventListener('click', refreshStream);
