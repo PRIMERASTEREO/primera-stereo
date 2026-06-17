@@ -96,7 +96,7 @@
             margin-top: -2px;
         }
 
-        /* REPRODUCTOR CENTRAL CON ANCHO FIJO CONTROLADO */
+        /* REPRODUCTOR CENTRAL CUADRADO */
         .player-card {
             position: relative;
             overflow: hidden;
@@ -108,10 +108,10 @@
             border-radius: 20px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9);
             margin: auto 0;
-            height: 340px; /* Cuadrado perfecto para video y carátulas */
+            height: 340px;
         }
 
-        /* CAPA 1: CARÁTULA DE ITUNES */
+        /* CAPA 1: CARÁTULAS O LOGO DE LA RADIO */
         .album-art-bg {
             position: absolute;
             top: 0;
@@ -122,14 +122,11 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-        }
-        .album-art-bg.visible {
-            opacity: 1;
+            opacity: 1; /* Visible por defecto para que nunca quede vacío */
+            transition: opacity 0.4s ease-in-out;
         }
 
-        /* CAPA 2: VIDEO DE YOUTUBE INTERNO */
+        /* CAPA 2: VIDEO DE YOUTUBE (OCULTO DETRÁS HASTA QUE SE REPRODUZCA UN VIDEO REAL) */
         .player-video-bg {
             position: absolute;
             top: 0;
@@ -138,21 +135,23 @@
             height: 100%;
             z-index: 2; 
             opacity: 0;
-            transition: opacity 0.5s ease-in-out;
+            visibility: hidden;
+            transition: opacity 0.4s ease-in-out, visibility 0.4s;
             pointer-events: none;
             background: #000000;
         }
         .player-video-bg.visible {
             opacity: 1;
+            visibility: visible;
         }
         .player-video-bg iframe {
             width: 100%;
             height: 100%;
-            transform: scale(1.35); /* Zoom sutil para eliminar bordes negros del video */
+            transform: scale(1.35);
             object-fit: cover;
         }
 
-        /* CAPA 3: CONTROLES - INVISIBLES POR DEFECTO PARA VER LA IMAGEN/VIDEO */
+        /* CAPA 3: CONTROLES - INVISIBLES POR DEFECTO */
         .hover-control {
             position: absolute;
             top: 0;
@@ -166,14 +165,14 @@
             justify-content: center;
             gap: 16px;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.65); /* Capa oscura traslúcida sobre el video/arte sólo en hover */
+            background: rgba(0, 0, 0, 0.65);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            opacity: 0; /* Completamente ocultos por defecto */
-            transition: opacity 0.4s ease, transform 0.3s ease;
+            opacity: 0;
+            transition: opacity 0.4s ease;
         }
 
-        /* EFECTO HOVER REAL: APARECEN AL PASAR EL CURSOR */
+        /* EFECTO HOVER PERFECTO */
         .player-card:hover .hover-control,
         .player-card:active .hover-control {
             opacity: 1;
@@ -271,7 +270,7 @@
             box-shadow: 0 0 4px rgba(0,0,0,0.5);
         }
 
-        /* CONTENEDOR DE METADATOS: TOTALMENTE SIMÉTRICO AL ANCHO DEL PLAYER */
+        /* METADATOS SIMÉTRICOS (340px) */
         .status-badge {
             position: relative;
             display: flex;
@@ -283,7 +282,7 @@
             color: #ffffff;
             z-index: 5;
             width: 100%;
-            max-width: 340px; /* Clavado exactamente al mismo ancho de la card */
+            max-width: 340px;
             padding: 12px 15px;
             background: rgba(20, 22, 26, 0.95);
             border-radius: 12px;
@@ -407,7 +406,7 @@
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
             </div>
             <div class="copyright">
-                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
+                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO ONLINE
             </div>
         </div>
     </div>
@@ -425,17 +424,13 @@
             
             const streamUrl = 'https://primerastereo.stream.laut.fm/primerastereo';
             const metadataApiUrl = 'https://api.laut.fm/station/primerastereo/current_song';
+            const defaultLogoUrl = 'https://primera-stereo.netlify.app/fondo.png'; // Logo por defecto para jingles/estación
             
             const YOUTUBE_API_KEY = "AIzaSyCxU2onHMctFbLj0UKLt-SHjw8V80bmGgg";
             
             let ytPlayer = null;
             let isPlayerReady = false; 
             let lastVideoQuery = "";
-            let currentArtistGlobal = "";
-            let currentTrackGlobal = "";
-            
-            let videoIdsFound = [];
-            let currentVideoIndex = 0;
             
             let isPlaying = false;
             let metadataInterval = null;
@@ -443,6 +438,9 @@
             
             audioPlayer.volume = volumeSlider.value;
             
+            // Ponemos el logo oficial desde el inicio para que nunca se vea vacío
+            albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
+
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -452,9 +450,8 @@
                 ytPlayer = new YT.Player('player-video-bg', {
                     height: '100%',
                     width: '100%',
-                    videoId: 'Jf3v7H7G-bU', 
                     playerVars: {
-                        'autoplay': 1,
+                        'autoplay': 0,
                         'controls': 0,
                         'rel': 0,
                         'loop': 1,
@@ -464,26 +461,30 @@
                         'origin': window.location.origin
                     },
                     events: {
-                        'onReady': function(event) {
-                            event.target.mute();
+                        'onReady': function() {
                             isPlayerReady = true;
-                            if (currentTrackGlobal && currentArtistGlobal) {
-                                searchAndPlayVideo(currentTrackGlobal, currentArtistGlobal);
-                            }
                         },
                         'onStateChange': function(event) {
+                            // SÓLO cuando el video empiece a reproducirse de verdad, se muestra la capa de video
                             if (event.data === YT.PlayerState.PLAYING) {
-                                albumArtBg.classList.remove('visible'); // Oculta carátula para ver el video limpio
                                 videoContainer.classList.add('visible'); 
+                            } else if (event.data === YT.PlayerState.ENDED || event.data === YT.PlayerState.PAUSED) {
+                                videoContainer.classList.remove('visible');
                             }
                         },
-                        'onError': function(event) {
-                            console.warn("Video bloqueado o con error de copyright. Pasando a la carátula...");
-                            switchToFallbackArtwork();
+                        'onError': function() {
+                            hideVideoAndShowArt();
                         }
                     }
                 });
             };
+
+            function hideVideoAndShowArt() {
+                videoContainer.classList.remove('visible');
+                if (ytPlayer && ytPlayer.pauseVideo) {
+                    try { ytPlayer.pauseVideo(); } catch(e){}
+                }
+            }
 
             async function getAlbumArt(track, artist) {
                 try {
@@ -496,71 +497,57 @@
                         albumArtBg.style.backgroundImage = `url('${highResArt}')`;
                         return true;
                     }
-                    return false;
                 } catch (e) {
-                    console.error("Error carátula:", e);
-                    return false;
+                    console.error("Error carátula iTunes:", e);
                 }
+                // Fallback al logo de la radio si no se encuentra carátula en iTunes
+                albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
+                return false;
             }
 
-            function switchToFallbackArtwork() {
-                // Si falla YouTube, ocultamos el cuadro gris de error y encendemos la carátula de iTunes limpia
-                videoContainer.classList.remove('visible');
-                if (ytPlayer && ytPlayer.pauseVideo) {
-                    ytPlayer.pauseVideo();
-                }
-                albumArtBg.classList.add('visible');
-            }
+            async function processTrackMedia(track, artist) {
+                const trackUpper = track.toUpperCase();
+                const artistUpper = artist.toUpperCase();
 
-            async function searchAndPlayVideo(track, artist) {
+                // REGLA FUNDAMENTAL: Si es JINGLE o PRIMERA STEREO se fuerza el logo de la radio sin videos ni itunes
+                if (trackUpper.includes("JINGLE") || trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO")) {
+                    hideVideoAndShowArt();
+                    albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
+                    lastVideoQuery = "STATION_IDLE_LOGO";
+                    return;
+                }
+
+                // Si es un tema musical real, buscamos su carátula
+                await getAlbumArt(track, artist);
+
+                // Evitar recargar el mismo video continuamente si no ha cambiado el tema
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
-                const query = `${artist} ${cleanTrack} official music video`; 
-                
-                currentArtistGlobal = artist;
-                currentTrackGlobal = cleanTrack;
-
-                const hasArt = await getAlbumArt(cleanTrack, artist);
-                if (hasArt) {
-                    albumArtBg.classList.add('visible'); // Muestra la carátula primero mientras procesa
-                } else {
-                    albumArtBg.style.backgroundImage = "none";
-                    albumArtBg.classList.remove('visible');
-                }
-
-                if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
+                const query = `${artist} ${cleanTrack} official music video`;
                 if (query === lastVideoQuery) return;
                 lastVideoQuery = query;
 
+                if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
+
+                // Buscamos y disparamos el video oficial en segundo plano
                 try {
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
 
                     if (data.items && data.items.length > 0) {
-                        videoIdsFound = data.items.map(item => item.id.videoId);
-                        currentVideoIndex = 0; 
-                        executeVideoLoad(videoIdsFound[currentVideoIndex]);
+                        const videoId = data.items[0].id.videoId;
+                        ytPlayer.loadVideoById({
+                            videoId: videoId,
+                            startSeconds: 0
+                        });
+                        ytPlayer.mute();
+                        ytPlayer.playVideo();
                     } else {
-                        switchToFallbackArtwork();
+                        hideVideoAndShowArt();
                     }
                 } catch (error) {
                     console.error('Error YouTube API:', error);
-                    switchToFallbackArtwork();
-                }
-            }
-
-            function executeVideoLoad(videoId) {
-                if (!isPlayerReady || !ytPlayer) return;
-                try {
-                    ytPlayer.loadVideoById({
-                        videoId: videoId,
-                        startSeconds: 2
-                    });
-                    ytPlayer.mute();
-                    ytPlayer.playVideo();
-                } catch (err) {
-                    console.error("Error inyectando ID:", err);
-                    switchToFallbackArtwork();
+                    hideVideoAndShowArt();
                 }
             }
             
@@ -575,7 +562,7 @@
                         const currentArtist = data.artist && data.artist.name ? data.artist.name : 'PRIMERA STEREO';
                         
                         statusElement.innerHTML = `<i class="fas fa-music"></i> <span>${currentArtist} - ${currentTrack}</span>`;
-                        searchAndPlayVideo(currentTrack, currentArtist);
+                        processTrackMedia(currentTrack, currentArtist);
                     } else {
                         if (isPlaying) {
                             statusElement.innerHTML = '<i class="fas fa-broadcast-tower"></i> <span>Al Aire - En Vivo</span>';
@@ -587,7 +574,7 @@
             }
 
             updateMetadata();
-            metadataInterval = setInterval(updateMetadata, 15000);
+            metadataInterval = setInterval(updateMetadata, 14000);
 
             function simulateVisualizer() {
                 if (!isPlaying) {
@@ -626,6 +613,7 @@
                     statusElement.innerHTML = '<i class="fas fa-pause-circle"></i> Pausado';
                     cancelAnimationFrame(animationId);
                     bars.forEach(bar => bar.style.height = '5px');
+                    hideVideoAndShowArt();
                 }
             }
 
