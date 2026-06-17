@@ -118,7 +118,7 @@
             justify-content: space-between;
         }
 
-        /* Contenedor de la carátula de respaldo */
+        /* Capa de la carátula de fondo */
         .album-art-bg {
             position: absolute;
             top: 0;
@@ -129,24 +129,26 @@
             background-size: cover;
             background-position: center;
             filter: blur(4px);
-            opacity: 0.45;
-            transition: background-image 0.8s ease-in-out;
+            opacity: 0.5;
+            transition: background-image 0.6s ease-in-out;
         }
 
+        /* El video ahora está visible por defecto en segundo plano */
         .player-video-bg {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 2; /* Por encima de la carátula */
+            z-index: 2; 
             pointer-events: none; 
-            opacity: 0;
-            transition: opacity 0.6s ease;
+            opacity: 0.65;
+            transition: opacity 0.4s ease;
         }
 
-        .player-video-bg.visible {
-            opacity: 0.65;
+        /* Si falla, añadimos una clase para ocultarlo dinámicamente */
+        .player-video-bg.hidden {
+            opacity: 0 !important;
         }
 
         .player-video-bg iframe {
@@ -399,7 +401,7 @@
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
             </div>
             <div class="copyright">
-                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO ONLINE
+                &copy;2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
             </div>
         </div>
     </div>
@@ -432,7 +434,7 @@
             
             audioPlayer.volume = volumeSlider.value;
             
-            // Inyección limpia del script oficial de YouTube sin bloquear renderizado
+            // Inyección controlada de la API de YouTube
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -442,7 +444,7 @@
                 ytPlayer = new YT.Player('player-video-bg', {
                     height: '100%',
                     width: '100%',
-                    videoId: 'Jf3v7H7G-bU', // Video inicial ultra estable
+                    videoId: 'Jf3v7H7G-bU', // Video inicial dummy estable
                     playerVars: {
                         'autoplay': 1,
                         'controls': 0,
@@ -455,29 +457,29 @@
                     events: {
                         'onReady': function(event) {
                             event.target.mute();
+                            event.target.playVideo(); // Forzamos reproducción en frío al nacer
                             isPlayerReady = true;
                             if (currentTrackGlobal && currentArtistGlobal) {
                                 searchAndPlayVideo(currentTrackGlobal, currentArtistGlobal);
                             }
                         },
                         'onStateChange': function(event) {
-                            // Si el video se reproduce correctamente, ocultamos la carátula y mostramos el video
                             if (event.data === YT.PlayerState.PLAYING) {
-                                videoContainer.classList.add('visible');
+                                videoContainer.classList.remove('hidden'); // Asegura visibilidad activa
                             }
-                            if (event.data === YT.PlayerState.ENDED && isPlaying) {
+                            if (event.data === YT.PlayerState.ENDED) {
                                 ytPlayer.playVideo(); 
                             }
                         },
                         'onError': function(event) {
-                            console.warn("Video bloqueado o error de ID. Pasando a carátula de respaldo.");
-                            videoContainer.classList.remove('visible'); // Muestra la hermosa carátula en su lugar
+                            console.warn("Fallo de reproducción. Ocultando capa de video para ver carátula.");
+                            videoContainer.classList.add('hidden');
                         }
                     }
                 });
             };
 
-            // NUEVO BUSCADOR DE CARÁTULAS DE RESPALDO (iTunes API)
+            // API de iTunes para buscar carátulas automáticamente
             async function getAlbumArt(track, artist) {
                 try {
                     const query = `${artist} ${track}`;
@@ -485,27 +487,23 @@
                     const res = await fetch(url);
                     const data = await res.json();
                     if (data.results && data.results.length > 0) {
-                        // Cambiamos el tamaño de la carátula de 100x100 a 600x600 px de alta resolución
                         let highResArt = data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
                         albumArtBg.style.backgroundImage = `url('${highResArt}')`;
                     } else {
                         albumArtBg.style.backgroundImage = "none";
                     }
                 } catch (e) {
-                    console.error("Error cargando carátula:", e);
+                    console.error("Error carátula:", e);
                 }
             }
 
             async function searchAndPlayVideo(track, artist) {
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
-                
-                // CAMBIO CRUCIAL: Añadimos términos estrictos "live concert festival" para evadir bloqueos de disqueras
                 const query = `${artist} ${cleanTrack} live concert festival`; 
                 
                 currentArtistGlobal = artist;
                 currentTrackGlobal = cleanTrack;
 
-                // Buscamos e inyectamos la carátula inmediatamente (asíncrono, no congela el código)
                 getAlbumArt(cleanTrack, artist);
 
                 if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
@@ -518,29 +516,25 @@
                     const data = await response.json();
 
                     if (data.items && data.items.length > 0) {
-                        // Forzamos que agarre la primera opción que cumpla el criterio en vivo
                         let selectedVideoId = data.items[0].id.videoId;
                         executeVideoLoad(selectedVideoId);
                     } else {
-                        // Si no encuentra nada, oculta capa de video y deja la carátula visible
-                        videoContainer.classList.remove('visible');
+                        videoContainer.classList.add('hidden');
                     }
                 } catch (error) {
                     console.error('Error YouTube API:', error);
-                    videoContainer.classList.remove('visible');
+                    videoContainer.classList.add('hidden');
                 }
             }
 
+            // MODIFICACIÓN CRUCIAL: Forzar la carga y ejecución instantánea del video SIEMPRE (esté o no la radio en Play)
             function executeVideoLoad(videoId) {
                 if (!isPlayerReady || !ytPlayer) return;
                 try {
-                    if (isPlaying) {
-                        ytPlayer.loadVideoById({videoId: videoId});
-                        ytPlayer.mute();
-                        ytPlayer.playVideo();
-                    } else {
-                        ytPlayer.cueVideoById({videoId: videoId});
-                    }
+                    ytPlayer.loadVideoById({videoId: videoId});
+                    ytPlayer.mute();
+                    ytPlayer.playVideo();
+                    videoContainer.classList.remove('hidden');
                 } catch (err) {
                     console.error("Error inyectando video:", err);
                 }
@@ -565,11 +559,9 @@
                     }
                 } catch (error) {
                     console.error('Error metadatos:', error);
-                    // Si falla la API de metadatos, la radio NO se detiene
                 }
             }
 
-            // Arrancar metadatos de inmediato de forma independiente
             updateMetadata();
             metadataInterval = setInterval(updateMetadata, 14000);
 
@@ -598,15 +590,10 @@
                         mainApp.classList.add('playing-mode');
                         simulateVisualizer();
                         
-                        // Forzamos actualización limpia de metadatos al arrancar
                         lastVideoQuery = ""; 
                         updateMetadata();
-                        
-                        if (isPlayerReady && ytPlayer && ytPlayer.playVideo) {
-                            ytPlayer.playVideo();
-                        }
                     }).catch(error => {
-                        console.error('Error al reproducir streaming:', error);
+                        console.error('Error streaming:', error);
                         statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error de streaming';
                     });
                 } else {
@@ -618,11 +605,6 @@
                     statusElement.innerHTML = '<i class="fas fa-pause-circle"></i> Pausado';
                     cancelAnimationFrame(animationId);
                     bars.forEach(bar => bar.style.height = '5px');
-                    videoContainer.classList.remove('visible');
-                    
-                    if (isPlayerReady && ytPlayer && ytPlayer.pauseVideo) {
-                        ytPlayer.pauseVideo();
-                    }
                 }
             }
 
@@ -633,11 +615,6 @@
                 playBtn.innerHTML = '<i class="fas fa-play"></i>';
                 mainApp.classList.remove('playing-mode');
                 statusElement.innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizando...';
-                videoContainer.classList.remove('visible');
-                
-                if (isPlayerReady && ytPlayer && ytPlayer.stopVideo) {
-                    ytPlayer.stopVideo();
-                }
                 
                 setTimeout(() => {
                     togglePlayback();
