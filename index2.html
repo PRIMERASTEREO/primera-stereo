@@ -133,7 +133,6 @@
             object-fit: cover !important;
         }
 
-        /* --- CONTROL DE VISIBILIDAD DE CONTROLES (HOVER UNIFICADO) --- */
         .hover-control {
             position: absolute;
             top: 0;
@@ -153,14 +152,12 @@
             pointer-events: auto;
         }
 
-        /* Cuando está en modo Video, los controles se ocultan por defecto */
         .player-card.video-mode .hover-control {
             opacity: 0;
             background: rgba(0, 0, 0, 0);
-            pointer-events: none; /* Evita bloquear interacciones tras el desvanecimiento */
+            pointer-events: none;
         }
 
-        /* Se muestran al pasar el mouse o tocar el contenedor en modo video */
         .player-card.video-mode:hover .hover-control,
         .player-card.video-mode:active .hover-control {
             opacity: 1 !important;
@@ -422,7 +419,7 @@
                 </div>
 
                 <button class="play-btn" id="play-btn">
-                    <i class="fas fa-pause"></i>
+                    <i class="fas fa-play"></i>
                 </button>
 
                 <div class="volume-container">
@@ -451,7 +448,7 @@
                 <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
             <div class="copyright">
-                &copy; 2010 - 2026 PRIMERA STEREO<br></BR>RADIO VIDEO ONLINE
+                &copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE
             </div>
         </div>
     </div>
@@ -476,7 +473,6 @@
             const audioPlayer = new Audio();
             const playBtn = document.getElementById('play-btn');
             const volumeSlider = document.getElementById('volume-slider');
-            const statusElement = document.getElementById('status');
             const statusIcon = document.getElementById('status-icon');
             const statusText = document.getElementById('status-text');
             const bars = document.querySelectorAll('#radio-visualizer .bar');
@@ -495,11 +491,14 @@
             let currentTrackGlobal = "";
             let isPlaying = false;
             let metadataInterval = null;
-            let animationId;
+            let visualizerInterval = null;
             
+            // Vincular el stream de audio
+            audioPlayer.src = streamUrl;
             audioPlayer.volume = volumeSlider.value;
             albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
 
+            // Cargar API de YouTube Iframe
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -511,11 +510,11 @@
                     width: '100%',
                     videoId: 'dQw4w9WgXcQ', 
                     playerVars: {
-                        'autoplay': 1,
+                        'autoplay': 0,
                         'controls': 0,
                         'rel': 0,
                         'loop': 1,
-                        'mute': 1,
+                        'mute': 1, // Mute estricto para el video
                         'playsinline': 1,
                         'disablekb': 1,
                         'origin': window.location.origin
@@ -535,6 +534,54 @@
                     }
                 });
             };
+
+            // Lógica de alternancia Play/Pause vinculada a Laut.fm y YouTube
+            function togglePlayback() {
+                if (isPlaying) {
+                    audioPlayer.pause();
+                    if (ytPlayer && ytPlayer.pauseVideo && playerCard.classList.contains('video-mode')) {
+                        try { ytPlayer.pauseVideo(); } catch(e){}
+                    }
+                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    stopVisualizer();
+                    isPlaying = false;
+                } else {
+                    audioPlayer.play().then(() => {
+                        if (ytPlayer && ytPlayer.playVideo && playerCard.classList.contains('video-mode')) {
+                            try { ytPlayer.playVideo(); } catch(e){}
+                        }
+                        playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                        startVisualizer();
+                        isPlaying = true;
+                    }).catch(err => {
+                        console.error("Error al arrancar audio stream:", err);
+                    });
+                }
+            }
+
+            playBtn.addEventListener('click', togglePlayback);
+
+            // Control de volumen exclusivo para el streaming de audio
+            volumeSlider.addEventListener('input', function() {
+                audioPlayer.volume = this.value;
+            });
+
+            function startVisualizer() {
+                clearInterval(visualizerInterval);
+                visualizerInterval = setInterval(() => {
+                    bars.forEach(bar => {
+                        if (isPlaying) {
+                            const height = Math.floor(Math.random() * 30) + 5;
+                            bar.style.height = `${height}px`;
+                        }
+                    });
+                }, 150);
+            }
+
+            function stopVisualizer() {
+                clearInterval(visualizerInterval);
+                bars.forEach(bar => bar.style.height = '5px');
+            }
 
             function getAlbumArt(track, artist) {
                 const query = `${artist} ${track}`;
@@ -625,7 +672,12 @@
                     }
                     ytPlayer.loadVideoById({ videoId: videoId, startSeconds: 0 });
                     ytPlayer.mute();
-                    ytPlayer.playVideo();
+                    
+                    if (isPlaying) {
+                        ytPlayer.playVideo();
+                    } else {
+                        ytPlayer.pauseVideo();
+                    }
                     
                     playerCard.classList.remove('art-mode');
                     playerCard.classList.add('video-mode');
@@ -679,7 +731,6 @@
                 }
             }
             
-            // Iniciar consulta de metadatos inicial
             updateMetadata();
             metadataInterval = setInterval(updateMetadata, 10000);
         });
