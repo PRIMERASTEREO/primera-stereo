@@ -447,7 +447,7 @@
                 <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
             <div class="copyright">
-                &copy; 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
+                &copy; 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE.
             </div>
         </div>
     </div>
@@ -491,7 +491,7 @@
                 ytPlayer = new YT.Player('player-video-bg', {
                     height: '100%',
                     width: '100%',
-                    videoId: 'Jf3v7H7G-bU', 
+                    videoId: 'dQw4w9WgXcQ', 
                     playerVars: {
                         'autoplay': 1,
                         'controls': 0,
@@ -517,8 +517,8 @@
                             }
                         },
                         'onError': function(event) {
-                            console.warn("Video no disponible. Restableciendo modo Carátula.");
-                            fallbackToArtMode();
+                            console.warn("Aviso de inicialización de iFrame. Esperando siguiente canción.");
+                            isPlayerReady = true;
                         }
                     }
                 });
@@ -673,7 +673,8 @@
                 }
                 bars.forEach(bar => {
                     const randomHeight = Math.floor(Math.random() * 27) + 5;
-                    bar.style.height = `${randomHeight}px`;
+                    var dynamicHeight = randomHeight + 'px';
+                    bar.style.height = dynamicHeight;
                     bar.style.background = 'linear-gradient(to top, #ff7b00, #ffae00)';
                 });
                 animationId = requestAnimationFrame(simulateVisualizer);
