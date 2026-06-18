@@ -731,7 +731,9 @@
                 }
             }
             
+            // Inicialización de metadatos y llamada obligatoria al autoplay continuo
             updateMetadata();
+            togglePlayback(); 
             metadataInterval = setInterval(updateMetadata, 10000);
         });
     </script>
