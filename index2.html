@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRIMERA STEREO 📻 RADIO ONLINE</title>
+    <title>PRIMERA STEREO 馃摶 RADIO ONLINE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" href="https://primerastereo.netlify.app/favicon.png">
     <link rel="icon" type="image/ico" href="https://primerastereo.netlify.app/favicon.png" sizes="512x512">
@@ -111,7 +111,7 @@
             height: 340px;
         }
 
-        /* Capa de carátula principal */
+        /* Capa de car谩tula principal */
         .album-art-bg {
             position: absolute;
             top: 0;
@@ -139,7 +139,7 @@
             pointer-events: none;
         }
         
-        /* Modificadores de estado dinámicos gestionados por JS */
+        /* Modificadores de estado din谩micos gestionados por JS */
         .player-card.video-mode .player-video-bg {
             z-index: 4;
             opacity: 1;
@@ -152,7 +152,7 @@
             width: 100%;
             height: 100%;
             border: none;
-            transform: scale(1.42); /* Compensación de aspecto para rellenar el marco */
+            transform: scale(1.42); /* Compensaci贸n de aspecto para rellenar el marco */
             object-fit: cover;
         }
 
@@ -170,17 +170,17 @@
             justify-content: center;
             gap: 16px;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.4); /* Fondo más suave al inicio */
+            background: rgba(0, 0, 0, 0.4); /* Fondo m谩s suave al inicio */
             transition: background 0.4s ease, opacity 0.4s ease;
         }
 
-        /* Interacción del Hover completa */
+        /* Interacci贸n del Hover completa */
         .player-card:hover .hover-control,
         .player-card:active .hover-control {
             background: rgba(0, 0, 0, 0.7);
         }
 
-        /* Al cargar o en modo carátula, forzamos que los textos de fondo se oculten para no ensuciar el logo */
+        /* Al cargar o en modo car谩tula, forzamos que los textos de fondo se oculten para no ensuciar el logo */
         .player-card.art-mode .station-title,
         .player-card.art-mode .station-subtitle,
         .player-card.art-mode .bars-container,
@@ -232,7 +232,7 @@
             transition: height 0.2s ease;
         }
 
-        /* BOTÓN PLAY: Diseñado con alta prioridad visual */
+        /* BOT脫N PLAY: Dise帽ado con alta prioridad visual */
         .play-btn {
             width: 70px;
             height: 70px;
@@ -420,7 +420,7 @@
         </div>
 
         <div class="footer-section">
-            <div class="social-title">Síguenos en nuestras redes sociales</div>
+            <div class="social-title">S铆guenos en nuestras redes sociales</div>
             <div class="social-icons">
                 <a href="https://www.facebook.com/PrimeraStereoRadio" class="social-btn facebook" target="_blank"><i class="fab fa-facebook-f"></i></a>
                 <a href="https://www.instagram.com/Primera.Stereo/" class="social-btn instagram" target="_blank"><i class="fab fa-instagram"></i></a>
@@ -470,7 +470,7 @@
                         return true;
                     }
                 } catch (e) {
-                    console.error("Error carátula:", e);
+                    console.error("Error car谩tula:", e);
                 }
                 albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
                 return false;
@@ -480,7 +480,7 @@
                 const trackUpper = track.toUpperCase();
                 const artistUpper = artist.toUpperCase();
 
-                // Filtro para jingles o identificaciones de la estación
+                // Filtro para jingles o identificaciones de la estaci贸n
                 if (trackUpper.includes("JINGLE") || trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO")) {
                     playerCard.classList.remove('video-mode');
                     playerCard.classList.add('art-mode');
@@ -492,23 +492,23 @@
 
                 getAlbumArt(track, artist);
 
-                // Exclusión explícita de "lyrics" o "letra" para videoclips musicales oficiales
+                // Exclusi贸n expl铆cita de "lyrics" o "letra" para videoclips musicales oficiales
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
                 let cleanArtist = artist.trim();
                 
-                // Generamos un query limpio para la URL nativa de incrustación de YouTube
+                // Generamos un query limpio para la URL nativa de incrustaci贸n de YouTube
                 const rawSearchQuery = `${cleanArtist} ${cleanTrack} official music video`;
                 if (rawSearchQuery === lastVideoQuery) return;
                 lastVideoQuery = rawSearchQuery;
 
-                // Si la reproducción no está activa, mantenemos la interfaz en modo carátula limpia
+                // Si la reproducci贸n no est谩 activa, mantenemos la interfaz en modo car谩tula limpia
                 if (!isPlaying) {
                     playerCard.classList.remove('video-mode');
                     playerCard.classList.add('art-mode');
                     return;
                 }
 
-                // INYECCIÓN DE VIDEO DIRECTA POR URL COMPILADA SIN DEPENDER DE FETCH API KEYS
+                // INYECCI脫N DE VIDEO DIRECTA POR URL COMPILADA SIN DEPENDER DE FETCH API KEYS
                 // Cambiamos el modo de renderizado a "/embed/videoseries?listType=search&list=..."
                 // Esto fuerza a la plataforma de YouTube a buscar e inicializar de forma nativa el clip musical al frente
                 const embeddedSearchUrl = `https://www.youtube.com/embed/videoseries?listType=search&list=${encodeURIComponent(rawSearchQuery)}&autoplay=1&mute=1&controls=0&rel=0&loop=1&showinfo=0&iv_load_policy=3&playsinline=1`;
