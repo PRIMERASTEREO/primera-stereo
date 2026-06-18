@@ -287,12 +287,13 @@
             box-shadow: 0 0 4px rgba(0,0,0,0.5);
         }
 
+        /* CONTENEDOR DE LA BARRA DE ESTADO */
         .status-badge {
             position: relative;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
+            justify-content: flex-start;
+            gap: 10px;
             font-size: 10pt;
             font-weight: bold;
             color: #ffffff;
@@ -306,13 +307,31 @@
             border: 1px solid rgba(255, 255, 255, 0.15);
             margin-top: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            overflow: hidden; 
         }
         
-        .status-badge span {
-            white-space: nowrap;
+        /* Contenedor de la marquesina con ancho flexible */
+        .marquee-container {
+            flex: 1;
             overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 370px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            height: 20px;
+        }
+
+        /* TEXTO CORREGIDO: Hace scroll infinito sea largo o corto */
+        .marquee-text {
+            display: inline-block;
+            white-space: nowrap;
+            position: absolute;
+            animation: marqueeEffect 12s linear infinite;
+        }
+
+        /* CORRECCIÓN DE ANIMACIÓN: Entrada desde el 100% del contenedor hasta desaparecer a la izquierda (-100%) */
+        @keyframes marqueeEffect {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
         }
 
         .footer-section {
@@ -406,7 +425,10 @@
         </div>
 
         <div class="status-badge" id="status">
-            <i class="fas fa-broadcast-tower"></i> <span>Sincronizando señal en vivo...</span>
+            <i class="fas fa-broadcast-tower"></i>
+            <div class="marquee-container">
+                <span class="marquee-text" id="status-text">Sincronizando señal en vivo...</span>
+            </div>
         </div>
 
         <div class="footer-section">
@@ -469,7 +491,7 @@
                         'controls': 0,
                         'rel': 0,
                         'loop': 1,
-                        'mute': 1, // Mutado por defecto para evadir bloqueos de autoplay del navegador
+                        'mute': 1,
                         'playsinline': 1,
                         'disablekb': 1,
                         'origin': window.location.origin
@@ -609,15 +631,19 @@
                     if (!response.ok) throw new Error('Error API');
                     const data = await response.json();
                     
+                    const statusTextElement = document.getElementById('status-text');
+                    
                     if (data && data.title) {
                         const currentTrack = data.title;
                         const currentArtist = data.artist && data.artist.name ? data.artist.name : 'PRIMERA STEREO';
                         
-                        statusElement.innerHTML = `<i class="fas fa-music"></i> <span>${currentArtist} - ${currentTrack}</span>`;
+                        statusElement.querySelector('i').className = "fas fa-music";
+                        statusTextElement.textContent = `${currentArtist} - ${currentTrack}`;
                         searchAndPlayVideo(currentTrack, currentArtist);
                     } else {
                         if (isPlaying) {
-                            statusElement.innerHTML = '<i class="fas fa-broadcast-tower"></i> <span>Al Aire - En Vivo</span>';
+                            statusElement.querySelector('i').className = "fas fa-broadcast-tower";
+                            statusTextElement.textContent = "Al Aire - En Vivo";
                         }
                     }
                 } catch (error) {
@@ -638,7 +664,6 @@
                 animationId = requestAnimationFrame(simulateVisualizer);
             }
 
-            // FUNCIÓN DE AUTOPLAY DIRECTO PARA CARGAR AL ENTRAR (F5)
             function autoPlayOnLoad() {
                 audioPlayer.src = streamUrl + '?cb=' + Date.now();
                 audioPlayer.crossOrigin = "anonymous";
@@ -652,15 +677,17 @@
                     updateMetadata();
                 }).catch(error => {
                     console.warn('Autoplay con sonido bloqueado por navegador. Esperando interacción.');
-                    statusElement.innerHTML = '<i class="fas fa-play-circle"></i> Presiona Pausa/Play para escuchar en vivo';
-                    // Dejamos que la metadata y el video sigan buscando en segundo plano aunque el audio esté pausado
+                    document.getElementById('status-text').textContent = "Presiona Pausa/Play para escuchar en vivo";
+                    statusElement.querySelector('i').className = "fas fa-play-circle";
                     updateMetadata(); 
                 });
             }
 
             function togglePlayback() {
+                const statusTextElement = document.getElementById('status-text');
                 if (!isPlaying) {
-                    statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...';
+                    statusElement.querySelector('i').className = "fas fa-spinner fa-spin";
+                    statusTextElement.textContent = "Conectando...";
                     audioPlayer.src = streamUrl + '?cb=' + Date.now();
                     audioPlayer.crossOrigin = "anonymous";
                     
@@ -674,7 +701,8 @@
                         updateMetadata();
                     }).catch(error => {
                         console.error('Error streaming:', error);
-                        statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error de streaming';
+                        statusElement.querySelector('i').className = "fas fa-exclamation-triangle";
+                        statusTextElement.textContent = "Error de streaming";
                     });
                 } else {
                     audioPlayer.pause();
@@ -683,14 +711,14 @@
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
                     playBtn.style.background = 'linear-gradient(135deg, #ff7b00, #ffae00)';
                     playBtn.style.boxShadow = '0 6px 20px rgba(255, 123, 0, 0.6)';
-                    statusElement.innerHTML = '<i class="fas fa-pause-circle"></i> Pausado';
+                    statusElement.querySelector('i').className = "fas fa-pause-circle";
+                    statusTextElement.textContent = "Pausado";
                     cancelAnimationFrame(animationId);
                     bars.forEach(bar => bar.style.height = '5px');
                     clearVideoBuffer();
                 }
             }
 
-            // Ejecución inmediata al cargar la página
             autoPlayOnLoad();
             metadataInterval = setInterval(updateMetadata, 15000);
             
