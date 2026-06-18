@@ -96,7 +96,7 @@
             margin-top: -2px;
         }
 
-        /* CARD CENTRAL CUADRADA EXIGIDA POR EL RETO */
+        /* CARD CENTRAL CUADRADA */
         .player-card {
             position: relative;
             overflow: hidden;
@@ -125,7 +125,7 @@
             transition: opacity 0.4s ease;
         }
 
-        /* Contenedor del video */
+        /* Contenedor del video de YouTube */
         .player-video-bg {
             position: absolute;
             top: 0;
@@ -139,9 +139,7 @@
             pointer-events: none;
         }
         
-        /* Modificadores de estado dinámicos gestionados por JS */
-        
-        /* CORRECCIÓN DE CAPAS: El video pasa al frente (z-index 4) superando la carátula */
+        /* CORRECCIÓN ESTRUCTURAL DE CAPAS CSS: El video pasa al frente (z-index 4) superando la carátula */
         .player-card.video-mode .player-video-bg {
             z-index: 4;
             opacity: 1;
@@ -154,7 +152,7 @@
             width: 100%;
             height: 100%;
             border: none;
-            transform: scale(1.42); /* Zoom nativo para rellenar el aspecto cuadrado */
+            transform: scale(1.42); /* Zoom sutil para rellenar el aspecto cuadrado */
             object-fit: cover;
         }
 
@@ -176,10 +174,25 @@
             transition: background 0.4s ease, opacity 0.4s ease;
         }
 
+        /* CORRECCIÓN INTERFAZ MODO VIDEO (REQUIREMENT #3): 
+           Controles con opacidad cero por defecto para no tapar el clip de YouTube */
+        .player-card.video-mode .hover-control {
+            background: rgba(0, 0, 0, 0); 
+            opacity: 0; /* Totalmente invisibles hasta el hover */
+        }
+        
+        /* Al pasar el mouse encima del video, la capa de control aparece sutilmente */
+        .player-card.video-mode:hover .hover-control,
+        .player-card.video-mode:active .hover-control {
+            background: rgba(0, 0, 0, 0.6);
+            opacity: 1;
+        }
+
         /* Interacción del Hover clásica en modo carátula */
         .player-card.art-mode:hover .hover-control,
         .player-card.art-mode:active .hover-control {
             background: rgba(0, 0, 0, 0.7);
+            opacity: 1;
         }
 
         /* Al cargar o en modo carátula sin interactuar, los textos secundarios se ocultan */
@@ -192,35 +205,17 @@
             transition: opacity 0.3s ease;
         }
 
-        /* CORRECCIÓN INTERFAZ MODO VIDEO: 
-           Desvanecimiento de fondo negro y elementos fijos para dejar ver el clip de YouTube */
-        .player-card.video-mode .hover-control {
-            background: rgba(0, 0, 0, 0); /* Capa de controles 100% transparente de fondo */
-        }
-        
-        /* Forzar ocultación de elementos que estorban la visual del video */
-        .player-card.video-mode .station-title,
-        .player-card.video-mode .station-subtitle,
+        /* Ocultar las barras animadas del ecualizador fijos en modo Video para limpiar la pantalla */
         .player-card.video-mode .bars-container {
             opacity: 0 !important;
             pointer-events: none !important;
         }
 
-        /* El control de volumen en modo video solo aparece si el usuario interactúa (hover) */
-        .player-card.video-mode .volume-container {
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .player-card.video-mode:hover .volume-container {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* Revelado limpio general al pasar el cursor en modo Carátula */
-        .player-card.art-mode:hover .station-title, .player-card.art-mode:hover .station-subtitle,
-        .player-card.art-mode:hover .bars-container, .player-card.art-mode:hover .volume-container,
-        .player-card.art-mode:active .station-title, .player-card.art-mode:active .station-subtitle,
-        .player-card.art-mode:active .bars-container, .player-card.art-mode:active .volume-container {
+        /* Revelado limpio general al pasar el cursor */
+        .player-card:hover .station-title, .player-card:hover .station-subtitle,
+        .player-card:hover .bars-container, .player-card:hover .volume-container,
+        .player-card:active .station-title, .player-card:active .station-subtitle,
+        .player-card:active .bars-container, .player-card:active .volume-container {
             opacity: 1;
             pointer-events: auto;
         }
@@ -280,15 +275,6 @@
         
         .play-btn:hover {
             transform: scale(1.1);
-        }
-
-        /* En modo video, el botón Play/Pausa se vuelve transparente por defecto para no tapar el clip */
-        .player-card.video-mode .play-btn {
-            opacity: 0.15;
-        }
-        /* Al pasar el mouse encima del video, el botón de control reaparece con suavidad */
-        .player-card.video-mode:hover .play-btn {
-            opacity: 1;
         }
 
         .volume-container {
@@ -425,7 +411,6 @@
             <div class="sub-logo">Radio Video Online</div>
         </div>
 
-        <!-- Iniciamos en art-mode para asegurar visibilidad limpia del logo y botón Play inicial -->
         <div class="player-card art-mode" id="player-card">
             <div id="album-art-bg" class="album-art-bg"></div>
             <div id="player-video-bg" class="player-video-bg"></div>
@@ -484,7 +469,8 @@
             
             const streamUrl = 'https://primerastereo.stream.laut.fm/primerastereo';
             const metadataApiUrl = 'https://api.laut.fm/station/primerastereo/current_song';
-            const defaultLogoUrl = 'https://primera-stereo.netlify.app/11.png'; // Logo por defecto para jingles/estación
+            // CORRECCIÓN REQUIREMENT #1: Logo oficial saneado
+            const defaultLogoUrl = 'https://primera-stereo.netlify.app/11.png'; 
             
             // TU CLAVE DE API ACTUALIZADA Y VERIFICADA
             const YOUTUBE_API_KEY = "AIzaSyCxU2onHMctFbLj0UKLt-SHjw8V80bmGgg";
@@ -535,7 +521,7 @@
                         },
                         'onStateChange': function(event) {
                             if (event.data === YT.PlayerState.PLAYING) {
-                                // CORRECCIÓN DE CAPAS JS: 
+                                // CORRECCIÓN ESTRUCTURAL DE CAPAS JS: 
                                 // El video está corriendo con éxito, hacemos el suche de CSS
                                 playerCard.classList.remove('art-mode');
                                 playerCard.classList.add('video-mode');
@@ -544,11 +530,7 @@
                         'onError': function(event) {
                             // SI UN VIDEO SE ENCUENTRA BLOQUEADO, VOLVEMOS AL MODO CARÁTULA
                             console.warn("Video bloqueado detectado. Volviendo a modo Carátula.");
-                            playerCard.classList.remove('video-mode');
-                            playerCard.classList.add('art-mode');
-                            if(ytPlayer && ytPlayer.stopVideo) {
-                                ytPlayer.stopVideo();
-                            }
+                            fallbackToArtMode();
                         }
                     }
                 });
@@ -573,16 +555,25 @@
                 return false;
             }
 
-            // SISTEMA MAESTRO: TRAE VIDEOS DE CUALQUIER PROVEEDOR EVITANDO EL BLOQUEO DE DERECHOS
+            // SISTEMA MAESTRO ANTI-LYRICS (REQUIREMENT #4): Prioriza canales de Topic/Audio
             async function searchAndPlayVideo(track, artist) {
+                const trackUpper = track.toUpperCase();
+                const artistUpper = artist.toUpperCase();
+
+                // CORRECCIÓN REQUIREMENT #2: Sistema de protección para Jingles/Estación
+                if (trackUpper.includes("JINGLE") || trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO")) {
+                    clearVideoBuffer();
+                    albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
+                    lastVideoQuery = "STATION_IDLE_LOGO";
+                    return;
+                }
+
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
                 let cleanArtist = artist.trim();
                 
-                // CORRECCIÓN DE BÚSQUEDA ANTI-BLOQUEO:
-                // Buscamos versiones estáticas, letras o audios planos, que rara vez bloquean la reproducción incrustada
-                const lyricsQuery = `${cleanArtist} ${cleanTrack} lyrics`; 
-                const topicQuery = `${cleanArtist} ${cleanTrack} topic`;
-                const audioQuery = `${cleanArtist} ${cleanTrack} official audio`;
+                // Generamos un query limpio y forzado para buscar audios oficiales sin bloques visuales estáticos
+                const TopicQuery = `${cleanArtist} ${cleanTrack} official audio`; 
+                const TopicQueryRetry = `${cleanArtist} ${cleanTrack} video topic`;
                 
                 currentArtistGlobal = cleanArtist;
                 currentTrackGlobal = cleanTrack;
@@ -592,8 +583,7 @@
 
                 if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
                 
-                // UsamosTopicQuery como la principal para buscar el audio limpio oficial
-                const targetQuery = audioQuery; 
+                const targetQuery = TopicQuery; 
 
                 if (targetQuery === lastVideoQuery) return;
                 lastVideoQuery = targetQuery;
@@ -608,12 +598,12 @@
                         // Tomamos el primer video topic o audio Topic
                         executeVideoLoad(data.items[0].id.videoId);
                     } else {
-                        // Si falla TopicQuery, intentamos con Audio oficial
-                        retrySearch(lyricsQuery);
+                        // Si falla TopicQuery, intentamos con TopicVideo
+                        retrySearch(TopicQueryRetry);
                     }
                 } catch (error) {
                     console.error('Error buscando video en TopicQuery:', error);
-                    retrySearch(lyricsQuery);
+                    retrySearch(TopicQueryRetry);
                 }
             }
             
@@ -631,6 +621,11 @@
                     console.error('Error buscando video en retryQuery:', error);
                     fallbackToArtMode();
                 }
+            }
+
+            function clearVideoBuffer() {
+                 videoContainer.innerHTML = ''; // Limpieza física del iframe para el modo carátula limpia
+                 fallbackToArtMode();
             }
 
             function fallbackToArtMode() {
@@ -720,13 +715,7 @@
                     statusElement.innerHTML = '<i class="fas fa-pause-circle"></i> Pausado';
                     cancelAnimationFrame(animationId);
                     bars.forEach(bar => bar.style.height = '5px');
-                    
-                    // Al pausar audio, paramos también video y volvemos a Carátula
-                    if(ytPlayer && ytPlayer.stopVideo) {
-                        ytPlayer.stopVideo();
-                    }
-                    playerCard.classList.remove('video-mode');
-                    playerCard.classList.add('art-mode');
+                    clearVideoBuffer();
                 }
             }
 
