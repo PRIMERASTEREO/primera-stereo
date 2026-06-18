@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRIMERA STEREO 馃摶 RADIO ONLINE</title>
+    <title>PRIMERA STEREO 📻 RADIO ONLINE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" href="https://primerastereo.netlify.app/favicon.png">
     <link rel="icon" type="image/ico" href="https://primerastereo.netlify.app/favicon.png" sizes="512x512">
@@ -111,14 +111,14 @@
             height: 340px;
         }
 
-        /* Capa de car谩tula principal */
+        /* Capa de carátula principal */
         .album-art-bg {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 3; 
+            z-index: 2; 
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -138,25 +138,16 @@
             transition: opacity 0.4s ease;
             pointer-events: none;
         }
-        
-        /* Modificadores de estado din谩micos gestionados por JS */
-        .player-card.video-mode .player-video-bg {
-            z-index: 4;
-            opacity: 1;
-        }
-        .player-card.video-mode .album-art-bg {
-            opacity: 0;
-        }
 
         .player-video-bg iframe {
             width: 100%;
             height: 100%;
             border: none;
-            transform: scale(1.42); /* Compensaci贸n de aspecto para rellenar el marco */
+            transform: scale(1.42); /* Compensación de aspecto para rellenar el marco */
             object-fit: cover;
         }
 
-        /* CAPA HOVER MEJORADA: Visible parcialmente por defecto para mostrar controles */
+        /* CAPA DE CONTROLES FLOTANTES */
         .hover-control {
             position: absolute;
             top: 0;
@@ -170,17 +161,38 @@
             justify-content: center;
             gap: 16px;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.4); /* Fondo m谩s suave al inicio */
+            background: rgba(0, 0, 0, 0.4);
             transition: background 0.4s ease, opacity 0.4s ease;
         }
 
-        /* Interacci贸n del Hover completa */
-        .player-card:hover .hover-control,
-        .player-card:active .hover-control {
+        /* Modificadores estructurales cuando se activa el VIDEO-MODE */
+        .player-card.video-mode .player-video-bg {
+            z-index: 3;
+            opacity: 1;
+        }
+        
+        .player-card.video-mode .album-art-bg {
+            opacity: 0;
+        }
+
+        /* Si el video está activo, quitamos el fondo oscuro para dejar ver el clip de YouTube */
+        .player-card.video-mode .hover-control {
+            background: rgba(0, 0, 0, 0); 
+        }
+
+        /* Si el usuario pasa el mouse sobre el video, oscurecemos sutilmente para que manipule pausa o volumen */
+        .player-card.video-mode:hover .hover-control,
+        .player-card.video-mode:active .hover-control {
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        /* Interacción del Hover clásica en modo carátula */
+        .player-card.art-mode:hover .hover-control,
+        .player-card.art-mode:active .hover-control {
             background: rgba(0, 0, 0, 0.7);
         }
 
-        /* Al cargar o en modo car谩tula, forzamos que los textos de fondo se oculten para no ensuciar el logo */
+        /* Al cargar o en modo carátula sin interactuar, los textos secundarios se ocultan */
         .player-card.art-mode .station-title,
         .player-card.art-mode .station-subtitle,
         .player-card.art-mode .bars-container,
@@ -190,7 +202,25 @@
             transition: opacity 0.3s ease;
         }
 
-        /* Los elementos informativos se revelan limpiamente al pasar el cursor */
+        /* Desvanecimiento completo de barras y textos informativos fijos en modo Video para limpiar la pantalla */
+        .player-card.video-mode .station-title,
+        .player-card.video-mode .station-subtitle,
+        .player-card.video-mode .bars-container {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        /* El control de volumen en modo video solo aparece si el usuario pasa el cursor encima */
+        .player-card.video-mode .volume-container {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .player-card.video-mode:hover .volume-container {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Revelado limpio general al pasar el cursor */
         .player-card:hover .station-title, .player-card:hover .station-subtitle,
         .player-card:hover .bars-container, .player-card:hover .volume-container,
         .player-card:active .station-title, .player-card:active .station-subtitle,
@@ -232,7 +262,7 @@
             transition: height 0.2s ease;
         }
 
-        /* BOT脫N PLAY: Dise帽ado con alta prioridad visual */
+        /* BOTÓN PLAY */
         .play-btn {
             width: 70px;
             height: 70px;
@@ -247,13 +277,22 @@
             box-shadow: 0 6px 20px rgba(255, 123, 0, 0.6);
             color: white;
             font-size: 26px;
-            transition: transform 0.2s ease, background 0.3s ease;
+            transition: transform 0.2s ease, background 0.3s ease, opacity 0.3s ease;
             z-index: 6;
-            pointer-events: auto !important; /* Siempre clicable */
+            pointer-events: auto !important;
         }
         
         .play-btn:hover {
             transform: scale(1.1);
+        }
+
+        /* En modo video, el botón Play/Pausa se vuelve transparente por defecto para no tapar el clip */
+        .player-card.video-mode .play-btn {
+            opacity: 0;
+        }
+        /* Al pasar el mouse encima del video, el botón de control reaparece con suavidad */
+        .player-card.video-mode:hover .play-btn {
+            opacity: 1;
         }
 
         .volume-container {
@@ -420,7 +459,7 @@
         </div>
 
         <div class="footer-section">
-            <div class="social-title">S铆guenos en nuestras redes sociales</div>
+            <div class="social-title">Síguenos en nuestras redes sociales</div>
             <div class="social-icons">
                 <a href="https://www.facebook.com/PrimeraStereoRadio" class="social-btn facebook" target="_blank"><i class="fab fa-facebook-f"></i></a>
                 <a href="https://www.instagram.com/Primera.Stereo/" class="social-btn instagram" target="_blank"><i class="fab fa-instagram"></i></a>
@@ -429,7 +468,7 @@
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
             </div>
             <div class="copyright">
-                &copy; 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
+                &copy; 2010 - 2026 PRIMERA STEREO<br>RADIO ONLINE
             </div>
         </div>
     </div>
@@ -470,7 +509,7 @@
                         return true;
                     }
                 } catch (e) {
-                    console.error("Error car谩tula:", e);
+                    console.error("Error carátula:", e);
                 }
                 albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
                 return false;
@@ -480,7 +519,7 @@
                 const trackUpper = track.toUpperCase();
                 const artistUpper = artist.toUpperCase();
 
-                // Filtro para jingles o identificaciones de la estaci贸n
+                // Filtro para jingles o identificaciones de la estación
                 if (trackUpper.includes("JINGLE") || trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO")) {
                     playerCard.classList.remove('video-mode');
                     playerCard.classList.add('art-mode');
@@ -492,25 +531,20 @@
 
                 getAlbumArt(track, artist);
 
-                // Exclusi贸n expl铆cita de "lyrics" o "letra" para videoclips musicales oficiales
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
                 let cleanArtist = artist.trim();
                 
-                // Generamos un query limpio para la URL nativa de incrustaci贸n de YouTube
                 const rawSearchQuery = `${cleanArtist} ${cleanTrack} official music video`;
                 if (rawSearchQuery === lastVideoQuery) return;
                 lastVideoQuery = rawSearchQuery;
 
-                // Si la reproducci贸n no est谩 activa, mantenemos la interfaz en modo car谩tula limpia
                 if (!isPlaying) {
                     playerCard.classList.remove('video-mode');
                     playerCard.classList.add('art-mode');
                     return;
                 }
 
-                // INYECCI脫N DE VIDEO DIRECTA POR URL COMPILADA SIN DEPENDER DE FETCH API KEYS
-                // Cambiamos el modo de renderizado a "/embed/videoseries?listType=search&list=..."
-                // Esto fuerza a la plataforma de YouTube a buscar e inicializar de forma nativa el clip musical al frente
+                // Inyección limpia vía embed nativo de YouTube
                 const embeddedSearchUrl = `https://www.youtube.com/embed/videoseries?listType=search&list=${encodeURIComponent(rawSearchQuery)}&autoplay=1&mute=1&controls=0&rel=0&loop=1&showinfo=0&iv_load_policy=3&playsinline=1`;
                 
                 videoContainer.innerHTML = `
@@ -520,7 +554,7 @@
                         frameborder="0">
                     </iframe>`;
                 
-                // Intercambio inmediato de capas por CSS
+                // Transición limpia de capas
                 playerCard.classList.remove('art-mode');
                 playerCard.classList.add('video-mode');
             }
