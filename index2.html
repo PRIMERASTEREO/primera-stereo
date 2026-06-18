@@ -84,7 +84,7 @@
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 20px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9);
-            margin: auto 0 !important; /* Mantiene la simetría y centrado vertical */
+            margin: auto 0 !important;
             height: 440px;
         }
 
@@ -127,7 +127,7 @@
             width: 100%;
             height: 100%;
             border: none;
-            transform: scale(1.78); /* Elimina bandas negras y estira de forma fluida */
+            transform: scale(1.78);
             object-fit: cover;
         }
 
@@ -164,14 +164,13 @@
         .player-card.art-mode .bars-container,
         .player-card.art-mode .volume-container,
         .player-card.art-mode .play-btn {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .player-card.art-mode:hover .hover-control,
         .player-card.art-mode:active .hover-control {
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.4);
         }
 
         .player-card.video-mode .bars-container {
@@ -447,7 +446,7 @@
                 <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
             <div class="copyright">
-                &copy; 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE.
+                &copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE
             </div>
         </div>
     </div>
@@ -481,7 +480,7 @@
             audioPlayer.volume = volumeSlider.value;
             albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
 
-            // Cargar de forma asíncrona la API de iFrames de YouTube
+            // Inyectar API de YouTube
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -491,7 +490,7 @@
                 ytPlayer = new YT.Player('player-video-bg', {
                     height: '100%',
                     width: '100%',
-                    videoId: 'dQw4w9WgXcQ', 
+                    videoId: 'dQw4w9WgXcQ', // ID de inicialización silencioso e invisible
                     playerVars: {
                         'autoplay': 1,
                         'controls': 0,
@@ -506,25 +505,23 @@
                         'onReady': function(event) {
                             event.target.mute();
                             isPlayerReady = true;
+                            // Si ya se leyeron canciones antes de cargar la API, arranca de inmediato
                             if (currentTrackGlobal && currentArtistGlobal) {
                                 searchAndPlayVideo(currentTrackGlobal, currentArtistGlobal);
                             }
                         },
                         'onStateChange': function(event) {
-                            if (event.data === YT.PlayerState.PLAYING) {
-                                playerCard.classList.remove('art-mode');
-                                playerCard.classList.add('video-mode');
-                            }
+                            // CORRECCIÓN: Quitamos el interruptor masivo que forzaba el cambio de modo video aquí
                         },
                         'onError': function(event) {
-                            console.warn("Aviso de inicialización de iFrame. Esperando siguiente canción.");
+                            console.warn("Inicialización pasiva completada.");
                             isPlayerReady = true;
                         }
                     }
                 });
             };
 
-            // INTERCEPTOR JSONP PARA DESACTIVAR EL CONTROL DE CORS DE ITUNES DE FORMA NATIVA
+            // Interceptor JSONP nativo para carátulas iTunes (Libre de CORS)
             window.handleiTunesResponse = function(data) {
                 if (data.results && data.results.length > 0) {
                     let highResArt = data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
@@ -550,12 +547,13 @@
                 document.body.appendChild(script);
             }
 
-            // SISTEMA INTELIGENTE CONTRA EL ERROR 429 BASADO EN CACHÉ DE NAVEGADOR (LOCALSTORAGE)
+            // Sistema optimizado de búsqueda y renderizado condicional de video
             async function searchAndPlayVideo(track, artist) {
                 const trackUpper = track.toUpperCase();
                 const artistUpper = artist.toUpperCase();
 
-                if (trackUpper.includes("JINGLE") || trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO")) {
+                // Filtrar jingles institucionales o pausas comerciales de Laut.fm
+                if (trackUpper.includes("JINGLE") || trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO") || trackUpper.includes("LAUT.FM")) {
                     clearVideoBuffer();
                     albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
                     lastVideoQuery = "STATION_IDLE_LOGO";
@@ -564,19 +562,19 @@
 
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
                 let cleanArtist = artist.trim();
-                
                 const videoQuery = `${cleanArtist} ${cleanTrack}`; 
                 
                 currentArtistGlobal = cleanArtist;
                 currentTrackGlobal = cleanTrack;
 
+                // Desencadenar obtención de carátula iTunes en paralelo
                 getAlbumArt(cleanTrack, cleanArtist);
 
                 if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
                 if (videoQuery === lastVideoQuery) return;
                 lastVideoQuery = videoQuery;
 
-                // Verificar memoria del cliente local antes de consumir cuota de la API
+                // Leer memoria caché local del navegador
                 const cachedVideoId = localStorage.getItem(`yt_${videoQuery}`);
                 if (cachedVideoId) {
                     if (cachedVideoId === "NOT_FOUND") {
@@ -592,7 +590,7 @@
                     const response = await fetch(searchUrl);
                     
                     if (response.status === 429 || !response.ok) {
-                        console.warn(`Cuota de API YouTube saturada (HTTP ${response.status}). Activando carátula estática.`);
+                        console.warn(`Límite de API alcanzado. Mostrando carátula.`);
                         fallbackToArtMode();
                         return;
                     }
@@ -601,7 +599,7 @@
 
                     if (data.items && data.items.length > 0) {
                         const videoId = data.items[0].id.videoId;
-                        localStorage.setItem(`yt_${videoQuery}`, videoId); // Almacena en el navegador de por vida
+                        localStorage.setItem(`yt_${videoQuery}`, videoId);
                         executeVideoLoad(videoId);
                     } else {
                         localStorage.setItem(`yt_${videoQuery}`, "NOT_FOUND");
@@ -628,12 +626,22 @@
             function executeVideoLoad(videoId) {
                 if (!isPlayerReady || !ytPlayer) return;
                 try {
+                    // Si el video devuelto por la API coincide con el video de prueba original, protegemos el reproductor manteniéndolo en modo carátula
+                    if (videoId === 'dQw4w9WgXcQ' || videoId === 'Jf3v7H7G-bU') {
+                        fallbackToArtMode();
+                        return;
+                    }
+
                     ytPlayer.loadVideoById({
                         videoId: videoId,
                         startSeconds: 0
                     });
                     ytPlayer.mute();
                     ytPlayer.playVideo();
+                    
+                    // El reproductor cambia a modo video ÚNICAMENTE cuando la API inyecta un ID musical verificado y real
+                    playerCard.classList.remove('art-mode');
+                    playerCard.classList.add('video-mode');
                 } catch (err) {
                     console.error("Error inyectando track:", err);
                     fallbackToArtMode();
