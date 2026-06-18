@@ -99,6 +99,7 @@
             background-position: center;
             background-repeat: no-repeat;
             transition: opacity 0.4s ease;
+            opacity: 1;
         }
 
         .player-video-bg {
@@ -112,6 +113,7 @@
             opacity: 0;
             transition: opacity 0.4s ease;
             pointer-events: none;
+            overflow: hidden;
         }
         
         .player-card.video-mode .player-video-bg {
@@ -123,11 +125,12 @@
             opacity: 0;
         }
 
-        .player-video-bg iframe {
-            width: 100%;
-            height: 100%;
+        /* Selector corregido para la transformación del iframe de YouTube */
+        .player-video-bg iframe, .player-video-bg id {
+            width: 100% !important;
+            height: 100% !important;
             border: none;
-            transform: scale(1.35);
+            transform: scale(1.75) !important;
             object-fit: cover;
         }
 
@@ -144,20 +147,22 @@
             justify-content: center;
             gap: 16px;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.4) !important; 
+            background: rgba(0, 0, 0, 0.4); 
             transition: background 0.4s ease, opacity 0.4s ease;
-            opacity: 1 !important;
+            opacity: 1;
+            pointer-events: auto;
         }
 
+        /* Comportamiento del Hover corregido en Modo Video */
         .player-card.video-mode .hover-control {
-            background: rgba(0, 0, 0, 0) !important; 
-            opacity: 0 !important;
+            background: rgba(0, 0, 0, 0); 
+            opacity: 0;
         }
         
         .player-card.video-mode:hover .hover-control,
         .player-card.video-mode:active .hover-control {
-            background: rgba(0, 0, 0, 0.6) !important;
-            opacity: 1 !important;
+            background: rgba(0, 0, 0, 0.6);
+            opacity: 1;
         }
 
         .station-title {
@@ -282,7 +287,7 @@
         }
 
         .metadata-artist {
-            color: #ff7b00 !important;
+            color: #fc7f03 !important;
             font-weight: bold;
         }
 
@@ -330,7 +335,7 @@
 
         .social-title {
             font-size: 10pt;
-            color: #ff7b00;
+            color: #fc7f03;
         }
 
         .social-icons {
@@ -385,7 +390,9 @@
 
         <div class="player-card art-mode" id="player-card">
             <div id="album-art-bg" class="album-art-bg"></div>
-            <div id="player-video-bg" class="player-video-bg"></div>
+            <div id="player-video-bg" class="player-video-bg">
+                <div id="yt-player-element"></div>
+            </div>
 
             <div class="hover-control">
                 <div class="station-title">PRIMERA STEREO</div>
@@ -426,13 +433,13 @@
                 <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
             <div class="copyright">
-                &copy; 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
+                &copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE
             </div>
         </div>
     </div>
 
     <script>
-        // Callback JSONP global para las carátulas (Evita de raíz el bloqueo de CORS)
+        // Manejador JSONP global para las portadas de iTunes
         window.handleiTunesResponse = function(data) {
             const albumArtBg = document.getElementById('album-art-bg');
             const defaultLogoUrl = 'https://primera-stereo.netlify.app/11.png';
@@ -476,14 +483,15 @@
             audioPlayer.volume = volumeSlider.value;
             albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
 
-            // Inyectar API de YouTube sincronizada con la carga del documento
+            // Inyectar API de YouTube Iframe de forma asíncrona y segura
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
             window.onYouTubeIframeAPIReady = function() {
-                ytPlayer = new YT.Player('player-video-bg', {
+                // Se apunta al elemento interno para no romper las clases contenedoras
+                ytPlayer = new YT.Player('yt-player-element', {
                     height: '100%',
                     width: '100%',
                     videoId: 'dQw4w9WgXcQ', 
@@ -606,6 +614,8 @@
                     ytPlayer.loadVideoById({ videoId: videoId, startSeconds: 0 });
                     ytPlayer.mute();
                     ytPlayer.playVideo();
+                    
+                    // Activación correcta de clases visuales
                     playerCard.classList.remove('art-mode');
                     playerCard.classList.add('video-mode');
                 } catch (err) {
@@ -616,7 +626,7 @@
             async function updateMetadata() {
                 try {
                     const response = await fetch(metadataApiUrl + '?t=' + new Date().getTime());
-                    if (!response.ok) throw new Error('Señal temporal fuera de línea');
+                    if (!response.ok) throw new Error('Error en el feed de origen');
                     const data = await response.json();
                     
                     if (data && data.title) {
@@ -650,7 +660,7 @@
                         }
                     }
                 } catch (error) {
-                    console.log('Sincronizando metadatos pasivamente...');
+                    console.log('Lectura asíncrona activa...');
                 }
             }
 
