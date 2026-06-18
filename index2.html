@@ -47,9 +47,10 @@
         }
 
         .header-section {
-            z-index: 2;
+            z-index: 10;
             width: 100%;
             margin-top: 10px;
+            flex-shrink: 0;
         }
 
         .main-logo {
@@ -75,15 +76,16 @@
         .player-card {
             position: relative;
             overflow: hidden;
-            z-index: 2;
+            z-index: 5;
             width: 100%;
             max-width: 440px;
+            height: 440px;
             background: #14161a;
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 20px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9);
             margin: auto 0 !important;
-            height: 440px;
+            flex-shrink: 0;
         }
 
         .album-art-bg {
@@ -92,7 +94,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 3; 
+            z-index: 6; 
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -113,7 +115,7 @@
         }
         
         .player-card.video-mode .player-video-bg {
-            z-index: 4;
+            z-index: 7;
             opacity: 1;
         }
         
@@ -125,7 +127,7 @@
             width: 100%;
             height: 100%;
             border: none;
-            transform: scale(1.78);
+            transform: scale(1.35);
             object-fit: cover;
         }
 
@@ -135,7 +137,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 5;
+            z-index: 8;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -145,7 +147,6 @@
             background: rgba(0, 0, 0, 0.4) !important; 
             transition: background 0.4s ease, opacity 0.4s ease;
             opacity: 1 !important;
-            pointer-events: auto !important;
         }
 
         .player-card.video-mode .hover-control {
@@ -212,7 +213,7 @@
             color: white;
             font-size: 26px;
             transition: transform 0.2s ease, background 0.3s ease;
-            z-index: 6;
+            z-index: 12;
         }
         
         .play-btn:hover {
@@ -265,7 +266,7 @@
             font-size: 10pt;
             font-weight: bold;
             color: #ffffff;
-            z-index: 5;
+            z-index: 10;
             width: 100%;
             max-width: 440px;
             padding: 12px 15px;
@@ -277,11 +278,11 @@
             margin-bottom: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             overflow: hidden; 
+            flex-shrink: 0;
         }
 
-        /* COLORES CLAROS Y SEPARADOS DE METADATOS */
         .metadata-artist {
-            color: #fc7f03 !important;
+            color: #ff7b00 !important;
             font-weight: bold;
         }
 
@@ -301,14 +302,14 @@
             position: relative;
             display: flex;
             align-items: center;
-            height: 20px;
+            height: 24px;
         }
 
         .marquee-text {
             display: inline-block;
             white-space: nowrap;
             position: absolute;
-            animation: marqueeEffect 12s linear infinite;
+            animation: marqueeEffect 14s linear infinite;
         }
 
         @keyframes marqueeEffect {
@@ -317,18 +318,19 @@
         }
 
         .footer-section {
-            z-index: 2;
+            z-index: 10;
             width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 10px;
             margin-bottom: 5px;
+            flex-shrink: 0;
         }
 
         .social-title {
             font-size: 10pt;
-            color: #fc7f03;
+            color: #ff7b00;
         }
 
         .social-icons {
@@ -424,13 +426,13 @@
                 <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
             <div class="copyright">
-                &copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE
+                &copy; 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
             </div>
         </div>
     </div>
 
     <script>
-        // Callback JSONP global corregido para evitar bloqueos de CORS de iTunes
+        // Callback JSONP global para las carátulas (Evita de raíz el bloqueo de CORS)
         window.handleiTunesResponse = function(data) {
             const albumArtBg = document.getElementById('album-art-bg');
             const defaultLogoUrl = 'https://primera-stereo.netlify.app/11.png';
@@ -474,7 +476,7 @@
             audioPlayer.volume = volumeSlider.value;
             albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
 
-            // Inyección segura de la API de YouTube
+            // Inyectar API de YouTube sincronizada con la carga del documento
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -503,11 +505,9 @@
                                 searchAndPlayVideo(currentTrackGlobal, currentArtistGlobal);
                             }
                         },
-                        'onStateChange': function(event) {
-                        },
-                        'onError': function(event) {
-                            console.warn("Reproductor de YT inicializado.");
+                        'onError': function() {
                             isPlayerReady = true;
+                            fallbackToArtMode();
                         }
                     }
                 });
@@ -563,17 +563,14 @@
 
                 try {
                     const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(videoQuery)}&type=video&videoEmbeddable=true&videoSyndicated=true&key=${YOUTUBE_API_KEY}`;
+                    const response = await fetch(searchUrl).catch(() => ({ ok: false }));
                     
-                    const response = await fetch(searchUrl).catch(() => ({ ok: false, status: 500 }));
-                    
-                    if (!response.ok) {
-                        console.warn(`Control de Cuota API YouTube pasivo (${response.status}).`);
+                    if (!response || !response.ok) {
                         fallbackToArtMode();
                         return;
                     }
 
                     const data = await response.json();
-
                     if (data.items && data.items.length > 0) {
                         const videoId = data.items[0].id.videoId;
                         localStorage.setItem(`yt_${videoQuery}`, videoId);
@@ -583,7 +580,6 @@
                         fallbackToArtMode();
                     }
                 } catch (error) {
-                    console.error('Búsqueda mitigada de error:', error);
                     fallbackToArtMode();
                 }
             }
@@ -607,18 +603,12 @@
                         fallbackToArtMode();
                         return;
                     }
-
-                    ytPlayer.loadVideoById({
-                        videoId: videoId,
-                        startSeconds: 0
-                    });
+                    ytPlayer.loadVideoById({ videoId: videoId, startSeconds: 0 });
                     ytPlayer.mute();
                     ytPlayer.playVideo();
-                    
                     playerCard.classList.remove('art-mode');
                     playerCard.classList.add('video-mode');
                 } catch (err) {
-                    console.error("Error inyectando track:", err);
                     fallbackToArtMode();
                 }
             }
@@ -626,7 +616,7 @@
             async function updateMetadata() {
                 try {
                     const response = await fetch(metadataApiUrl + '?t=' + new Date().getTime());
-                    if (!response.ok) throw new Error('Señal externa ausente');
+                    if (!response.ok) throw new Error('Señal temporal fuera de línea');
                     const data = await response.json();
                     
                     if (data && data.title) {
@@ -634,8 +624,6 @@
                         const currentArtist = (data.artist && data.artist.name) ? data.artist.name : 'PRIMERA STEREO';
                         
                         statusIcon.className = "fas fa-music";
-                        
-                        // Reconstrucción limpia de la marquesina manteniendo intactos los colores
                         statusText.innerHTML = '';
                         
                         const artistSpan = document.createElement('span');
@@ -662,7 +650,7 @@
                         }
                     }
                 } catch (error) {
-                    console.error('Fallo controlado de sincronización:', error);
+                    console.log('Sincronizando metadatos pasivamente...');
                 }
             }
 
@@ -689,9 +677,8 @@
                     playBtn.style.background = 'linear-gradient(135deg, #0072ff, #00d4ff)';
                     simulateVisualizer();
                     updateMetadata();
-                }).catch(error => {
-                    console.warn('Autoplay bloqueado por políticas del navegador.');
-                    statusText.textContent = "Presiona Pausa/Play para escuchar en vivo";
+                }).catch(() => {
+                    statusText.textContent = "Presiona Play para escuchar en vivo";
                     statusIcon.className = "fas fa-play-circle";
                     updateMetadata(); 
                 });
@@ -711,10 +698,9 @@
                         simulateVisualizer();
                         lastVideoQuery = ""; 
                         updateMetadata();
-                    }).catch(error => {
-                        console.error('Error de señal:', error);
+                    }).catch(() => {
                         statusIcon.className = "fas fa-exclamation-triangle";
-                        statusText.textContent = "Error de streaming";
+                        statusText.textContent = "Error de señal";
                     });
                 } else {
                     audioPlayer.pause();
