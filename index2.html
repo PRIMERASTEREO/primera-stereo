@@ -69,6 +69,7 @@
             color: #00d4ff;
             letter-spacing: 2px;
             margin-top: -2px;
+            text-shadow: 0px 2px 8px rgba(0, 0, 0, 0.9); /* Sombra más intensa */
         }
 
         /* CARD CENTRAL CUADRADA - REAJUSTADA A 440PX */
@@ -565,8 +566,9 @@
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
                 let cleanArtist = artist.trim();
                 
-                const VideoQuery = `${cleanArtist} ${cleanTrack} official music video`; 
-                const VideoQueryRetry = `${cleanArtist} ${cleanTrack} video clip`;
+                // CAMBIO INYECTADO: Quitamos los sufijos rígidos para evadir las restricciones estrictas de VEVO/Discográficas
+                const VideoQuery = `${cleanArtist} ${cleanTrack}`; 
+                const VideoQueryRetry = `${cleanArtist} ${cleanTrack} audio`;
                 
                 currentArtistGlobal = cleanArtist;
                 currentTrackGlobal = cleanTrack;
@@ -581,7 +583,8 @@
                 lastVideoQuery = targetQuery;
 
                 try {
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${encodeURIComponent(targetQuery)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
+                    // CAMBIO INYECTADO: Se añade &videoSyndicated=true para descartar los videos bloqueados fuera de YouTube
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${encodeURIComponent(targetQuery)}&type=video&videoEmbeddable=true&videoSyndicated=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
 
@@ -598,7 +601,8 @@
             
             async function retrySearch(retryQuery) {
                  try {
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(retryQuery)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
+                    // CAMBIO INYECTADO: También se asegura el filtro en la búsqueda secundaria
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(retryQuery)}&type=video&videoEmbeddable=true&videoSyndicated=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
                     if (data.items && data.items.length > 0) {
@@ -653,7 +657,6 @@
                         const currentArtist = data.artist && data.artist.name ? data.artist.name : 'PRIMERA STEREO';
                         
                         statusElement.querySelector('i').className = "fas fa-music";
-                        // Modificado para inyectar clases específicas al artista y al tema
                         statusTextElement.innerHTML = `<span class="metadata-artist">${currentArtist}</span> - <span class="metadata-track">${currentTrack}</span>`;
                         searchAndPlayVideo(currentTrack, currentArtist);
                     } else {
