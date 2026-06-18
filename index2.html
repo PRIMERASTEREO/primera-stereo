@@ -30,7 +30,6 @@
             user-select: none;
         }
 
-        /* BLINDAJE ESTRUCTURAL CONTRA ESTILOS INYECTADOS EXTERNOS */
         .app-container {
             position: relative !important;
             width: 100% !important;
@@ -73,7 +72,6 @@
             text-shadow: 0px 2px 8px rgba(0, 0, 0, 0.9);
         }
 
-        /* CONTENEDOR CENTRAL DE REPRODUCCIÓN (CUADRADO PERFECTO) */
         .player-card {
             position: relative;
             overflow: hidden;
@@ -144,46 +142,21 @@
             justify-content: center;
             gap: 16px;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.4) !important; 
             transition: background 0.4s ease, opacity 0.4s ease;
+            opacity: 1 !important;
+            pointer-events: auto !important;
         }
 
         .player-card.video-mode .hover-control {
-            background: rgba(0, 0, 0, 0); 
-            opacity: 0;
+            background: rgba(0, 0, 0, 0) !important; 
+            opacity: 0 !important;
         }
         
         .player-card.video-mode:hover .hover-control,
         .player-card.video-mode:active .hover-control {
-            background: rgba(0, 0, 0, 0.6);
-            opacity: 1;
-        }
-
-        .player-card.art-mode .station-title,
-        .player-card.art-mode .station-subtitle,
-        .player-card.art-mode .bars-container,
-        .player-card.art-mode .volume-container,
-        .player-card.art-mode .play-btn {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .player-card.art-mode:hover .hover-control,
-        .player-card.art-mode:active .hover-control {
-            background: rgba(0, 0, 0, 0.4);
-        }
-
-        .player-card.video-mode .bars-container {
-            opacity: 0 !important;
-            pointer-events: none !important;
-        }
-
-        .player-card:hover .station-title, .player-card:hover .station-subtitle,
-        .player-card:hover .bars-container, .player-card:hover .volume-container, .player-card:hover .play-btn,
-        .player-card:active .station-title, .player-card:active .station-subtitle,
-        .player-card:active .bars-container, .player-card:active .volume-container, .player-card:active .play-btn {
-            opacity: 1;
-            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.6) !important;
+            opacity: 1 !important;
         }
 
         .station-title {
@@ -209,6 +182,11 @@
             gap: 3px;
             height: 35px;
             margin: 5px 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .player-card.video-mode .bars-container {
+            opacity: 0 !important;
         }
 
         .bar {
@@ -233,9 +211,8 @@
             box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6);
             color: white;
             font-size: 26px;
-            transition: transform 0.2s ease, background 0.3s ease, opacity 0.3s ease;
+            transition: transform 0.2s ease, background 0.3s ease;
             z-index: 6;
-            pointer-events: auto !important;
         }
         
         .play-btn:hover {
@@ -277,10 +254,8 @@
             border-radius: 50%;
             background: #00d4ff;
             cursor: pointer;
-            box-shadow: 0 0 4px rgba(0,0,0,0.5);
         }
 
-        /* BARRA DE METADATOS INFERIOR CON MARQUESINA */
         .status-badge {
             position: relative;
             display: flex;
@@ -304,18 +279,15 @@
             overflow: hidden; 
         }
 
-        .status-badge i {
-            color: #ffffff !important;
-        }
-
+        /* COLORES ORIGINALES DE LOS METADATOS */
         .metadata-artist {
-            color: #fc7f03;
+            color: #fc7f03 !important;
         }
 
         .metadata-track {
-            color: #00d4ff;
+            color: #00d4ff !important;
         }
-        
+
         .marquee-container {
             flex: 1;
             overflow: hidden;
@@ -385,7 +357,6 @@
             line-height: 1.3;
         }
 
-        /* RESPONSIVE MÓVIL Y COMPACTO */
         @media (max-height: 660px) or (max-width: 480px) {
             .player-card, .status-badge { max-width: 320px; }
             .player-card { height: 320px; }
@@ -440,18 +411,33 @@
             <div class="social-icons">
                 <a href="https://www.facebook.com/PrimeraStereoRadio" class="social-btn facebook" target="_blank"><i class="fab fa-facebook-f"></i></a>
                 <a href="https://www.instagram.com/Primera.Stereo/" class="social-btn instagram" target="_blank"><i class="fab fa-instagram"></i></a>
-                <a href="https://www.tiktok.com/@primerastereo" class="social-btn tiktok" target="_blank"><i class="fab fa-tiktok text-dark"></i></a>
+                <a href="https://www.tiktok.com/@primerastereo" class="social-btn tiktok" target="_blank"><i class="fab fa-tiktok"></i></a>
                 <a href="https://www.youtube.com/@PrimeraStereo" class="social-btn youtube" target="_blank"><i class="fab fa-youtube"></i></a>
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
                 <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
             <div class="copyright">
-                &copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE
+                &copy; 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
             </div>
         </div>
     </div>
 
     <script>
+        window.handleiTunesResponse = function(data) {
+            const albumArtBg = document.getElementById('album-art-bg');
+            const defaultLogoUrl = 'https://primera-stereo.netlify.app/11.png';
+            
+            if (data && data.results && data.results.length > 0) {
+                let highResArt = data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
+                albumArtBg.style.backgroundImage = `url('${highResArt}')`;
+            } else {
+                albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
+            }
+            
+            const oldScript = document.getElementById('itunes-jsonp');
+            if (oldScript) oldScript.remove();
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
             const audioPlayer = new Audio();
             const playBtn = document.getElementById('play-btn');
@@ -459,7 +445,6 @@
             const statusElement = document.getElementById('status');
             const bars = document.querySelectorAll('#radio-visualizer .bar');
             const albumArtBg = document.getElementById('album-art-bg');
-            const videoContainer = document.getElementById('player-video-bg');
             const playerCard = document.getElementById('player-card');
             
             const streamUrl = 'https://primerastereo.stream.laut.fm/primerastereo';
@@ -472,7 +457,6 @@
             let lastVideoQuery = "";
             let currentArtistGlobal = "";
             let currentTrackGlobal = "";
-            
             let isPlaying = false;
             let metadataInterval = null;
             let animationId;
@@ -480,7 +464,6 @@
             audioPlayer.volume = volumeSlider.value;
             albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
 
-            // Inyectar API de YouTube
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -490,7 +473,7 @@
                 ytPlayer = new YT.Player('player-video-bg', {
                     height: '100%',
                     width: '100%',
-                    videoId: 'dQw4w9WgXcQ', // ID de inicialización silencioso e invisible
+                    videoId: 'dQw4w9WgXcQ', 
                     playerVars: {
                         'autoplay': 1,
                         'controls': 0,
@@ -505,32 +488,18 @@
                         'onReady': function(event) {
                             event.target.mute();
                             isPlayerReady = true;
-                            // Si ya se leyeron canciones antes de cargar la API, arranca de inmediato
                             if (currentTrackGlobal && currentArtistGlobal) {
                                 searchAndPlayVideo(currentTrackGlobal, currentArtistGlobal);
                             }
                         },
                         'onStateChange': function(event) {
-                            // CORRECCIÓN: Quitamos el interruptor masivo que forzaba el cambio de modo video aquí
                         },
                         'onError': function(event) {
-                            console.warn("Inicialización pasiva completada.");
+                            console.warn("Reproductor de YT listo.");
                             isPlayerReady = true;
                         }
                     }
                 });
-            };
-
-            // Interceptor JSONP nativo para carátulas iTunes (Libre de CORS)
-            window.handleiTunesResponse = function(data) {
-                if (data.results && data.results.length > 0) {
-                    let highResArt = data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
-                    albumArtBg.style.backgroundImage = `url('${highResArt}')`;
-                } else {
-                    albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
-                }
-                const oldScript = document.getElementById('itunes-jsonp');
-                if (oldScript) oldScript.remove();
             };
 
             function getAlbumArt(track, artist) {
@@ -547,12 +516,10 @@
                 document.body.appendChild(script);
             }
 
-            // Sistema optimizado de búsqueda y renderizado condicional de video
             async function searchAndPlayVideo(track, artist) {
                 const trackUpper = track.toUpperCase();
                 const artistUpper = artist.toUpperCase();
 
-                // Filtrar jingles institucionales o pausas comerciales de Laut.fm
                 if (trackUpper.includes("JINGLE") || trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO") || trackUpper.includes("LAUT.FM")) {
                     clearVideoBuffer();
                     albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
@@ -567,14 +534,12 @@
                 currentArtistGlobal = cleanArtist;
                 currentTrackGlobal = cleanTrack;
 
-                // Desencadenar obtención de carátula iTunes en paralelo
                 getAlbumArt(cleanTrack, cleanArtist);
 
                 if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
                 if (videoQuery === lastVideoQuery) return;
                 lastVideoQuery = videoQuery;
 
-                // Leer memoria caché local del navegador
                 const cachedVideoId = localStorage.getItem(`yt_${videoQuery}`);
                 if (cachedVideoId) {
                     if (cachedVideoId === "NOT_FOUND") {
@@ -586,11 +551,13 @@
                 }
 
                 try {
+                    // DIRECCIÓN URL COMPLETA Y CORREGIDA AQUÍ
                     const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(videoQuery)}&type=video&videoEmbeddable=true&videoSyndicated=true&key=${YOUTUBE_API_KEY}`;
-                    const response = await fetch(searchUrl);
                     
-                    if (response.status === 429 || !response.ok) {
-                        console.warn(`Límite de API alcanzado. Mostrando carátula.`);
+                    const response = await fetch(searchUrl).catch(() => ({ ok: false, status: 500 }));
+                    
+                    if (!response.ok) {
+                        console.warn(`Aviso de Cuota o Red Excedida en YouTube (${response.status}). Modo carátula activo.`);
                         fallbackToArtMode();
                         return;
                     }
@@ -606,14 +573,14 @@
                         fallbackToArtMode();
                     }
                 } catch (error) {
-                    console.error('Error procesando búsqueda de YouTube:', error);
+                    console.error('Error en búsqueda:', error);
                     fallbackToArtMode();
                 }
             }
 
             function clearVideoBuffer() {
                  if (ytPlayer && ytPlayer.stopVideo) {
-                     ytPlayer.stopVideo();
+                     try { ytPlayer.stopVideo(); } catch(e){}
                  }
                  fallbackToArtMode();
             }
@@ -626,7 +593,6 @@
             function executeVideoLoad(videoId) {
                 if (!isPlayerReady || !ytPlayer) return;
                 try {
-                    // Si el video devuelto por la API coincide con el video de prueba original, protegemos el reproductor manteniéndolo en modo carátula
                     if (videoId === 'dQw4w9WgXcQ' || videoId === 'Jf3v7H7G-bU') {
                         fallbackToArtMode();
                         return;
@@ -639,7 +605,6 @@
                     ytPlayer.mute();
                     ytPlayer.playVideo();
                     
-                    // El reproductor cambia a modo video ÚNICAMENTE cuando la API inyecta un ID musical verificado y real
                     playerCard.classList.remove('art-mode');
                     playerCard.classList.add('video-mode');
                 } catch (err) {
@@ -651,7 +616,7 @@
             async function updateMetadata() {
                 try {
                     const response = await fetch(metadataApiUrl + '?t=' + new Date().getTime());
-                    if (!response.ok) throw new Error('Error de enlace');
+                    if (!response.ok) throw new Error('Error de señal externa');
                     const data = await response.json();
                     
                     const statusTextElement = document.getElementById('status-text');
@@ -670,7 +635,7 @@
                         }
                     }
                 } catch (error) {
-                    console.error('Fallo en sincronización:', error);
+                    console.error('Fallo en sincronización de metadatos:', error);
                 }
             }
 
@@ -681,8 +646,7 @@
                 }
                 bars.forEach(bar => {
                     const randomHeight = Math.floor(Math.random() * 27) + 5;
-                    var dynamicHeight = randomHeight + 'px';
-                    bar.style.height = dynamicHeight;
+                    bar.style.height = randomHeight + 'px';
                     bar.style.background = 'linear-gradient(to top, #ff7b00, #ffae00)';
                 });
                 animationId = requestAnimationFrame(simulateVisualizer);
@@ -696,11 +660,10 @@
                     isPlaying = true;
                     playBtn.innerHTML = '<i class="fas fa-pause"></i>';
                     playBtn.style.background = 'linear-gradient(135deg, #0072ff, #00d4ff)';
-                    playBtn.style.boxShadow = '0 6px 20px rgba(0, 114, 255, 0.6)';
                     simulateVisualizer();
                     updateMetadata();
                 }).catch(error => {
-                    console.warn('Interacción requerida por políticas del navegador.');
+                    console.warn('Bloqueo de Autoplay preventivo del navegador.');
                     document.getElementById('status-text').textContent = "Presiona Pausa/Play para escuchar en vivo";
                     statusElement.querySelector('i').className = "fas fa-play-circle";
                     updateMetadata(); 
@@ -719,7 +682,6 @@
                         isPlaying = true;
                         playBtn.innerHTML = '<i class="fas fa-pause"></i>';
                         playBtn.style.background = 'linear-gradient(135deg, #0072ff, #00d4ff)';
-                        playBtn.style.boxShadow = '0 6px 20px rgba(0, 114, 255, 0.6)';
                         simulateVisualizer();
                         lastVideoQuery = ""; 
                         updateMetadata();
@@ -734,7 +696,6 @@
                     isPlaying = false;
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
                     playBtn.style.background = 'linear-gradient(135deg, #ff7b00, #ffae00)';
-                    playBtn.style.boxShadow = '0 6px 20px rgba(255, 123, 0, 0.6)';
                     statusElement.querySelector('i').className = "fas fa-pause-circle";
                     statusTextElement.textContent = "Pausado";
                     cancelAnimationFrame(animationId);
