@@ -46,31 +46,6 @@
             text-align: center;
         }
 
-        .refresh-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 10px;
-            border-radius: 50%;
-            cursor: pointer;
-            z-index: 10;
-            transition: transform 0.3s ease;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .refresh-btn.loading {
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            100% { transform: rotate(360deg); }
-        }
-
         .header-section {
             z-index: 2;
             width: 100%;
@@ -149,12 +124,12 @@
         }
 
         .player-video-bg iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    transform: scale(1.78); /* Subido de 1.42 a 1.78 para obligarlo a expandirse más */
-    object-fit: cover;
-}
+            width: 100%;
+            height: 100%;
+            border: none;
+            transform: scale(1.78); /* Subido a 1.78 para expandir el video y reducir bandas negras */
+            object-fit: cover;
+        }
 
         /* CAPA DE CONTROLES FLOTANTES SUPERIOR */
         .hover-control {
@@ -255,14 +230,14 @@
             width: 70px;
             height: 70px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #ff7b00, #ffae00);
+            background: linear-gradient(135deg, #0072ff, #00d4ff); /* Inicializado en modo activo azul */
             border: none;
             outline: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 20px rgba(255, 123, 0, 0.6);
+            box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6);
             color: white;
             font-size: 26px;
             transition: transform 0.2s ease, background 0.3s ease, opacity 0.3s ease;
@@ -399,10 +374,6 @@
 </head>
 <body>
 
-    <button class="refresh-btn" id="refresh-btn" title="Refrescar streaming y actualizar metadatos">
-        <i class="fas fa-sync-alt"></i>
-    </button>
-
     <div class="app-container" id="main-app">
         <div class="header-section">
             <h1 class="main-logo">Primera Stereo</h1>
@@ -423,7 +394,7 @@
                 </div>
 
                 <button class="play-btn" id="play-btn">
-                    <i class="fas fa-play"></i>
+                    <i class="fas fa-pause"></i>
                 </button>
 
                 <div class="volume-container">
@@ -435,7 +406,7 @@
         </div>
 
         <div class="status-badge" id="status">
-            <i class="fas fa-broadcast-tower"></i> <span>Presiona Play para escuchar</span>
+            <i class="fas fa-broadcast-tower"></i> <span>Sincronizando señal en vivo...</span>
         </div>
 
         <div class="footer-section">
@@ -459,7 +430,6 @@
             const playBtn = document.getElementById('play-btn');
             const volumeSlider = document.getElementById('volume-slider');
             const statusElement = document.getElementById('status');
-            const refreshBtn = document.getElementById('refresh-btn');
             const bars = document.querySelectorAll('#radio-visualizer .bar');
             const albumArtBg = document.getElementById('album-art-bg');
             const videoContainer = document.getElementById('player-video-bg');
@@ -467,10 +437,7 @@
             
             const streamUrl = 'https://primerastereo.stream.laut.fm/primerastereo';
             const metadataApiUrl = 'https://api.laut.fm/station/primerastereo/current_song';
-            
-            // CORRECCIÓN PUNTO 1: Nueva URL del logo por defecto
             const defaultLogoUrl = 'https://primera-stereo.netlify.app/11.png'; 
-            
             const YOUTUBE_API_KEY = "AIzaSyCxU2onHMctFbLj0UKLt-SHjw8V80bmGgg";
             
             let ytPlayer = null;
@@ -486,6 +453,7 @@
             audioPlayer.volume = volumeSlider.value;
             albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
 
+            // Carga de la API del Iframe de YouTube
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -501,7 +469,7 @@
                         'controls': 0,
                         'rel': 0,
                         'loop': 1,
-                        'mute': 1, 
+                        'mute': 1, // Mutado por defecto para evadir bloqueos de autoplay del navegador
                         'playsinline': 1,
                         'disablekb': 1,
                         'origin': window.location.origin
@@ -550,7 +518,6 @@
                 const trackUpper = track.toUpperCase();
                 const artistUpper = artist.toUpperCase();
 
-                // CORRECCIÓN PUNTO 2: Si es jingle o tema de la emisora, destruye video y fuerza logo limpio
                 if (trackUpper.includes("JINGLE") || trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO")) {
                     clearVideoBuffer();
                     albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
@@ -561,7 +528,6 @@
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
                 let cleanArtist = artist.trim();
                 
-                // PUNTO 4: Forzado de búsqueda limpia para evadir estáticos de karaoke o letras extendidas
                 const VideoQuery = `${cleanArtist} ${cleanTrack} official music video`; 
                 const VideoQueryRetry = `${cleanArtist} ${cleanTrack} video clip`;
                 
@@ -578,7 +544,7 @@
                 lastVideoQuery = targetQuery;
 
                 try {
-                    const searchUrl = `https://www.googleapis.com/v3/search?part=snippet&maxResults=3&q=${encodeURIComponent(targetQuery)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${encodeURIComponent(targetQuery)}&type=video&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl);
                     const data = await response.json();
 
@@ -659,9 +625,6 @@
                 }
             }
 
-            updateMetadata();
-            metadataInterval = setInterval(updateMetadata, 15000);
-
             function simulateVisualizer() {
                 if (!isPlaying) {
                     bars.forEach(bar => bar.style.height = '5px');
@@ -673,6 +636,26 @@
                     bar.style.background = 'linear-gradient(to top, #ff7b00, #ffae00)';
                 });
                 animationId = requestAnimationFrame(simulateVisualizer);
+            }
+
+            // FUNCIÓN DE AUTOPLAY DIRECTO PARA CARGAR AL ENTRAR (F5)
+            function autoPlayOnLoad() {
+                audioPlayer.src = streamUrl + '?cb=' + Date.now();
+                audioPlayer.crossOrigin = "anonymous";
+                
+                audioPlayer.play().then(() => {
+                    isPlaying = true;
+                    playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    playBtn.style.background = 'linear-gradient(135deg, #0072ff, #00d4ff)';
+                    playBtn.style.boxShadow = '0 6px 20px rgba(0, 114, 255, 0.6)';
+                    simulateVisualizer();
+                    updateMetadata();
+                }).catch(error => {
+                    console.warn('Autoplay con sonido bloqueado por navegador. Esperando interacción.');
+                    statusElement.innerHTML = '<i class="fas fa-play-circle"></i> Presiona Pausa/Play para escuchar en vivo';
+                    // Dejamos que la metadata y el video sigan buscando en segundo plano aunque el audio esté pausado
+                    updateMetadata(); 
+                });
             }
 
             function togglePlayback() {
@@ -707,23 +690,12 @@
                 }
             }
 
-            function refreshStream() {
-                refreshBtn.classList.add('loading');
-                audioPlayer.pause();
-                isPlaying = false;
-                playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                playBtn.style.background = 'linear-gradient(135deg, #ff7b00, #ffae00)';
-                statusElement.innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizando...';
-                
-                setTimeout(() => {
-                    togglePlayback();
-                    refreshBtn.classList.remove('loading');
-                }, 600);
-            }
-
+            // Ejecución inmediata al cargar la página
+            autoPlayOnLoad();
+            metadataInterval = setInterval(updateMetadata, 15000);
+            
             playBtn.addEventListener('click', togglePlayback);
             volumeSlider.addEventListener('input', () => audioPlayer.volume = volumeSlider.value);
-            refreshBtn.addEventListener('click', refreshStream);
         });
     </script>
 </body>
