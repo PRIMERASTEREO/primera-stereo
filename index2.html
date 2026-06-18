@@ -279,13 +279,20 @@
             overflow: hidden; 
         }
 
-        /* COLORES ORIGINALES DE LOS METADATOS */
+        /* COLORES CLAROS Y SEPARADOS DE METADATOS */
         .metadata-artist {
             color: #fc7f03 !important;
+            font-weight: bold;
+        }
+
+        .metadata-separator {
+            color: #ffffff !important;
+            margin: 0 6px;
         }
 
         .metadata-track {
             color: #00d4ff !important;
+            font-weight: bold;
         }
 
         .marquee-container {
@@ -400,7 +407,7 @@
         </div>
 
         <div class="status-badge" id="status">
-            <i class="fas fa-broadcast-tower"></i>
+            <i class="fas fa-broadcast-tower" id="status-icon"></i>
             <div class="marquee-container">
                 <span class="marquee-text" id="status-text">Sincronizando señal en vivo...</span>
             </div>
@@ -417,12 +424,13 @@
                 <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
             <div class="copyright">
-                &copy; 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
+                &copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE
             </div>
         </div>
     </div>
 
     <script>
+        // Callback JSONP global corregido para evitar bloqueos de CORS de iTunes
         window.handleiTunesResponse = function(data) {
             const albumArtBg = document.getElementById('album-art-bg');
             const defaultLogoUrl = 'https://primera-stereo.netlify.app/11.png';
@@ -443,6 +451,8 @@
             const playBtn = document.getElementById('play-btn');
             const volumeSlider = document.getElementById('volume-slider');
             const statusElement = document.getElementById('status');
+            const statusIcon = document.getElementById('status-icon');
+            const statusText = document.getElementById('status-text');
             const bars = document.querySelectorAll('#radio-visualizer .bar');
             const albumArtBg = document.getElementById('album-art-bg');
             const playerCard = document.getElementById('player-card');
@@ -464,6 +474,7 @@
             audioPlayer.volume = volumeSlider.value;
             albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
 
+            // Inyección segura de la API de YouTube
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -495,7 +506,7 @@
                         'onStateChange': function(event) {
                         },
                         'onError': function(event) {
-                            console.warn("Reproductor de YT listo.");
+                            console.warn("Reproductor de YT inicializado.");
                             isPlayerReady = true;
                         }
                     }
@@ -551,13 +562,12 @@
                 }
 
                 try {
-                    // DIRECCIÓN URL COMPLETA Y CORREGIDA AQUÍ
                     const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(videoQuery)}&type=video&videoEmbeddable=true&videoSyndicated=true&key=${YOUTUBE_API_KEY}`;
                     
                     const response = await fetch(searchUrl).catch(() => ({ ok: false, status: 500 }));
                     
                     if (!response.ok) {
-                        console.warn(`Aviso de Cuota o Red Excedida en YouTube (${response.status}). Modo carátula activo.`);
+                        console.warn(`Control de Cuota API YouTube pasivo (${response.status}).`);
                         fallbackToArtMode();
                         return;
                     }
@@ -573,7 +583,7 @@
                         fallbackToArtMode();
                     }
                 } catch (error) {
-                    console.error('Error en búsqueda:', error);
+                    console.error('Búsqueda mitigada de error:', error);
                     fallbackToArtMode();
                 }
             }
@@ -616,26 +626,43 @@
             async function updateMetadata() {
                 try {
                     const response = await fetch(metadataApiUrl + '?t=' + new Date().getTime());
-                    if (!response.ok) throw new Error('Error de señal externa');
+                    if (!response.ok) throw new Error('Señal externa ausente');
                     const data = await response.json();
-                    
-                    const statusTextElement = document.getElementById('status-text');
                     
                     if (data && data.title) {
                         const currentTrack = data.title;
-                        const currentArtist = data.artist && data.artist.name ? data.artist.name : 'PRIMERA STEREO';
+                        const currentArtist = (data.artist && data.artist.name) ? data.artist.name : 'PRIMERA STEREO';
                         
-                        statusElement.querySelector('i').className = "fas fa-music";
-                        statusTextElement.innerHTML = `<span class="metadata-artist">${currentArtist}</span> - <span class="metadata-track">${currentTrack}</span>`;
+                        statusIcon.className = "fas fa-music";
+                        
+                        // Reconstrucción limpia de la marquesina manteniendo intactos los colores
+                        statusText.innerHTML = '';
+                        
+                        const artistSpan = document.createElement('span');
+                        artistSpan.className = 'metadata-artist';
+                        artistSpan.textContent = currentArtist;
+                        
+                        const separatorSpan = document.createElement('span');
+                        separatorSpan.className = 'metadata-separator';
+                        separatorSpan.textContent = ' - ';
+                        
+                        const trackSpan = document.createElement('span');
+                        trackSpan.className = 'metadata-track';
+                        trackSpan.textContent = currentTrack;
+                        
+                        statusText.appendChild(artistSpan);
+                        statusText.appendChild(separatorSpan);
+                        statusText.appendChild(trackSpan);
+                        
                         searchAndPlayVideo(currentTrack, currentArtist);
                     } else {
                         if (isPlaying) {
-                            statusElement.querySelector('i').className = "fas fa-broadcast-tower";
-                            statusTextElement.textContent = "Al Aire - En Vivo";
+                            statusIcon.className = "fas fa-broadcast-tower";
+                            statusText.textContent = "Al Aire - En Vivo";
                         }
                     }
                 } catch (error) {
-                    console.error('Fallo en sincronización de metadatos:', error);
+                    console.error('Fallo controlado de sincronización:', error);
                 }
             }
 
@@ -663,18 +690,17 @@
                     simulateVisualizer();
                     updateMetadata();
                 }).catch(error => {
-                    console.warn('Bloqueo de Autoplay preventivo del navegador.');
-                    document.getElementById('status-text').textContent = "Presiona Pausa/Play para escuchar en vivo";
-                    statusElement.querySelector('i').className = "fas fa-play-circle";
+                    console.warn('Autoplay bloqueado por políticas del navegador.');
+                    statusText.textContent = "Presiona Pausa/Play para escuchar en vivo";
+                    statusIcon.className = "fas fa-play-circle";
                     updateMetadata(); 
                 });
             }
 
             function togglePlayback() {
-                const statusTextElement = document.getElementById('status-text');
                 if (!isPlaying) {
-                    statusElement.querySelector('i').className = "fas fa-spinner fa-spin";
-                    statusTextElement.textContent = "Conectando...";
+                    statusIcon.className = "fas fa-spinner fa-spin";
+                    statusText.textContent = "Conectando...";
                     audioPlayer.src = streamUrl + '?cb=' + Date.now();
                     audioPlayer.crossOrigin = "anonymous";
                     
@@ -687,8 +713,8 @@
                         updateMetadata();
                     }).catch(error => {
                         console.error('Error de señal:', error);
-                        statusElement.querySelector('i').className = "fas fa-exclamation-triangle";
-                        statusTextElement.textContent = "Error de streaming";
+                        statusIcon.className = "fas fa-exclamation-triangle";
+                        statusText.textContent = "Error de streaming";
                     });
                 } else {
                     audioPlayer.pause();
@@ -696,8 +722,8 @@
                     isPlaying = false;
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
                     playBtn.style.background = 'linear-gradient(135deg, #ff7b00, #ffae00)';
-                    statusElement.querySelector('i').className = "fas fa-pause-circle";
-                    statusTextElement.textContent = "Pausado";
+                    statusIcon.className = "fas fa-pause-circle";
+                    statusText.textContent = "Pausado";
                     cancelAnimationFrame(animationId);
                     bars.forEach(bar => bar.style.height = '5px');
                     clearVideoBuffer();
