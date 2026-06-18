@@ -409,7 +409,7 @@
                 <div id="yt-player-element"></div>
             </div>
 
-            <div class="hover-control">
+            <div class="hover-control" id="hover-control">
                 <div class="station-title">PRIMERA STEREO</div>
                 <div class="station-subtitle">RADIO VIDEO ONLINE</div>   
 
@@ -448,7 +448,7 @@
                 <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
             <div class="copyright">
-                &copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE
+                &copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE.
             </div>
         </div>
     </div>
@@ -478,6 +478,7 @@
             const bars = document.querySelectorAll('#radio-visualizer .bar');
             const albumArtBg = document.getElementById('album-art-bg');
             const playerCard = document.getElementById('player-card');
+            const hoverControl = document.getElementById('hover-control');
             
             const streamUrl = 'https://primerastereo.stream.laut.fm/primerastereo';
             const metadataApiUrl = 'https://api.laut.fm/station/primerastereo/current_song';
@@ -514,7 +515,7 @@
                         'controls': 0,
                         'rel': 0,
                         'loop': 1,
-                        'mute': 1, // Mute estricto para el video
+                        'mute': 1, 
                         'playsinline': 1,
                         'disablekb': 1,
                         'origin': window.location.origin
@@ -661,6 +662,12 @@
             function fallbackToArtMode() {
                  playerCard.classList.remove('video-mode');
                  playerCard.classList.add('art-mode');
+                 
+                 // CORRECCIÓN: Forzar que los controles mantengan su estado visual e interactivo base
+                 // sobre la imagen estática del jingle/estación cancelando los bloqueos del modo video.
+                 hoverControl.style.opacity = "1";
+                 hoverControl.style.pointerEvents = "auto";
+                 hoverControl.style.background = "rgba(0, 0, 0, 0.65)";
             }
 
             function executeVideoLoad(videoId) {
@@ -678,6 +685,11 @@
                     } else {
                         ytPlayer.pauseVideo();
                     }
+                    
+                    // Limpiar estilos en línea inyectados por el fallback cuando sí hay video válido
+                    hoverControl.style.opacity = "";
+                    hoverControl.style.pointerEvents = "";
+                    hoverControl.style.background = "";
                     
                     playerCard.classList.remove('art-mode');
                     playerCard.classList.add('video-mode');
@@ -731,7 +743,6 @@
                 }
             }
             
-            // Inicialización de metadatos y llamada obligatoria al autoplay continuo
             updateMetadata();
             togglePlayback(); 
             metadataInterval = setInterval(updateMetadata, 10000);
