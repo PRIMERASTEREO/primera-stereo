@@ -451,7 +451,7 @@
                 <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
             <div class="copyright">
-                &copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE
+                &copy; 2010 - 2026 PRIMERA STEREO<br></BR>RADIO VIDEO ONLINE
             </div>
         </div>
     </div>
@@ -663,7 +663,6 @@
                         statusText.appendChild(separatorSpan);
                         statusText.appendChild(trackSpan);
                         
-                        // CRUCIAL: Solo disparamos la lógica de YouTube si la canción o el artista variaron
                         if (currentArtist !== currentArtistGlobal || currentTrack !== currentTrackGlobal) {
                             currentArtistGlobal = currentArtist;
                             currentTrackGlobal = currentTrack;
@@ -676,77 +675,13 @@
                         }
                     }
                 } catch (error) {
-                    console.log('Lectura asíncrona activa...');
+                    console.error("Error actualizando metadatos:", error);
                 }
             }
-
-            function simulateVisualizer() {
-                if (!isPlaying) {
-                    bars.forEach(bar => bar.style.height = '5px');
-                    return;
-                }
-                bars.forEach(bar => {
-                    const randomHeight = Math.floor(Math.random() * 27) + 5;
-                    bar.style.height = randomHeight + 'px';
-                    bar.style.background = 'linear-gradient(to top, #ff7b00, #ffae00)';
-                });
-                animationId = requestAnimationFrame(simulateVisualizer);
-            }
-
-            function autoPlayOnLoad() {
-                audioPlayer.src = streamUrl + '?cb=' + Date.now();
-                audioPlayer.crossOrigin = "anonymous";
-                
-                audioPlayer.play().then(() => {
-                    isPlaying = true;
-                    playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                    playBtn.style.background = 'linear-gradient(135deg, #0072ff, #00d4ff)';
-                    simulateVisualizer();
-                    updateMetadata();
-                }).catch(() => {
-                    statusText.textContent = "Presiona Play para escuchar en vivo";
-                    statusIcon.className = "fas fa-play-circle";
-                    updateMetadata(); 
-                });
-            }
-
-            function togglePlayback() {
-                if (!isPlaying) {
-                    statusIcon.className = "fas fa-spinner fa-spin";
-                    statusText.textContent = "Conectando...";
-                    audioPlayer.src = streamUrl + '?cb=' + Date.now();
-                    audioPlayer.crossOrigin = "anonymous";
-                    
-                    audioPlayer.play().then(() => {
-                        isPlaying = true;
-                        playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                        playBtn.style.background = 'linear-gradient(135deg, #0072ff, #00d4ff)';
-                        simulateVisualizer();
-                        lastVideoQuery = ""; 
-                        updateMetadata();
-                    }).catch(() => {
-                        statusIcon.className = "fas fa-exclamation-triangle";
-                        statusText.textContent = "Error de señal";
-                    });
-                } else {
-                    audioPlayer.pause();
-                    audioPlayer.src = ''; 
-                    isPlaying = false;
-                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                    playBtn.style.background = 'linear-gradient(135deg, #ff7b00, #ffae00)';
-                    statusIcon.className = "fas fa-pause-circle";
-                    statusText.textContent = "Pausado";
-                    cancelAnimationFrame(animationId);
-                    bars.forEach(bar => bar.style.height = '5px');
-                    clearVideoBuffer();
-                }
-            }
-
-            autoPlayOnLoad();
-            metadataInterval = setInterval(updateMetadata, 15000);
             
-            playBtn.addEventListener('click', togglePlayback);
-            volumeSlider.addEventListener('input', () => audioPlayer.volume = volumeSlider.value);
+            // Iniciar consulta de metadatos inicial
+            updateMetadata();
+            metadataInterval = setInterval(updateMetadata, 10000);
         });
     </script>
 </body>
