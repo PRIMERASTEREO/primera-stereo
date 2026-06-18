@@ -125,13 +125,13 @@
             opacity: 0;
         }
 
-        /* Selector corregido para la transformación del iframe de YouTube */
-        .player-video-bg iframe, .player-video-bg id {
+        /* Corrección de selectores para asegurar la carga visual del contenedor de YouTube */
+        .player-video-bg iframe, #yt-player-element {
             width: 100% !important;
             height: 100% !important;
-            border: none;
-            transform: scale(1.75) !important;
-            object-fit: cover;
+            border: none !important;
+            transform: scale(1.35) !important;
+            object-fit: cover !important;
         }
 
         .hover-control {
@@ -147,22 +147,23 @@
             justify-content: center;
             gap: 16px;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.4); 
-            transition: background 0.4s ease, opacity 0.4s ease;
+            background: rgba(0, 0, 0, 0.5); 
+            transition: background 0.3s ease, opacity 0.3s ease;
             opacity: 1;
             pointer-events: auto;
         }
 
-        /* Comportamiento del Hover corregido en Modo Video */
-        .player-card.video-mode .hover-control {
-            background: rgba(0, 0, 0, 0); 
-            opacity: 0;
+        /* Efecto HOVER unificado y corregido para los controles */
+        .player-card:hover .hover-control,
+        .player-card:active .hover-control {
+            background: rgba(0, 0, 0, 0.7) !important;
+            opacity: 1 !important;
         }
-        
-        .player-card.video-mode:hover .hover-control,
-        .player-card.video-mode:active .hover-control {
-            background: rgba(0, 0, 0, 0.6);
-            opacity: 1;
+
+        /* Desvanecimiento suave opcional cuando el cursor se retira (ideal para modo video) */
+        .player-card.video-mode .hover-control {
+            opacity: 0.3;
+            background: rgba(0, 0, 0, 0.2);
         }
 
         .station-title {
@@ -221,8 +222,10 @@
             z-index: 12;
         }
         
+        /* Efecto Hover específico del botón Play/Pausa */
         .play-btn:hover {
-            transform: scale(1.1);
+            transform: scale(1.1) !important;
+            box-shadow: 0 6px 24px rgba(0, 212, 255, 0.8) !important;
         }
 
         .volume-container {
@@ -235,6 +238,12 @@
             padding: 8px 14px;
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: border-color 0.2s ease;
+        }
+        
+        /* Efecto Hover en la barra de volumen */
+        .volume-container:hover {
+            border-color: rgba(0, 212, 255, 0.5);
         }
 
         .volume-icon {
@@ -260,6 +269,11 @@
             border-radius: 50%;
             background: #00d4ff;
             cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
         }
 
         .status-badge {
@@ -356,7 +370,10 @@
             color: white;
             font-size: 16px;
             border: 1px solid rgba(255,255,255,0.05);
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .social-btn:hover {
+            transform: translateY(-3px);
         }
         .social-btn.facebook:hover { background: #1877f2; }
         .social-btn.instagram:hover { background: #e1306c; }
@@ -390,6 +407,7 @@
 
         <div class="player-card art-mode" id="player-card">
             <div id="album-art-bg" class="album-art-bg"></div>
+            
             <div id="player-video-bg" class="player-video-bg">
                 <div id="yt-player-element"></div>
             </div>
@@ -433,13 +451,12 @@
                 <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
             <div class="copyright">
-                &copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE
+                &copy; 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
             </div>
         </div>
     </div>
 
     <script>
-        // Manejador JSONP global para las portadas de iTunes
         window.handleiTunesResponse = function(data) {
             const albumArtBg = document.getElementById('album-art-bg');
             const defaultLogoUrl = 'https://primera-stereo.netlify.app/11.png';
@@ -483,14 +500,12 @@
             audioPlayer.volume = volumeSlider.value;
             albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
 
-            // Inyectar API de YouTube Iframe de forma asíncrona y segura
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
             window.onYouTubeIframeAPIReady = function() {
-                // Se apunta al elemento interno para no romper las clases contenedoras
                 ytPlayer = new YT.Player('yt-player-element', {
                     height: '100%',
                     width: '100%',
@@ -570,7 +585,7 @@
                 }
 
                 try {
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(videoQuery)}&type=video&videoEmbeddable=true&videoSyndicated=true&key=${YOUTUBE_API_KEY}`;
+                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(videoQuery)}&type=video&key=${YOUTUBE_API_KEY}`;
                     const response = await fetch(searchUrl).catch(() => ({ ok: false }));
                     
                     if (!response || !response.ok) {
@@ -615,7 +630,6 @@
                     ytPlayer.mute();
                     ytPlayer.playVideo();
                     
-                    // Activación correcta de clases visuales
                     playerCard.classList.remove('art-mode');
                     playerCard.classList.add('video-mode');
                 } catch (err) {
