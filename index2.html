@@ -309,6 +309,19 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             overflow: hidden; 
         }
+
+        /* MODIFICACIONES DE COLOR SOLICITADAS */
+        .status-badge i {
+            color: #ffffff !important; /* Fuerza a que el icono siempre sea blanco */
+        }
+
+        .metadata-artist {
+            color: #fc7f03; /* Naranja idéntico al título */
+        }
+
+        .metadata-track {
+            color: #00d4ff; /* Azul idéntico al subtítulo */
+        }
         
         /* Contenedor de la marquesina con ancho flexible */
         .marquee-container {
@@ -374,7 +387,7 @@
         .social-btn.tiktok:hover { background: #000000; }
         .social-btn.youtube:hover { background: #ff0000; }
         .social-btn.google-play:hover { background: #20e8c7; }
-		.social-btn.whatsapp:hover { background: #20e825; }
+        .social-btn.whatsapp:hover { background: #20e825; }
 
         .copyright {
             font-size: 8pt;
@@ -440,7 +453,7 @@
                 <a href="https://www.tiktok.com/@primerastereo" class="social-btn tiktok" target="_blank"><i class="fab fa-tiktok text-dark"></i></a>
                 <a href="https://www.youtube.com/@PrimeraStereo" class="social-btn youtube" target="_blank"><i class="fab fa-youtube"></i></a>
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
-				<a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
             <div class="copyright">
                 &copy; 2010 - 2026 PRIMERA STEREO<br>RADIO VIDEO ONLINE
@@ -640,7 +653,8 @@
                         const currentArtist = data.artist && data.artist.name ? data.artist.name : 'PRIMERA STEREO';
                         
                         statusElement.querySelector('i').className = "fas fa-music";
-                        statusTextElement.textContent = `${currentArtist} - ${currentTrack}`;
+                        // Modificado para inyectar clases específicas al artista y al tema
+                        statusTextElement.innerHTML = `<span class="metadata-artist">${currentArtist}</span> - <span class="metadata-track">${currentTrack}</span>`;
                         searchAndPlayVideo(currentTrack, currentArtist);
                     } else {
                         if (isPlaying) {
