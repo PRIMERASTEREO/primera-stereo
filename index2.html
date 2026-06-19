@@ -29,7 +29,17 @@
         .player-card.video-mode .player-video-bg { z-index: 7; opacity: 1; }
         .player-card.video-mode .album-art-bg { opacity: 0; }
         .player-video-bg iframe, #yt-player-element { width: 100% !important; height: 100% !important; border: none !important; transform: scale(1.35) !important; object-fit: cover !important; }
-        .hover-control { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 20px; background: rgba(0, 0, 0, 0.65); transition: opacity 0.3s ease, background-color 0.3s ease; opacity: 1; pointer-events: auto; }
+        .hover-control { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 8; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            gap: 16px; padding: 20px; background: rgba(0, 0, 0, 0.7); 
+            transition: opacity 0.3s ease; opacity: 0; pointer-events: none; /* OCULTOS POR DEFECTO */
+        }
+        
+        /* AL TOCAR O PASAR EL MOUSE, APARECEN */
+        .player-card:hover .hover-control, .player-card:active .hover-control { 
+            opacity: 1 !important; pointer-events: auto !important; 
+        }
         .player-card.video-mode .hover-control { opacity: 0; background: rgba(0, 0, 0, 0); pointer-events: none; }
         .player-card.video-mode:hover .hover-control, .player-card.video-mode:active .hover-control { opacity: 1 !important; background: rgba(0, 0, 0, 0.75) !important; pointer-events: auto !important; }
         .station-title { font-size: 13pt; font-weight: bold; color: #fc7f03; letter-spacing: 1px; text-shadow: 0 2px 6px rgba(0,0,0,1); }
@@ -109,7 +119,7 @@
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
                 <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
-            <div class="copyright">&copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE...</div>
+            <div class="copyright">&copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE</div>
         </div>
     </div>
 
@@ -200,42 +210,41 @@
             }
 
             async function searchAndPlayVideo(track, artist) {
-                const trackUpper = track.toUpperCase();
-                const artistUpper = artist.toUpperCase();
+            const trackUpper = track.toUpperCase();
+            const artistUpper = artist.toUpperCase();
 
-                // Punto 3: Lógica Jingle/Logo (Oculta video y pone logo)
-                if (trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO") || trackUpper.includes("JINGLE")) {
-                    if (ytPlayer && ytPlayer.stopVideo) { try { ytPlayer.stopVideo(); } catch(e){} }
-                    albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
-                    playerCard.classList.remove('video-mode');
-                    hoverControl.classList.remove('controls-hidden'); // Ajuste: mostrar controles para poder dar play
-                    lastVideoQuery = "STATION_IDLE_LOGO";
-                    return;
-                }
-
-                // Punto 4 y 5: Carga video SIN LYRICS/KARAOKE
-                let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
-                let cleanArtist = artist.trim();
-                // Filtro agregado para evitar lyrics/karaoke
-                const videoQuery = `${cleanArtist} ${cleanTrack} -lyrics -karaoke`;
-                
-                getAlbumArt(cleanTrack, cleanArtist);
-                if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
-                if (videoQuery === lastVideoQuery) return;
-                lastVideoQuery = videoQuery;
-
-                try {
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(videoQuery)}&type=video&key=${YOUTUBE_API_KEY}`;
-                    const response = await fetch(searchUrl);
-                    if (!response.ok) { fallbackToArtMode(); return; }
-                    const data = await response.json();
-                    
-                    if (data.items && data.items.length > 0) {
-                        const videoId = data.items[0].id.videoId;
-                        executeVideoLoad(videoId);
-                    } else { fallbackToArtMode(); }
-                } catch (error) { fallbackToArtMode(); }
+            // Lógica JINGLE o Logo
+            if (trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO") || trackUpper.includes("JINGLE")) {
+                if (ytPlayer && ytPlayer.stopVideo) { try { ytPlayer.stopVideo(); } catch(e){} }
+                albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
+                playerCard.classList.remove('video-mode');
+                return;
             }
+
+            // FILTRO DE VIDEO MEJORADO: Excluye explícitamente lyrics y karaoke
+            let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
+            const videoQuery = `${artist} ${cleanTrack} -lyrics -karaoke -lyric -instrumental`;
+            
+            getAlbumArt(cleanTrack, artist);
+            
+            try {
+                const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${encodeURIComponent(videoQuery)}&type=video&key=${YOUTUBE_API_KEY}`;
+                const response = await fetch(searchUrl);
+                const data = await response.json();
+                
+                // Buscar un video que no tenga las palabras prohibidas en el título
+                const validVideo = data.items.find(item => {
+                    const title = item.snippet.title.toUpperCase();
+                    return !title.includes("LYRICS") && !title.includes("KARAOKE") && !title.includes("LYRIC");
+                });
+
+                if (validVideo) {
+                    executeVideoLoad(validVideo.id.videoId);
+                } else {
+                    fallbackToArtMode();
+                }
+            } catch (error) { fallbackToArtMode(); }
+        }
 
             function fallbackToArtMode() {
                 playerCard.classList.remove('video-mode');
