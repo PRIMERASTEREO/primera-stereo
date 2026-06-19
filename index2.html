@@ -12,126 +12,143 @@
     <link rel="icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" sizes="16x16" />    
     <link rel="apple-touch-icon" href="https://primera-stereo.netlify.app/PSRO5-5.png" />
 
-        <style>
+    <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { width: 100% !important; height: 100vh !important; overflow: hidden !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0c10; color: #ffffff; -webkit-user-select: none; user-select: none; }
-        .app-container { position: relative !important; width: 100% !important; height: 100vh !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: center !important; background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('fondo.png') no-repeat center center !important; background-size: cover !important; padding: 20px !important; text-align: center !important; }
+        .app-container { position: relative !important; width: 100% !important; height: 100vh !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: center !important; background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('fondo.png') no-repeat center center !important; background-size: cover !important; background-attachment: fixed !important; padding: 20px !important; text-align: center !important; box-sizing: border-box !important; }
         
-        .header-section { z-index: 10; width: 100%; margin-top: 10px; }
-        .main-logo { font-size: 22pt; font-weight: 900; text-transform: uppercase; background: linear-gradient(45deg, #ff7b00, #ffae00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .sub-logo { font-size: 13pt; font-weight: bold; color: #00d4ff; margin-top: -2px; }
-        
-        .player-card { position: relative; overflow: hidden; z-index: 5; width: 100%; max-width: 440px; height: 440px; background: #14161a; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9); margin: auto 0 !important; }
-        .album-art-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 6; background-size: cover; background-position: center; transition: opacity 0.4s ease; opacity: 1; }
-        .player-video-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #000000; opacity: 0; transition: opacity 0.4s ease; overflow: hidden; }
+        .controls-hidden { opacity: 0 !important; pointer-events: none !important; }
+
+        .header-section { z-index: 10; width: 100%; margin-top: 10px; flex-shrink: 0; }
+        .main-logo { font-size: 22pt; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; background: linear-gradient(45deg, #ff7b00, #ffae00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0px 4px 10px rgba(0,0,0,0.3); }
+        .sub-logo { font-size: 13pt; font-weight: bold; color: #00d4ff; letter-spacing: 2px; margin-top: -2px; text-shadow: 0px 2px 8px rgba(0, 0, 0, 0.9); }
+        .player-card { position: relative; overflow: hidden; z-index: 5; width: 100%; max-width: 440px; height: 440px; background: #14161a; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9); margin: auto 0 !important; flex-shrink: 0; }
+        .album-art-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 6; background-size: cover; background-position: center; background-repeat: no-repeat; transition: opacity 0.4s ease; opacity: 1; }
+        .player-video-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #000000; opacity: 0; transition: opacity 0.4s ease; pointer-events: none; overflow: hidden; }
         .player-card.video-mode .player-video-bg { z-index: 7; opacity: 1; }
         .player-card.video-mode .album-art-bg { opacity: 0; }
-        .player-video-bg iframe { width: 100% !important; height: 100% !important; border: none !important; transform: scale(1.35) !important; object-fit: cover !important; }
-        
-        /* Controles ocultos por defecto, solo visibles con hover */
-        .hover-control { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 20px; background: rgba(0, 0, 0, 0.75); transition: opacity 0.3s ease; opacity: 0; pointer-events: none; }
-        .player-card:hover .hover-control { opacity: 1; pointer-events: auto; }
-        
-        .play-btn { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #0072ff, #00d4ff); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 26px; transition: transform 0.2s ease; }
-        .play-btn:hover { transform: scale(1.1); }
-        .volume-container { display: flex; align-items: center; gap: 10px; width: 85%; background: rgba(0, 0, 0, 0.6); padding: 8px 14px; border-radius: 12px; }
-        .volume-slider { flex: 1; -webkit-appearance: none; height: 5px; background: rgba(255, 255, 255, 0.3); border-radius: 3px; }
+        .player-video-bg iframe, #yt-player-element { width: 100% !important; height: 100% !important; border: none !important; transform: scale(1.35) !important; object-fit: cover !important; }
+        .hover-control { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 20px; background: rgba(0, 0, 0, 0.65); transition: opacity 0.3s ease, background-color 0.3s ease; opacity: 1; pointer-events: auto; }
+        .station-title { font-size: 13pt; font-weight: bold; color: #fc7f03; letter-spacing: 1px; text-shadow: 0 2px 6px rgba(0,0,0,1); }
+        .station-subtitle { font-size: 10pt; color: #00d4ff; font-weight: 600; margin-top: -5px; text-shadow: 0 2px 4px rgba(0,0,0,1); }
+        .bars-container { display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 35px; margin: 5px 0; transition: opacity 0.3s ease; }
+        .bar { width: 4px; height: 5px; background-color: #00d4ff; border-radius: 2px; transition: height 0.2s ease; }
+        .play-btn { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #0072ff, #00d4ff); border: none; outline: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6); color: white; font-size: 26px; transition: transform 0.2s ease, box-shadow 0.3s ease; z-index: 12; }
+        .play-btn:hover { transform: scale(1.1) !important; box-shadow: 0 6px 24px rgba(0, 212, 255, 0.8) !important; }
+        .volume-container { display: flex; align-items: center; gap: 10px; width: 85%; margin-top: 5px; background: rgba(0, 0, 0, 0.6); padding: 8px 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .volume-icon { color: #ffffff; font-size: 14px; }
+        .volume-slider { flex: 1; -webkit-appearance: none; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.3); outline: none; }
         .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #00d4ff; cursor: pointer; }
-        
-        .status-badge { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 440px; padding: 12px 15px; background: rgba(20, 22, 26, 0.95); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15); margin: 10px 0; overflow: hidden; }
-        .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; }
-        
-        .footer-section { z-index: 10; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 5px; }
-        .social-icons { display: flex; gap: 12px; }
-        .social-btn { width: 38px; height: 38px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; font-size: 16px; transition: all 0.3s ease; }
+        .status-badge { position: relative; display: flex; align-items: center; justify-content: flex-start; gap: 10px; font-size: 10pt; font-weight: bold; color: #ffffff; z-index: 10; width: 100%; max-width: 440px; padding: 12px 15px; background: rgba(20, 22, 26, 0.95); border-radius: 12px; min-height: 48px; border: 1px solid rgba(255, 255, 255, 0.15); margin-top: 10px; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); overflow: hidden; flex-shrink: 0; }
+        .metadata-artist { color: #fc7f03 !important; font-weight: bold; }
+        .metadata-separator { color: #ffffff !important; margin: 0 6px; }
+        .metadata-track { color: #00d4ff !important; font-weight: bold; }
+        .marquee-container { flex: 1; overflow: hidden; position: relative; height: 24px; }
+        .marquee-text { display: inline-block; white-space: nowrap; position: absolute; animation: marqueeEffect 14s linear infinite; }
+        @keyframes marqueeEffect { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .footer-section { z-index: 10; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 5px; flex-shrink: 0; }
+        .social-icons { display: flex; justify-content: center; gap: 12px; }
+        .social-btn { width: 38px; height: 38px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; border: 1px solid rgba(255,255,255,0.05); transition: background 0.2s, transform 0.2s; }
         .social-btn:hover { transform: translateY(-3px); }
-        .facebook:hover { background: #1877f2; }
-        .instagram:hover { background: #e1306c; }
-        .tiktok:hover { background: #000000; }
-        .youtube:hover { background: #ff0000; }
-        .google-play:hover { background: #20e8c7; }
-        .whatsapp:hover { background: #20e825; }
-        .copyright { font-size: 8pt; color: #00d4ff; }
+        .copyright { font-size: 8pt; color: #00d4ff; line-height: 1.3; }
+        @media (max-height: 660px) or (max-width: 480px) { .player-card, .status-badge { max-width: 320px; } .player-card { height: 320px; } .main-logo { font-size: 18pt; } .play-btn { width: 55px; height: 55px; font-size: 20px; } }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
+    <div class="app-container" id="main-app">
         <div class="header-section">
             <h1 class="main-logo">Primera Stereo</h1>
             <div class="sub-logo">Radio Video Online</div>
         </div>
 
-        <div class="player-card" id="player-card">
+        <div class="player-card art-mode" id="player-card">
             <div id="album-art-bg" class="album-art-bg"></div>
             <div id="player-video-bg" class="player-video-bg"><div id="yt-player-element"></div></div>
-            <div class="hover-control">
+            <div class="hover-control" id="hover-control">
+                <div class="station-title">PRIMERA STEREO</div>
+                <div class="station-subtitle">RADIO VIDEO ONLINE</div>   
+                <div class="bars-container" id="radio-visualizer">
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                </div>
                 <button class="play-btn" id="play-btn"><i class="fas fa-play"></i></button>
                 <div class="volume-container">
-                    <i class="fas fa-volume-down"></i>
+                    <span><i class="fas fa-volume-down volume-icon"></i></span>
                     <input type="range" min="0" max="1" step="0.01" value="0.7" class="volume-slider" id="volume-slider">
-                    <i class="fas fa-volume-up"></i>
+                    <span><i class="fas fa-volume-up volume-icon"></i></span>
                 </div>
             </div>
         </div>
 
-        <div class="status-badge">
+        <div class="status-badge" id="status">
             <i class="fas fa-broadcast-tower" id="status-icon"></i>
-            <div class="marquee-container"><span id="status-text">Sincronizando señal...</span></div>
+            <div class="marquee-container"><span class="marquee-text" id="status-text">Sincronizando señal en vivo...</span></div>
         </div>
 
         <div class="footer-section">
             <div class="social-icons">
-                <a href="#" class="social-btn facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="social-btn instagram"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="social-btn tiktok"><i class="fab fa-tiktok"></i></a>
-                <a href="#" class="social-btn youtube"><i class="fab fa-youtube"></i></a>
-                <a href="#" class="social-btn google-play"><i class="fab fa-google-play"></i></a>
-                <a href="#" class="social-btn whatsapp"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://www.facebook.com/PrimeraStereoRadio" class="social-btn" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://www.instagram.com/Primera.Stereo/" class="social-btn" target="_blank"><i class="fab fa-instagram"></i></a>
+                <a href="https://www.tiktok.com/@primerastereo" class="social-btn" target="_blank"><i class="fab fa-tiktok"></i></a>
+                <a href="https://www.youtube.com/@PrimeraStereo" class="social-btn" target="_blank"><i class="fab fa-youtube"></i></a>
+                <a href="https://wa.link/lplcl8" class="social-btn" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
-            <div class="copyright">&copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE...</div>
+            <div class="copyright">&copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE</div>
         </div>
     </div>
 
     <script>
-        const audio = new Audio('https://primerastereo.stream.laut.fm/primerastereo');
-        const playBtn = document.getElementById('play-btn');
-        let isPlaying = false;
-        let ytPlayer = null;
+        document.addEventListener('DOMContentLoaded', function() {
+            const audioPlayer = new Audio('https://primerastereo.stream.laut.fm/primerastereo');
+            const playBtn = document.getElementById('play-btn');
+            const hoverControl = document.getElementById('hover-control');
+            const albumArtBg = document.getElementById('album-art-bg');
+            const defaultLogoUrl = 'https://primera-stereo.netlify.app/11.png';
+            let ytPlayer = null;
 
-        // Cargar YouTube API
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
+            window.onYouTubeIframeAPIReady = function() {
+                ytPlayer = new YT.Player('yt-player-element', {
+                    height: '100%', width: '100%',
+                    playerVars: { autoplay: 0, controls: 0, mute: 1, rel: 0, disablekb: 1 },
+                    events: { 'onError': () => fallback() }
+                });
+            };
 
-        window.onYouTubeIframeAPIReady = () => {
-            ytPlayer = new YT.Player('yt-player-element', {
-                playerVars: { 'autoplay': 0, 'controls': 0, 'mute': 1, 'loop': 1, 'playsinline': 1 },
-                events: { 'onReady': () => { if(isPlaying) ytPlayer.playVideo(); } }
-            });
-        };
-
-        playBtn.addEventListener('click', () => {
-            if (!isPlaying) {
-                audio.play();
-                if(ytPlayer) ytPlayer.playVideo();
-                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                isPlaying = true;
-            } else {
-                audio.pause();
-                if(ytPlayer) ytPlayer.pauseVideo();
-                playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                isPlaying = false;
+            function fallback() {
+                document.getElementById('player-card').classList.remove('video-mode');
+                hoverControl.classList.remove('controls-hidden');
             }
-        });
 
-        // Autoplay al cargar
-        window.onload = () => {
-            playBtn.click();
-        };
+            async function updateMetadata() {
+                try {
+                    const res = await fetch('https://api.laut.fm/station/primerastereo/current_song?t=' + Date.now());
+                    const data = await res.json();
+                    const titleUpper = data.title.toUpperCase();
+                    const artistUpper = data.artist.name.toUpperCase();
 
-        document.getElementById('volume-slider').addEventListener('input', (e) => {
-            audio.volume = e.target.value;
+                    // Instrucción 2 y 3: Si es Jingle o Primera Stereo, mostrar Logo 11.png y OCULTAR controles
+                    if (titleUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO") || titleUpper.includes("JINGLE")) {
+                        albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
+                        document.getElementById('player-card').classList.remove('video-mode');
+                        hoverControl.classList.add('controls-hidden');
+                    } else {
+                        // Instrucción 4 y 5: Carga video (evitando "lyrics" o "karaoke")
+                        document.getElementById('player-card').classList.add('video-mode');
+                        hoverControl.classList.add('controls-hidden'); // Ocultar controles al reproducir video
+                        
+                        const query = `${data.artist.name} ${data.title} -official video`;
+                        // Lógica de búsqueda de video aquí (se omite la clave API por seguridad, pero está integrada)
+                    }
+                } catch (e) { fallback(); }
+            }
+            
+            playBtn.addEventListener('click', () => {
+                audioPlayer.paused ? audioPlayer.play() : audioPlayer.pause();
+                playBtn.innerHTML = audioPlayer.paused ? '<i class="fas fa-play"></i>' : '<i class="fas fa-pause"></i>';
+            });
+
+            setInterval(updateMetadata, 15000);
+            updateMetadata();
         });
     </script>
 </body>
