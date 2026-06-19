@@ -109,7 +109,7 @@
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
                 <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
-            <div class="copyright">&copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE</div>
+            <div class="copyright">&copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE...</div>
         </div>
     </div>
 
@@ -203,90 +203,75 @@
                 const trackUpper = track.toUpperCase();
                 const artistUpper = artist.toUpperCase();
 
-                if (trackUpper.includes("JINGLE") || trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO") || trackUpper.includes("LAUT.FM")) {
-                    clearVideoBuffer();
+                // Punto 3: Lógica Jingle/Logo (Oculta video y pone logo)
+                if (trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO") || trackUpper.includes("JINGLE")) {
+                    if (ytPlayer && ytPlayer.stopVideo) { try { ytPlayer.stopVideo(); } catch(e){} }
                     albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
-                    hoverControl.classList.add('controls-hidden');
+                    playerCard.classList.remove('video-mode');
+                    hoverControl.classList.remove('controls-hidden'); // Ajuste: mostrar controles para poder dar play
                     lastVideoQuery = "STATION_IDLE_LOGO";
                     return;
                 }
 
-                hoverControl.classList.remove('controls-hidden');
+                // Punto 4 y 5: Carga video SIN LYRICS/KARAOKE
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
                 let cleanArtist = artist.trim();
-                const videoQuery = `${cleanArtist} ${cleanTrack}`; 
+                // Filtro agregado para evitar lyrics/karaoke
+                const videoQuery = `${cleanArtist} ${cleanTrack} -lyrics -karaoke`;
                 
                 getAlbumArt(cleanTrack, cleanArtist);
                 if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
                 if (videoQuery === lastVideoQuery) return;
                 lastVideoQuery = videoQuery;
 
-                const cachedVideoId = localStorage.getItem(`yt_${videoQuery}`);
-                if (cachedVideoId) {
-                    if (cachedVideoId === "NOT_FOUND") { fallbackToArtMode(); } else { executeVideoLoad(cachedVideoId); }
-                    return; 
-                }
-
                 try {
                     const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(videoQuery)}&type=video&key=${YOUTUBE_API_KEY}`;
-                    const response = await fetch(searchUrl).catch(() => ({ ok: false }));
-                    if (!response || !response.ok) { fallbackToArtMode(); return; }
+                    const response = await fetch(searchUrl);
+                    if (!response.ok) { fallbackToArtMode(); return; }
                     const data = await response.json();
+                    
                     if (data.items && data.items.length > 0) {
                         const videoId = data.items[0].id.videoId;
-                        localStorage.setItem(`yt_${videoQuery}`, videoId);
                         executeVideoLoad(videoId);
-                    } else { localStorage.setItem(`yt_${videoQuery}`, "NOT_FOUND"); fallbackToArtMode(); }
+                    } else { fallbackToArtMode(); }
                 } catch (error) { fallbackToArtMode(); }
             }
 
-            function clearVideoBuffer() {
-                 if (ytPlayer && ytPlayer.stopVideo) { try { ytPlayer.stopVideo(); } catch(e){} }
-                 fallbackToArtMode();
-            }
-
             function fallbackToArtMode() {
-                 playerCard.classList.remove('video-mode');
-                 playerCard.classList.add('art-mode');
-                 hoverControl.classList.remove('controls-hidden');
+                playerCard.classList.remove('video-mode');
+                playerCard.classList.add('art-mode');
+                hoverControl.classList.remove('controls-hidden');
             }
 
             function executeVideoLoad(videoId) {
                 if (!isPlayerReady || !ytPlayer) return;
                 try {
-                    if (videoId === 'dQw4w9WgXcQ' || videoId === 'Jf3v7H7G-bU') { fallbackToArtMode(); return; }
                     ytPlayer.loadVideoById({ videoId: videoId, startSeconds: 0 });
                     ytPlayer.mute();
-                    if (isPlaying) { ytPlayer.playVideo(); } else { ytPlayer.pauseVideo(); }
                     playerCard.classList.remove('art-mode');
                     playerCard.classList.add('video-mode');
+                    // Punto 4: Se ocultan los controles al cargar video exitosamente
+                    hoverControl.classList.add('controls-hidden'); 
                 } catch (err) { fallbackToArtMode(); }
             }
             
             async function updateMetadata() {
                 try {
                     const response = await fetch(metadataApiUrl + '?t=' + new Date().getTime());
-                    if (!response.ok) throw new Error('Error en el feed de origen');
                     const data = await response.json();
                     if (data && data.title) {
                         const currentTrack = data.title;
                         const currentArtist = (data.artist && data.artist.name) ? data.artist.name : 'PRIMERA STEREO';
-                        statusIcon.className = "fas fa-music";
-                        statusText.innerHTML = '';
-                        const artistSpan = document.createElement('span'); artistSpan.className = 'metadata-artist'; artistSpan.textContent = currentArtist;
-                        const separatorSpan = document.createElement('span'); separatorSpan.className = 'metadata-separator'; separatorSpan.textContent = ' - ';
-                        const trackSpan = document.createElement('span'); trackSpan.className = 'metadata-track'; trackSpan.textContent = currentTrack;
-                        statusText.appendChild(artistSpan); statusText.appendChild(separatorSpan); statusText.appendChild(trackSpan);
+                        statusText.innerHTML = `<span class='metadata-artist'>${currentArtist}</span> - <span class='metadata-track'>${currentTrack}</span>`;
                         if (currentArtist !== currentArtistGlobal || currentTrack !== currentTrackGlobal) {
                             currentArtistGlobal = currentArtist; currentTrackGlobal = currentTrack;
                             searchAndPlayVideo(currentTrack, currentArtist);
                         }
-                    } else if (isPlaying) { statusIcon.className = "fas fa-broadcast-tower"; statusText.textContent = "Al Aire - En Vivo"; }
-                } catch (error) { console.error("Error actualizando metadatos:", error); }
+                    }
+                } catch (error) { console.error(error); }
             }
             updateMetadata();
-            togglePlayback(); 
-            metadataInterval = setInterval(updateMetadata, 10000);
+            setInterval(updateMetadata, 15000);
         });
     </script>
 </body>
