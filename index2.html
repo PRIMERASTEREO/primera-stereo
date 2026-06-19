@@ -20,6 +20,7 @@
         .header-section { z-index: 10; width: 100%; margin-top: 10px; flex-shrink: 0; }
         .main-logo { font-size: 22pt; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; background: linear-gradient(45deg, #ff7b00, #ffae00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0px 4px 10px rgba(0,0,0,0.3); }
         .sub-logo { font-size: 13pt; font-weight: bold; color: #00d4ff; letter-spacing: 2px; margin-top: -2px; text-shadow: 0px 2px 8px rgba(0, 0, 0, 0.9); }
+        
         .player-card { position: relative; overflow: hidden; z-index: 5; width: 100%; max-width: 440px; height: 440px; background: #14161a; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9); margin: auto 0 !important; flex-shrink: 0; }
         .album-art-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 6; background-size: cover; background-position: center; background-repeat: no-repeat; transition: opacity 0.4s ease; opacity: 1; }
         .player-video-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #000000; opacity: 0; transition: opacity 0.4s ease; pointer-events: none; overflow: hidden; }
@@ -27,24 +28,21 @@
         .player-card.video-mode .album-art-bg { opacity: 0; }
         .player-video-bg iframe, #yt-player-element { width: 100% !important; height: 100% !important; border: none !important; transform: scale(1.35) !important; object-fit: cover !important; }
         
-        /* Controles */
-        .hover-control { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 20px; background: rgba(0, 0, 0, 0.65); transition: opacity 0.3s ease, background-color 0.3s ease; opacity: 1; pointer-events: auto; }
-        .player-card.video-mode .hover-control { opacity: 0; background: rgba(0, 0, 0, 0); pointer-events: none; }
-        .player-card.video-mode:hover .hover-control, .player-card.video-mode:active .hover-control { opacity: 1 !important; background: rgba(0, 0, 0, 0.75) !important; pointer-events: auto !important; }
+        /* Controles ocultos por defecto, solo visibles con hover */
+        .hover-control { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 20px; background: rgba(0, 0, 0, 0.75); transition: opacity 0.3s ease; opacity: 0; pointer-events: none; }
+        .player-card:hover .hover-control { opacity: 1; pointer-events: auto; }
         
         .station-title { font-size: 13pt; font-weight: bold; color: #fc7f03; letter-spacing: 1px; text-shadow: 0 2px 6px rgba(0,0,0,1); }
         .station-subtitle { font-size: 10pt; color: #00d4ff; font-weight: 600; margin-top: -5px; text-shadow: 0 2px 4px rgba(0,0,0,1); }
         .bars-container { display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 35px; margin: 5px 0; transition: opacity 0.3s ease; }
-        .player-card.video-mode .bars-container { opacity: 0 !important; }
         .bar { width: 4px; height: 5px; background-color: #00d4ff; border-radius: 2px; transition: height 0.2s ease; }
+        
         .play-btn { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #0072ff, #00d4ff); border: none; outline: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6); color: white; font-size: 26px; transition: transform 0.2s ease, box-shadow 0.3s ease; z-index: 12; }
         .play-btn:hover { transform: scale(1.1) !important; box-shadow: 0 6px 24px rgba(0, 212, 255, 0.8) !important; }
-        .volume-container { display: flex; align-items: center; gap: 10px; width: 85%; margin-top: 5px; background: rgba(0, 0, 0, 0.6); padding: 8px 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); transition: border-color 0.2s ease; }
-        .volume-container:hover { border-color: rgba(0, 212, 255, 0.5); }
-        .volume-icon { color: #ffffff; font-size: 14px; }
-        .volume-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.3); outline: none; }
-        .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #00d4ff; cursor: pointer; transition: transform 0.1s ease; }
-        .volume-slider::-webkit-slider-thumb:hover { transform: scale(1.3); }
+        .volume-container { display: flex; align-items: center; gap: 10px; width: 85%; margin-top: 5px; background: rgba(0, 0, 0, 0.6); padding: 8px 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .volume-slider { flex: 1; -webkit-appearance: none; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.3); outline: none; }
+        .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #00d4ff; cursor: pointer; }
+        
         .status-badge { position: relative; display: flex; align-items: center; justify-content: flex-start; gap: 10px; font-size: 10pt; font-weight: bold; color: #ffffff; z-index: 10; width: 100%; max-width: 440px; padding: 12px 15px; background: rgba(20, 22, 26, 0.95); border-radius: 12px; min-height: 48px; border: 1px solid rgba(255, 255, 255, 0.15); margin-top: 10px; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); overflow: hidden; flex-shrink: 0; }
         .metadata-artist { color: #fc7f03 !important; font-weight: bold; }
         .metadata-separator { color: #ffffff !important; margin: 0 6px; }
@@ -52,19 +50,12 @@
         .marquee-container { flex: 1; overflow: hidden; position: relative; display: flex; align-items: center; height: 24px; }
         .marquee-text { display: inline-block; white-space: nowrap; position: absolute; animation: marqueeEffect 14s linear infinite; }
         @keyframes marqueeEffect { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        
         .footer-section { z-index: 10; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 5px; flex-shrink: 0; }
-        .social-title { font-size: 10pt; color: #fc7f03; }
         .social-icons { display: flex; justify-content: center; gap: 12px; }
-        .social-btn { width: 38px; height: 38px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; font-size: 16px; border: 1px solid rgba(255,255,255,0.05); transition: background 0.2s, transform 0.2s; }
-        .social-btn:hover { transform: translateY(-3px); }
-        .social-btn.facebook:hover { background: #1877f2; }
-        .social-btn.instagram:hover { background: #e1306c; }
-        .social-btn.tiktok:hover { background: #000000; }
-        .social-btn.youtube:hover { background: #ff0000; }
-        .social-btn.google-play:hover { background: #20e8c7; }
-        .social-btn.whatsapp:hover { background: #20e825; }
-        .copyright { font-size: 8pt; color: #00d4ff; line-height: 1.3; }
-        @media (max-height: 660px) or (max-width: 480px) { .player-card, .status-badge { max-width: 320px; } .player-card { height: 320px; } .main-logo { font-size: 18pt; } .play-btn { width: 55px; height: 55px; font-size: 20px; } .bars-container { height: 25px; } }
+        .social-btn { width: 38px; height: 38px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; font-size: 16px; transition: background 0.2s, transform 0.2s; }
+        .copyright { font-size: 8pt; color: #00d4ff; }
+        @media (max-height: 660px) or (max-width: 480px) { .player-card, .status-badge { max-width: 320px; } .player-card { height: 320px; } }
     </style>
 </head>
 <body>
@@ -83,13 +74,12 @@
                 <div class="station-subtitle">RADIO VIDEO ONLINE</div>   
                 <div class="bars-container" id="radio-visualizer">
                     <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
                 </div>
                 <button class="play-btn" id="play-btn"><i class="fas fa-play"></i></button>
                 <div class="volume-container">
-                    <span><i class="fas fa-volume-down volume-icon"></i></span>
+                    <span><i class="fas fa-volume-down"></i></span>
                     <input type="range" min="0" max="1" step="0.01" value="0.7" class="volume-slider" id="volume-slider">
-                    <span><i class="fas fa-volume-up volume-icon"></i></span>
+                    <span><i class="fas fa-volume-up"></i></span>
                 </div>
             </div>
         </div>
@@ -100,16 +90,15 @@
         </div>
 
         <div class="footer-section">
-            <div class="social-title">Síguenos en nuestras redes sociales</div>
             <div class="social-icons">
-                <a href="https://www.facebook.com/PrimeraStereoRadio" class="social-btn facebook" target="_blank"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://www.instagram.com/Primera.Stereo/" class="social-btn instagram" target="_blank"><i class="fab fa-instagram"></i></a>
-                <a href="https://www.tiktok.com/@primerastereo" class="social-btn tiktok" target="_blank"><i class="fab fa-tiktok"></i></a>
-                <a href="https://www.youtube.com/@PrimeraStereo" class="social-btn youtube" target="_blank"><i class="fab fa-youtube"></i></a>
-                <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
-                <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://www.facebook.com/PrimeraStereoRadio" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://www.instagram.com/Primera.Stereo/" class="social-btn"><i class="fab fa-instagram"></i></a>
+                <a href="https://www.tiktok.com/@primerastereo" class="social-btn"><i class="fab fa-tiktok"></i></a>
+                <a href="https://www.youtube.com/@PrimeraStereo" class="social-btn"><i class="fab fa-youtube"></i></a>
+                <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn"><i class="fab fa-google-play"></i></a>
+                <a href="https://wa.link/lplcl8" class="social-btn"><i class="fab fa-whatsapp"></i></a>
             </div>
-            <div class="copyright">&copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE...</div>
+            <div class="copyright">&copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE</div>
         </div>
     </div>
 
@@ -134,7 +123,6 @@
             const bars = document.querySelectorAll('#radio-visualizer .bar');
             const albumArtBg = document.getElementById('album-art-bg');
             const playerCard = document.getElementById('player-card');
-            const hoverControl = document.getElementById('hover-control');
             const streamUrl = 'https://primerastereo.stream.laut.fm/primerastereo';
             const metadataApiUrl = 'https://api.laut.fm/station/primerastereo/current_song';
             const defaultLogoUrl = 'https://primera-stereo.netlify.app/11.png'; 
@@ -147,34 +135,30 @@
 
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
-            const firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            document.head.appendChild(tag);
 
             window.onYouTubeIframeAPIReady = function() {
                 ytPlayer = new YT.Player('yt-player-element', {
                     height: '100%', width: '100%',
                     playerVars: { 'autoplay': 0, 'controls': 0, 'rel': 0, 'loop': 1, 'mute': 1, 'playsinline': 1, 'disablekb': 1, 'origin': window.location.origin },
-                    events: {
-                        'onReady': function(event) { event.target.mute(); isPlayerReady = true; },
-                        'onError': function() { isPlayerReady = true; fallbackToArtMode(); }
-                    }
+                    events: { 'onReady': () => { isPlayerReady = true; }, 'onError': () => { isPlayerReady = true; fallbackToArtMode(); } }
                 });
             };
 
             function togglePlayback() {
                 if (isPlaying) {
                     audioPlayer.pause();
-                    if (ytPlayer && ytPlayer.pauseVideo && playerCard.classList.contains('video-mode')) { try { ytPlayer.pauseVideo(); } catch(e){} }
+                    if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
                     stopVisualizer();
                     isPlaying = false;
                 } else {
                     audioPlayer.play().then(() => {
-                        if (ytPlayer && ytPlayer.playVideo && playerCard.classList.contains('video-mode')) { try { ytPlayer.playVideo(); } catch(e){} }
+                        if (ytPlayer && ytPlayer.playVideo) ytPlayer.playVideo();
                         playBtn.innerHTML = '<i class="fas fa-pause"></i>';
                         startVisualizer();
                         isPlaying = true;
-                    }).catch(err => { console.error("Error al arrancar audio stream:", err); });
+                    });
                 }
             }
             playBtn.addEventListener('click', togglePlayback);
@@ -183,63 +167,46 @@
             function startVisualizer() {
                 clearInterval(visualizerInterval);
                 visualizerInterval = setInterval(() => {
-                    bars.forEach(bar => { if (isPlaying) { const height = Math.floor(Math.random() * 30) + 5; bar.style.height = `${height}px`; } });
+                    bars.forEach(bar => { if (isPlaying) bar.style.height = `${Math.floor(Math.random() * 30) + 5}px`; });
                 }, 150);
             }
             function stopVisualizer() { clearInterval(visualizerInterval); bars.forEach(bar => bar.style.height = '5px'); }
 
             function getAlbumArt(track, artist) {
-                const query = `${artist} ${track}`;
-                const oldScript = document.getElementById('itunes-jsonp');
-                if (oldScript) oldScript.remove();
                 const script = document.createElement('script');
                 script.id = 'itunes-jsonp';
-                script.src = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&limit=1&callback=handleiTunesResponse`;
-                script.onerror = function() { albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`; };
+                script.src = `https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + track)}&media=music&limit=1&callback=handleiTunesResponse`;
                 document.body.appendChild(script);
             }
 
             async function searchAndPlayVideo(track, artist) {
-                const trackUpper = track.toUpperCase();
-                const artistUpper = artist.toUpperCase();
-
-                if (trackUpper.includes("JINGLE") || trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO") || trackUpper.includes("LAUT.FM")) {
+                if (track.toUpperCase().includes("JINGLE") || track.toUpperCase().includes("PRIMERA STEREO")) {
                     clearVideoBuffer();
-                    albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
-                    lastVideoQuery = "STATION_IDLE_LOGO";
                     return;
                 }
-
-                let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
-                let cleanArtist = artist.trim();
-                const videoQuery = `${cleanArtist} ${cleanTrack}`; 
-                
-                getAlbumArt(cleanTrack, cleanArtist);
-                if (!isPlayerReady || !ytPlayer || !ytPlayer.loadVideoById) return;
+                const videoQuery = `${artist} ${track}`;
                 if (videoQuery === lastVideoQuery) return;
                 lastVideoQuery = videoQuery;
-
+                getAlbumArt(track, artist);
+                
                 const cachedVideoId = localStorage.getItem(`yt_${videoQuery}`);
                 if (cachedVideoId) {
-                    if (cachedVideoId === "NOT_FOUND") { fallbackToArtMode(); } else { executeVideoLoad(cachedVideoId); }
-                    return; 
+                    if (cachedVideoId !== "NOT_FOUND") executeVideoLoad(cachedVideoId);
+                    return;
                 }
-
                 try {
-                    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(videoQuery)}&type=video&key=${YOUTUBE_API_KEY}`;
-                    const response = await fetch(searchUrl).catch(() => ({ ok: false }));
-                    if (!response || !response.ok) { fallbackToArtMode(); return; }
+                    const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(videoQuery)}&type=video&key=${YOUTUBE_API_KEY}`);
                     const data = await response.json();
                     if (data.items && data.items.length > 0) {
                         const videoId = data.items[0].id.videoId;
                         localStorage.setItem(`yt_${videoQuery}`, videoId);
                         executeVideoLoad(videoId);
-                    } else { localStorage.setItem(`yt_${videoQuery}`, "NOT_FOUND"); fallbackToArtMode(); }
-                } catch (error) { fallbackToArtMode(); }
+                    } else localStorage.setItem(`yt_${videoQuery}`, "NOT_FOUND");
+                } catch (e) { fallbackToArtMode(); }
             }
 
             function clearVideoBuffer() {
-                 if (ytPlayer && ytPlayer.stopVideo) { try { ytPlayer.stopVideo(); } catch(e){} }
+                 if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
                  fallbackToArtMode();
             }
 
@@ -249,39 +216,29 @@
             }
 
             function executeVideoLoad(videoId) {
-                if (!isPlayerReady || !ytPlayer) return;
-                try {
-                    ytPlayer.loadVideoById({ videoId: videoId, startSeconds: 0 });
-                    ytPlayer.mute();
-                    if (isPlaying) { ytPlayer.playVideo(); } else { ytPlayer.pauseVideo(); }
-                    playerCard.classList.remove('art-mode');
-                    playerCard.classList.add('video-mode');
-                } catch (err) { fallbackToArtMode(); }
+                if (!ytPlayer) return;
+                ytPlayer.loadVideoById({ videoId: videoId });
+                playerCard.classList.remove('art-mode');
+                playerCard.classList.add('video-mode');
             }
             
             async function updateMetadata() {
                 try {
                     const response = await fetch(metadataApiUrl + '?t=' + new Date().getTime());
-                    if (!response.ok) throw new Error('Error en el feed de origen');
                     const data = await response.json();
                     if (data && data.title) {
                         const currentTrack = data.title;
-                        const currentArtist = (data.artist && data.artist.name) ? data.artist.name : 'PRIMERA STEREO';
+                        const currentArtist = data.artist?.name || 'PRIMERA STEREO';
                         statusIcon.className = "fas fa-music";
-                        statusText.innerHTML = '';
-                        const artistSpan = document.createElement('span'); artistSpan.className = 'metadata-artist'; artistSpan.textContent = currentArtist;
-                        const separatorSpan = document.createElement('span'); separatorSpan.className = 'metadata-separator'; separatorSpan.textContent = ' - ';
-                        const trackSpan = document.createElement('span'); trackSpan.className = 'metadata-track'; trackSpan.textContent = currentTrack;
-                        statusText.appendChild(artistSpan); statusText.appendChild(separatorSpan); statusText.appendChild(trackSpan);
-                        if (currentArtist !== currentArtistGlobal || currentTrack !== currentTrackGlobal) {
-                            currentArtistGlobal = currentArtist; currentTrackGlobal = currentTrack;
+                        statusText.innerHTML = `<span class="metadata-artist">${currentArtist}</span><span class="metadata-separator"> - </span><span class="metadata-track">${currentTrack}</span>`;
+                        if (currentTrack !== currentTrackGlobal) {
+                            currentTrackGlobal = currentTrack;
                             searchAndPlayVideo(currentTrack, currentArtist);
                         }
-                    } else if (isPlaying) { statusIcon.className = "fas fa-broadcast-tower"; statusText.textContent = "Al Aire - En Vivo"; }
-                } catch (error) { console.error("Error actualizando metadatos:", error); }
+                    }
+                } catch (e) { console.error(e); }
             }
             updateMetadata();
-            togglePlayback(); 
             metadataInterval = setInterval(updateMetadata, 10000);
         });
     </script>
