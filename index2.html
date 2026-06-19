@@ -17,9 +17,6 @@
         html, body { width: 100% !important; height: 100vh !important; overflow: hidden !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0c10; color: #ffffff; -webkit-user-select: none; user-select: none; }
         .app-container { position: relative !important; width: 100% !important; height: 100vh !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: center !important; background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('fondo.png') no-repeat center center !important; background-size: cover !important; background-attachment: fixed !important; padding: 20px !important; text-align: center !important; box-sizing: border-box !important; }
         
-        /* Clase añadida */
-        .controls-hidden { opacity: 0 !important; pointer-events: none !important; }
-
         .header-section { z-index: 10; width: 100%; margin-top: 10px; flex-shrink: 0; }
         .main-logo { font-size: 22pt; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; background: linear-gradient(45deg, #ff7b00, #ffae00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0px 4px 10px rgba(0,0,0,0.3); }
         .sub-logo { font-size: 13pt; font-weight: bold; color: #00d4ff; letter-spacing: 2px; margin-top: -2px; text-shadow: 0px 2px 8px rgba(0, 0, 0, 0.9); }
@@ -29,9 +26,12 @@
         .player-card.video-mode .player-video-bg { z-index: 7; opacity: 1; }
         .player-card.video-mode .album-art-bg { opacity: 0; }
         .player-video-bg iframe, #yt-player-element { width: 100% !important; height: 100% !important; border: none !important; transform: scale(1.35) !important; object-fit: cover !important; }
+        
+        /* Controles */
         .hover-control { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 20px; background: rgba(0, 0, 0, 0.65); transition: opacity 0.3s ease, background-color 0.3s ease; opacity: 1; pointer-events: auto; }
         .player-card.video-mode .hover-control { opacity: 0; background: rgba(0, 0, 0, 0); pointer-events: none; }
         .player-card.video-mode:hover .hover-control, .player-card.video-mode:active .hover-control { opacity: 1 !important; background: rgba(0, 0, 0, 0.75) !important; pointer-events: auto !important; }
+        
         .station-title { font-size: 13pt; font-weight: bold; color: #fc7f03; letter-spacing: 1px; text-shadow: 0 2px 6px rgba(0,0,0,1); }
         .station-subtitle { font-size: 10pt; color: #00d4ff; font-weight: 600; margin-top: -5px; text-shadow: 0 2px 4px rgba(0,0,0,1); }
         .bars-container { display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 35px; margin: 5px 0; transition: opacity 0.3s ease; }
@@ -109,7 +109,7 @@
                 <a href="https://www.appcreator24.com/app3819260-6rbmq8" class="social-btn google-play" target="_blank"><i class="fab fa-google-play"></i></a>
                 <a href="https://wa.link/lplcl8" class="social-btn whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
-            <div class="copyright">&copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE</div>
+            <div class="copyright">&copy; 2010 - 2026 PRIMERA STEREO RADIO VIDEO ONLINE.</div>
         </div>
     </div>
 
@@ -152,10 +152,10 @@
 
             window.onYouTubeIframeAPIReady = function() {
                 ytPlayer = new YT.Player('yt-player-element', {
-                    height: '100%', width: '100%', videoId: 'dQw4w9WgXcQ', 
+                    height: '100%', width: '100%',
                     playerVars: { 'autoplay': 0, 'controls': 0, 'rel': 0, 'loop': 1, 'mute': 1, 'playsinline': 1, 'disablekb': 1, 'origin': window.location.origin },
                     events: {
-                        'onReady': function(event) { event.target.mute(); isPlayerReady = true; if (currentTrackGlobal && currentArtistGlobal) { searchAndPlayVideo(currentTrackGlobal, currentArtistGlobal); } },
+                        'onReady': function(event) { event.target.mute(); isPlayerReady = true; },
                         'onError': function() { isPlayerReady = true; fallbackToArtMode(); }
                     }
                 });
@@ -206,12 +206,10 @@
                 if (trackUpper.includes("JINGLE") || trackUpper.includes("PRIMERA STEREO") || artistUpper.includes("PRIMERA STEREO") || trackUpper.includes("LAUT.FM")) {
                     clearVideoBuffer();
                     albumArtBg.style.backgroundImage = `url('${defaultLogoUrl}')`;
-                    hoverControl.classList.add('controls-hidden');
                     lastVideoQuery = "STATION_IDLE_LOGO";
                     return;
                 }
 
-                hoverControl.classList.remove('controls-hidden');
                 let cleanTrack = track.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
                 let cleanArtist = artist.trim();
                 const videoQuery = `${cleanArtist} ${cleanTrack}`; 
@@ -248,13 +246,11 @@
             function fallbackToArtMode() {
                  playerCard.classList.remove('video-mode');
                  playerCard.classList.add('art-mode');
-                 hoverControl.classList.remove('controls-hidden');
             }
 
             function executeVideoLoad(videoId) {
                 if (!isPlayerReady || !ytPlayer) return;
                 try {
-                    if (videoId === 'dQw4w9WgXcQ' || videoId === 'Jf3v7H7G-bU') { fallbackToArtMode(); return; }
                     ytPlayer.loadVideoById({ videoId: videoId, startSeconds: 0 });
                     ytPlayer.mute();
                     if (isPlaying) { ytPlayer.playVideo(); } else { ytPlayer.pauseVideo(); }
